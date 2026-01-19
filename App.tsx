@@ -18,13 +18,17 @@ import AdminView from './views/AdminView';
 // Public Views
 import HomeView from './views/HomeView';
 import PropertyListView from './views/PropertyListView';
+import PropertyDetailView from './views/PropertyDetailView';
 import ServicesView from './views/ServicesView';
 import ContactView from './views/ContactView';
+import AboutView from './views/AboutView';
+import CareerView from './views/CareerView';
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentPath, setCurrentPath] = useState('home');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
 
   // Sync login state
   useEffect(() => {
@@ -39,16 +43,24 @@ const App: React.FC = () => {
   };
 
   const handleLogin = (role: UserRole) => {
+    // Fix: Added missing 'permissions' property to the User object to satisfy the User interface requirements.
     const user: User = {
       id: Math.random().toString(),
       name: `${role} User`,
       email: `${role.toLowerCase()}@monte-chaisa.com`,
       role,
-      avatar: `https://picsum.photos/seed/${role}/100`
+      avatar: `https://picsum.photos/seed/${role}/100`,
+      permissions: []
     };
     setCurrentUser(user);
     localStorage.setItem('erp_user', JSON.stringify(user));
     setCurrentPath('dashboard');
+  };
+
+  const handleViewProperty = (id: string) => {
+    setSelectedPropertyId(id);
+    setCurrentPath('imovel-detalhes');
+    window.scrollTo(0, 0);
   };
 
   const isERPRoute = ['dashboard', 'finance', 'hr', 'projects', 'plans', 'reports', 'admin'].includes(currentPath);
@@ -56,10 +68,13 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (currentPath) {
       // Public
-      case 'home': return <HomeView onNavigate={setCurrentPath} />;
-      case 'imoveis': return <PropertyListView />;
+      case 'home': return <HomeView onNavigate={setCurrentPath} onViewProperty={handleViewProperty} />;
+      case 'imoveis': return <PropertyListView onViewProperty={handleViewProperty} />;
+      case 'imovel-detalhes': return <PropertyDetailView propertyId={selectedPropertyId} onBack={() => setCurrentPath('imoveis')} />;
       case 'servicos': return <ServicesView />;
       case 'contato': return <ContactView />;
+      case 'sobre': return <AboutView />;
+      case 'carreira': return <CareerView />;
       case 'login': return (
         <div className="min-h-[80vh] flex items-center justify-center bg-slate-50 p-4">
           <div className="bg-white rounded-3xl shadow-xl p-8 max-w-md w-full text-center border border-slate-100">
@@ -88,7 +103,7 @@ const App: React.FC = () => {
       case 'plans': return <PlansView />;
       case 'reports': return <ReportsView />;
       case 'admin': return <AdminView />;
-      default: return <HomeView onNavigate={setCurrentPath} />;
+      default: return <HomeView onNavigate={setCurrentPath} onViewProperty={handleViewProperty} />;
     }
   };
 

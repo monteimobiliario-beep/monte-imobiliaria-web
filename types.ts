@@ -1,10 +1,19 @@
 
 export enum UserRole {
-  ADMIN = 'Administrador',
-  MANAGER = 'Gestor',
-  FINANCE = 'Financeiro',
-  HR = 'RH',
-  EMPLOYEE = 'Funcionário'
+  ADMIN = 'Administrador de Sistema',
+  CEO = 'Director Executivo (CEO)',
+  MANAGER = 'Gestor Geral Operacional',
+  FINANCE = 'Director Financeiro',
+  HR = 'Gestor de Recursos Humanos',
+  SALES_LEAD = 'Chefe de Vendas',
+  SALES = 'Consultor Imobiliário',
+  MAINTENANCE_LEAD = 'Supervisor de Manutenção',
+  MAINTENANCE = 'Técnico Especializado',
+  IT_MANAGER = 'Gestor de TI & Sistemas',
+  MARKETING = 'Marketing & Comunicação',
+  SECURITY_LEAD = 'Chefe de Segurança',
+  RECEPTIONIST = 'Recepcionista / Front Desk',
+  EMPLOYEE = 'Colaborador Geral'
 }
 
 export interface User {
@@ -13,6 +22,7 @@ export interface User {
   email: string;
   role: UserRole;
   avatar: string;
+  permissions: string[];
 }
 
 export interface Transaction {
@@ -24,14 +34,44 @@ export interface Transaction {
   description: string;
 }
 
+export type AttendanceStatus = 'Presente' | 'Falta' | 'Atraso' | 'Férias' | 'Licença';
+
+export interface AttendanceRecord {
+  id: string;
+  employeeId: string;
+  date: string;
+  checkIn: string;
+  checkOut: string;
+  status: AttendanceStatus;
+  location: string;
+}
+
+export type ContractType = 'Prazo Certo' | 'Prazo Incerto' | 'Efetivo' | 'Prestação de Serviços' | 'Estágio' | 'Consultoria';
+
+export interface Contract {
+  id: string;
+  employeeId: string;
+  type: ContractType;
+  startDate: string;
+  endDate?: string;
+  salaryBase: number;
+  status: 'Ativo' | 'Expirado' | 'Rescindido';
+  documentUrl?: string;
+  fileSize?: string;
+}
+
 export interface Employee {
   id: string;
   name: string;
-  role: string;
+  role: UserRole;
   department: string;
   salary: number;
-  status: 'Ativo' | 'Férias' | 'Inativo';
+  status: 'Ativo' | 'Férias' | 'Inativo' | 'Suspenso';
   avatar: string;
+  email: string;
+  phone: string;
+  joinDate: string;
+  permissions: string[];
 }
 
 export interface Project {
@@ -53,17 +93,21 @@ export interface StrategicPlan {
   deadline: string;
 }
 
+export type PropertyCategory = 'Casa' | 'Apartamento' | 'Terreno' | 'Guest House' | 'Hotel' | 'Condomínio';
+
 export interface Property {
   id: string;
   title: string;
-  type: 'Casa' | 'Apartamento' | 'Terreno';
-  dealType: 'Venda' | 'Arrendamento';
+  type: PropertyCategory;
+  dealType: 'Venda' | 'Aluguel';
   price: number;
   location: string;
   beds: number;
   baths: number;
   area: number;
   image: string;
+  gallery: string[];
+  description: string;
   featured?: boolean;
 }
 

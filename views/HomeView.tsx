@@ -1,90 +1,110 @@
 
-import React from 'react';
-import { Search, MapPin, Building2, ShieldCheck, ThumbsUp, ArrowRight } from 'lucide-react';
-import { MOCK_PROPERTIES, MOCK_SERVICES } from '../constants';
+import React, { useState, useEffect } from 'react';
+import { Search, MapPin, Building2, ShieldCheck, ThumbsUp, ArrowRight, Star, MessageCircle, ChevronDown } from 'lucide-react';
+import { MOCK_PROPERTIES } from '../constants';
 
 interface HomeViewProps {
   onNavigate: (path: string) => void;
+  onViewProperty: (id: string) => void;
 }
 
-const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
+const HERO_IMAGES = [
+  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1200',
+  'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&q=80&w=1200',
+  'https://images.unsplash.com/photo-1600566753190-17f0bcd2a6c4?auto=format&fit=crop&q=80&w=1200',
+  'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=1200'
+];
+
+const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onViewProperty }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="animate-in fade-in duration-500">
-      {/* Hero Section */}
-      <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=1920" 
-            alt="Hero Background" 
-            className="w-full h-full object-cover scale-105"
-          />
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]"></div>
+      <section className="relative h-[340px] flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 z-0 transition-all duration-1000">
+          {HERO_IMAGES.map((img, idx) => (
+            <img 
+              key={idx}
+              src={img} 
+              alt="Hero Background" 
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${idx === currentImageIndex ? 'opacity-100' : 'opacity-0'}`}
+            />
+          ))}
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[1px]"></div>
         </div>
 
         <div className="relative z-10 max-w-5xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">
+          <h1 className="text-2xl md:text-4xl font-black text-white mb-4 leading-tight drop-shadow-lg">
             Encontre o imóvel ideal com a <span className="text-blue-400">Monte Imobiliária</span>
           </h1>
-          <p className="text-lg text-slate-200 mb-10 max-w-2xl mx-auto">
-            Venda, arrendamento e manutenção com a confiança que você merece. Descubra as melhores oportunidades em Moçambique.
+          <p className="text-sm md:text-base text-slate-100 mb-6 max-w-xl mx-auto drop-shadow">
+            Excelência em Venda, Aluguel e Gestão Hoteleira em Moçambique.
           </p>
 
-          {/* Search Bar */}
-          <div className="bg-white p-2 rounded-2xl md:rounded-full shadow-2xl flex flex-col md:flex-row gap-2 max-w-3xl mx-auto">
+          <div className="bg-white p-2 rounded-2xl md:rounded-full shadow-2xl flex flex-col md:flex-row gap-2 max-w-2xl mx-auto">
             <div className="flex-1 flex items-center px-4 py-2 gap-3 border-b md:border-b-0 md:border-r border-slate-100">
-              <MapPin size={20} className="text-blue-500" />
-              <input type="text" placeholder="Onde você procura?" className="w-full bg-transparent outline-none text-slate-800 font-medium" />
+              <MapPin size={16} className="text-blue-500" />
+              <input type="text" placeholder="Bairro ou Cidade..." className="w-full bg-transparent outline-none text-slate-800 font-medium text-xs" />
             </div>
             <div className="flex-1 flex items-center px-4 py-2 gap-3">
-              <Building2 size={20} className="text-blue-500" />
-              <select className="bg-transparent outline-none text-slate-800 font-medium w-full appearance-none">
-                <option>Todos os Tipos</option>
-                <option>Casas</option>
-                <option>Apartamentos</option>
-                <option>Terrenos</option>
+              <Building2 size={16} className="text-blue-500" />
+              <select className="bg-transparent outline-none text-slate-800 font-medium w-full appearance-none text-xs">
+                <option>Categorias</option>
+                <option>Hotel</option>
+                <option>Condomínio</option>
+                <option>Guest House</option>
               </select>
             </div>
-            <button onClick={() => onNavigate('imoveis')} className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full font-bold flex items-center justify-center gap-2 transition-all">
-              <Search size={18} />
-              Pesquisar
+            <button onClick={() => onNavigate('imoveis')} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-bold flex items-center justify-center gap-2 transition-all text-xs">
+              <Search size={14} /> Pesquisar
             </button>
           </div>
         </div>
       </section>
 
-      {/* Featured Properties */}
-      <section className="py-20 px-4 md:px-8 bg-white">
+      <section className="py-16 px-4 md:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
             <div>
-              <h2 className="text-3xl font-black text-slate-900 mb-2">Destaques</h2>
-              <p className="text-slate-500">Imóveis exclusivos selecionados para você.</p>
+              <h2 className="text-2xl font-black text-slate-900 mb-2">Imóveis Reais para Você</h2>
+              <p className="text-slate-500 text-sm">Transparência e fotos reais em cada listagem.</p>
             </div>
-            <button onClick={() => onNavigate('imoveis')} className="text-blue-600 font-bold flex items-center gap-2 hover:gap-3 transition-all">
-              Ver todos os imóveis <ArrowRight size={18} />
+            <button onClick={() => onNavigate('imoveis')} className="text-blue-600 font-bold text-sm flex items-center gap-2 hover:gap-3 transition-all">
+              Ver Catálogo Completo <ArrowRight size={16} />
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {MOCK_PROPERTIES.filter(p => p.featured).map(property => (
-              <div key={property.id} className="group cursor-pointer bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all overflow-hidden">
-                <div className="relative h-64 overflow-hidden">
-                  <img src={property.image} alt={property.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                  <div className="absolute top-4 left-4 bg-blue-600 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {MOCK_PROPERTIES.filter(p => p.featured).slice(0, 6).map(property => (
+              <div 
+                key={property.id} 
+                onClick={() => onViewProperty(property.id)}
+                className="group cursor-pointer bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-all overflow-hidden flex flex-col"
+              >
+                <div className="relative h-48 overflow-hidden">
+                  <img src={property.image} alt={property.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+                  <div className="absolute top-3 left-3 bg-blue-600 text-white text-[9px] font-black uppercase px-2 py-1 rounded-md">
                     {property.dealType}
                   </div>
                 </div>
-                <div className="p-6">
-                  <div className="text-blue-600 font-bold text-lg mb-1">
-                    {property.price.toLocaleString('pt-PT', { style: 'currency', currency: 'MZN', minimumFractionDigits: 0 })}
+                <div className="p-5 flex-1 flex flex-col">
+                  <div className="text-blue-600 font-black text-lg mb-1">
+                    {property.price.toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN', minimumFractionDigits: 0 })}
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-2">{property.title}</h3>
-                  <p className="text-sm text-slate-500 flex items-center gap-1 mb-6">
-                    <MapPin size={14} /> {property.location}
+                  <h3 className="text-base font-bold text-slate-900 mb-1">{property.title}</h3>
+                  <p className="text-xs text-slate-500 flex items-center gap-1 mb-4">
+                    <MapPin size={12} /> {property.location}
                   </p>
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-50 text-slate-600 font-medium text-sm">
-                    <span className="flex items-center gap-1.5"><Building2 size={16} /> {property.beds} Quartos</span>
-                    <span className="flex items-center gap-1.5"><ThumbsUp size={16} /> {property.area}m²</span>
+                  <div className="mt-auto flex items-center justify-between pt-3 border-t border-slate-50 text-slate-600 font-medium text-[11px]">
+                    <span className="flex items-center gap-1"><Building2 size={14} /> {property.beds} Qts</span>
+                    <span className="flex items-center gap-1"><ThumbsUp size={14} /> {property.area}m²</span>
                   </div>
                 </div>
               </div>
@@ -93,29 +113,37 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* Why Choose Us */}
-      <section className="py-20 px-4 md:px-8 bg-slate-50">
-        <div className="max-w-7xl mx-auto text-center mb-16">
-          <h2 className="text-3xl font-black text-slate-900 mb-4">Por que escolher a Monte?</h2>
-          <p className="text-slate-500 max-w-2xl mx-auto">Oferecemos uma experiência imobiliária completa, da compra à manutenção preventiva.</p>
-        </div>
-
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            { title: 'Confiabilidade', icon: <ShieldCheck size={32} />, desc: 'Anos de experiência no mercado moçambicano garantindo transações seguras.' },
-            { title: 'Atendimento Premium', icon: <ThumbsUp size={32} />, desc: 'Suporte personalizado desde a primeira visita até o pós-venda.' },
-            { title: 'Especialistas Locais', icon: <MapPin size={32} />, desc: 'Equipa com profundo conhecimento das áreas mais valorizadas.' },
-          ].map((item, idx) => (
-            <div key={idx} className="bg-white p-10 rounded-3xl border border-slate-100 text-center shadow-sm hover:-translate-y-2 transition-transform">
-              <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                {item.icon}
+      <section className="py-16 px-4 md:px-8 bg-slate-50">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-2xl font-black text-center mb-12">O que dizem os nossos clientes</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div className="flex text-yellow-400 mb-4">
+                  {[...Array(5)].map((_, star) => <Star key={star} size={14} fill="currentColor" />)}
+                </div>
+                <p className="text-sm text-slate-600 italic mb-6">"Excelente serviço de gestão de condomínio. Transparência total nas contas e manutenção sempre em dia. Recomendo a Monte Imobiliária!"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-slate-200 rounded-full overflow-hidden">
+                    <img src={`https://picsum.photos/seed/user${i}/100`} alt="User" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold">Cliente Satisfeito {i}</p>
+                    <p className="text-[10px] text-slate-400">Proprietário</p>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4">{item.title}</h3>
-              <p className="text-slate-500 leading-relaxed text-sm">{item.desc}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
+
+      <div className="fixed bottom-6 right-6 z-50">
+        <button className="bg-green-500 text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center gap-2">
+          <MessageCircle size={24} />
+          <span className="hidden md:block font-bold">Falar connosco</span>
+        </button>
+      </div>
     </div>
   );
 };

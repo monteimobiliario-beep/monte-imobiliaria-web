@@ -15,6 +15,8 @@ const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, isLoggedIn }) 
     { name: 'Início', path: 'home' },
     { name: 'Imóveis', path: 'imoveis' },
     { name: 'Serviços', path: 'servicos' },
+    { name: 'Sobre Nós', path: 'sobre' },
+    { name: 'Carreira', path: 'carreira' },
     { name: 'Contacto', path: 'contato' },
   ];
 
@@ -32,16 +34,18 @@ const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, isLoggedIn }) 
       {/* Main Navbar */}
       <nav className="bg-white/95 backdrop-blur-sm border-b border-slate-100 shadow-sm px-4 lg:px-8 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <button onClick={() => onNavigate('home')} className="flex items-center gap-2">
-            <div className="bg-blue-600 w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold">M</div>
+          <button onClick={() => onNavigate('home')} className="flex items-center gap-3 group">
+            <div className="w-12 h-12 flex items-center justify-center transition-transform group-hover:scale-105">
+              <img src="https://raw.githubusercontent.com/filipe-beira/static-assets/main/monte-chaisa-logo.png" alt="Monte & Chaisa Logo" className="w-full h-full object-contain" />
+            </div>
             <div className="text-left">
               <span className="block text-xl font-black text-slate-900 leading-none">MONTE</span>
-              <span className="block text-[10px] font-bold text-blue-600 tracking-widest">IMOBILIÁRIA</span>
+              <span className="block text-[10px] font-bold text-blue-600 tracking-widest uppercase">Imobiliária</span>
             </div>
           </button>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
               <button
                 key={link.path}

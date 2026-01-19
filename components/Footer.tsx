@@ -11,8 +11,10 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
     <footer className="bg-slate-900 text-slate-300 pt-16 pb-8 px-4 md:px-8">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
         <div>
-          <div className="flex items-center gap-2 mb-6">
-            <div className="bg-blue-600 w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold">M</div>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 flex items-center justify-center">
+              <img src="https://raw.githubusercontent.com/filipe-beira/static-assets/main/monte-chaisa-logo.png" alt="Monte & Chaisa Logo" className="w-full h-full object-contain brightness-0 invert" />
+            </div>
             <span className="text-2xl font-black text-white">MONTE</span>
           </div>
           <p className="text-sm leading-relaxed mb-6">

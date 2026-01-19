@@ -1,6 +1,5 @@
 
 import React from 'react';
-// Fix: Module '../constants' does not export 'NAVIGATION'. Using 'ERP_NAVIGATION' instead.
 import { ERP_NAVIGATION } from '../constants';
 import { UserRole } from '../types';
 import { X, ChevronLeft, ChevronRight, LayoutGrid } from 'lucide-react';
@@ -14,15 +13,14 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, userRole, isOpen, toggleSidebar }) => {
-  // Fix: Use the correctly named ERP_NAVIGATION constant for menu items.
   const filteredNav = ERP_NAVIGATION.filter(item => item.roles.includes(userRole));
 
   return (
     <div className={`fixed inset-y-0 left-0 z-50 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition duration-300 ease-in-out bg-slate-900 text-slate-300 w-64 flex flex-col`}>
       <div className="p-6 flex items-center justify-between border-b border-slate-800">
         <div className="flex items-center gap-3">
-          <div className="bg-blue-600 p-2 rounded-lg text-white">
-            <LayoutGrid size={24} />
+          <div className="w-10 h-10 flex items-center justify-center">
+            <img src="https://raw.githubusercontent.com/filipe-beira/static-assets/main/monte-chaisa-logo.png" alt="M&C" className="w-full h-full object-contain brightness-0 invert" />
           </div>
           <span className="text-xl font-bold text-white tracking-tight">M&C ERP</span>
         </div>
