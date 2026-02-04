@@ -1,5 +1,7 @@
 {
-  "name": "Copy of Monte & Chaisa ERP",
-  "description": "Sistema de Gestão Empresarial (ERP) completo para controle financeiro, recursos humanos, projetos e planejamento estratégico.",
-  "requestFramePermissions": []
+  "name": "Monte Imobiliária ERP",
+  "description": "Sistema de Gestão Empresarial (ERP) premium para controle financeiro, recursos humanos, projetos e estratégia da Monte Imobiliária.",
+  "requestFramePermissions": [
+    "camera"
+  ]
 }
