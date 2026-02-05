@@ -31,66 +31,68 @@ const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, isLoggedIn }) 
 
   return (
     <div className="w-full sticky top-0 z-50">
-      {/* Top Info Bar */}
-      <div className="hidden lg:flex bg-slate-900 text-slate-300 py-2 px-8 justify-between text-xs font-medium">
-        <div className="flex gap-6">
+      {/* Top Info Bar - Ultra Compact */}
+      <div className="hidden lg:flex bg-slate-900 text-slate-400 py-1 px-8 justify-between text-[9px] font-black uppercase tracking-wider">
+        <div className="flex gap-4">
           <a href="https://wa.me/258875018283" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white transition-colors">
-            <Phone size={12} className="text-blue-500" /> +258 87 501 8283
+            <Phone size={9} className="text-blue-500" /> +258 87 501 8283
           </a>
           <a href="mailto:monteimobiliario@gmail.com" className="flex items-center gap-2 hover:text-white transition-colors">
-            <Mail size={12} className="text-blue-500" /> monteimobiliario@gmail.com
+            <Mail size={9} className="text-blue-500" /> monteimobiliario@gmail.com
           </a>
         </div>
-        <a href="https://www.google.com/maps/search/?api=1&query=Bairro+Alto+da+Manga,+Beira,+Moçambique" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white transition-colors">
-          <MapPin size={12} className="text-blue-500" /> Alto da Manga, Beira
-        </a>
+        <div className="flex items-center gap-2">
+          <MapPin size={9} className="text-blue-500" /> Alto da Manga, Beira
+        </div>
       </div>
 
-      {/* Main Navbar */}
-      <nav className="bg-white/95 backdrop-blur-sm border-b border-slate-100 shadow-sm px-4 lg:px-8 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <button onClick={() => onNavigate('home')} className="flex items-center gap-4 group">
-            <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center p-2 shadow-xl shadow-blue-500/10 group-hover:scale-105 transition-transform overflow-hidden border border-slate-50">
+      {/* Main Navbar - Thinner py-1.5 */}
+      <nav className="bg-white/95 backdrop-blur-sm border-b border-slate-100 shadow-sm px-4 lg:px-8 py-1.5">
+        <div className="max-w-[1800px] mx-auto flex items-center justify-between">
+          <button onClick={() => onNavigate('home')} className="flex items-center gap-2 group">
+            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1 shadow-sm group-hover:scale-105 transition-transform overflow-hidden border border-slate-50">
               <img src={systemLogo} alt="Monte Logo" className="w-full h-full object-contain" />
             </div>
+            <span className="hidden sm:block font-black text-slate-900 text-xs tracking-tighter italic uppercase">MONTE IMOBILIÁRIA</span>
           </button>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-4">
             {navLinks.map((link) => (
               <button
                 key={link.path}
                 onClick={() => onNavigate(link.path)}
-                className={`text-sm font-semibold transition-colors ${
-                  currentPath === link.path ? 'text-blue-600' : 'text-slate-600 hover:text-blue-500'
+                className={`text-[10px] font-black uppercase tracking-widest transition-colors px-2 py-1 rounded-md ${
+                  currentPath === link.path ? 'text-blue-600 bg-blue-50' : 'text-slate-500 hover:text-blue-500 hover:bg-slate-50'
                 }`}
               >
                 {link.name}
               </button>
             ))}
+            <div className="w-px h-4 bg-slate-200 mx-2"></div>
             <button
               onClick={() => onNavigate(isLoggedIn ? 'dashboard' : 'login')}
-              className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
+              className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-sm"
             >
-              <UserIcon size={16} />
-              {isLoggedIn ? 'Aceder Hub' : 'Login Staff'}
+              <UserIcon size={12} />
+              {isLoggedIn ? 'Sistema' : 'Entrar'}
             </button>
           </div>
 
           {/* Mobile Toggle */}
           <button className="md:hidden text-slate-600" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {isMenuOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden pt-4 pb-2 space-y-1">
+          <div className="md:hidden py-4 space-y-1 animate-in slide-in-from-top-2">
             {navLinks.map((link) => (
               <button
                 key={link.path}
                 onClick={() => { onNavigate(link.path); setIsMenuOpen(false); }}
-                className="block w-full text-left px-4 py-3 text-base font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600 rounded-lg"
+                className="block w-full text-left px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:text-blue-600 hover:bg-slate-50"
               >
                 {link.name}
               </button>
