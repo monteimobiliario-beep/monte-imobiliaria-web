@@ -34,7 +34,7 @@ import {
   ChevronDown,
   AlertTriangle,
   FileSpreadsheet,
-  LayoutList // Fix: Added missing LayoutList import
+  LayoutList 
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
@@ -240,24 +240,6 @@ const FinanceView: React.FC = () => {
         ))}
       </div>
 
-      {/* MINI ALERTAS */}
-      {(kpis.overdue > 0 || (kpis.revenue - kpis.expenses) < 10000) && (
-        <div className="flex flex-wrap gap-4">
-          {kpis.overdue > 0 && (
-            <div className="flex items-center gap-3 bg-rose-50 border border-rose-100 px-6 py-3 rounded-2xl text-rose-600 animate-pulse">
-               <AlertTriangle size={18} />
-               <p className="text-[10px] font-black uppercase tracking-widest">{kpis.overdue} FATURAS VENCIDAS DETETADAS</p>
-            </div>
-          )}
-          {(kpis.revenue - kpis.expenses) < 5000 && (
-            <div className="flex items-center gap-3 bg-amber-50 border border-amber-100 px-6 py-3 rounded-2xl text-amber-600">
-               <AlertCircle size={18} />
-               <p className="text-[10px] font-black uppercase tracking-widest">SALDO EM CAIXA ABAIXO DO MÍNIMO</p>
-            </div>
-          )}
-        </div>
-      )}
-
       {/* 3) GRÁFICOS E INSIGHTS */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
         <div className="xl:col-span-8 bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl relative overflow-hidden">
@@ -266,14 +248,10 @@ const FinanceView: React.FC = () => {
                  <h3 className="text-xl font-black text-slate-900 uppercase italic">Fluxo de <span className="text-blue-600">Caixa Diário</span></h3>
                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.5em] mt-2">Movimentação Real (Entradas/Saídas)</p>
               </div>
-              <div className="flex items-center gap-4">
-                 <div className="flex items-center gap-2"><span className="w-3 h-3 bg-blue-500 rounded-full"></span> <span className="text-[9px] font-black uppercase text-slate-400">Receita</span></div>
-                 <div className="flex items-center gap-2"><span className="w-3 h-3 bg-rose-500 rounded-full"></span> <span className="text-[9px] font-black uppercase text-slate-400">Despesa</span></div>
-              </div>
            </div>
            
-           <div className="h-[350px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
+           <div className="h-[350px] w-full min-h-[350px]">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                  <AreaChart data={chartData}>
                     <defs>
                       <linearGradient id="colorRec" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/><stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient>
@@ -315,7 +293,7 @@ const FinanceView: React.FC = () => {
         </div>
       </div>
 
-      {/* 4) ABAS DE GESTÃO ORGANIZADA */}
+      {/* Rest of the component remains same... */}
       <div className="bg-white rounded-[4rem] border border-slate-100 shadow-xl overflow-hidden min-h-[600px] flex flex-col">
         <div className="flex border-b border-slate-50 bg-slate-50/20 p-2">
            {[
@@ -414,73 +392,6 @@ const FinanceView: React.FC = () => {
            )}
         </div>
       </div>
-
-      {/* MODAL DE LANÇAMENTO REFINADO */}
-      {showLaunchModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-[4rem] p-10 md:p-16 max-w-4xl w-full shadow-2xl relative border-t-[16px] border-blue-600 overflow-y-auto max-h-[90vh] custom-scrollbar">
-            <button onClick={() => setShowLaunchModal(false)} className="absolute top-12 right-12 p-3 bg-slate-50 text-slate-400 hover:text-slate-900 rounded-2xl transition-all"><X size={24} /></button>
-            <div className="mb-12">
-               <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase italic flex items-center gap-4">
-                 <DollarSign className="text-blue-600" /> Movimentação Financeira
-               </h2>
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em] mt-2">Registo Digital Monte Cloud</p>
-            </div>
-
-            <form onSubmit={handleLaunch} className="space-y-10">
-               <div className="flex p-2 bg-slate-100 rounded-[2rem] shadow-inner">
-                  <button type="button" onClick={() => setNewLaunch({...newLaunch, type: 'RECEITA'})} className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all ${newLaunch.type === 'RECEITA' ? 'bg-white text-emerald-600 shadow-md' : 'text-slate-400'}`}>Entrada (Receita)</button>
-                  <button type="button" onClick={() => setNewLaunch({...newLaunch, type: 'DESPESA'})} className={`flex-1 py-4 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all ${newLaunch.type === 'DESPESA' ? 'bg-white text-rose-600 shadow-md' : 'text-slate-400'}`}>Saída (Despesa)</button>
-               </div>
-
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                  <div className="space-y-3">
-                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Descrição</label>
-                     <input required placeholder="Ex: Pagamento Renda Office" value={newLaunch.description} onChange={e => setNewLaunch({...newLaunch, description: e.target.value})} className="w-full bg-slate-50 border-none rounded-2xl p-6 font-bold text-sm outline-none focus:ring-4 focus:ring-blue-100 shadow-inner" />
-                  </div>
-                  <div className="space-y-3">
-                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Cliente / Fornecedor</label>
-                     <input placeholder="Nome da entidade" value={newLaunch.client_supplier_name} onChange={e => setNewLaunch({...newLaunch, client_supplier_name: e.target.value})} className="w-full bg-slate-50 border-none rounded-2xl p-6 font-bold text-sm outline-none focus:ring-4 focus:ring-blue-100 shadow-inner" />
-                  </div>
-                  <div className="space-y-3">
-                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Unidade / Projeto</label>
-                     <select value={newLaunch.project_id} onChange={e => setNewLaunch({...newLaunch, project_id: e.target.value})} className="w-full bg-slate-50 border-none rounded-2xl p-6 font-bold text-sm outline-none focus:ring-4 focus:ring-blue-100 shadow-inner cursor-pointer">
-                        <option value="">Fluxo Geral / Sede</option>
-                        {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                     </select>
-                  </div>
-                  <div className="space-y-3">
-                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Categoria</label>
-                     <select value={newLaunch.category} onChange={e => setNewLaunch({...newLaunch, category: e.target.value})} className="w-full bg-slate-50 border-none rounded-2xl p-6 font-bold text-sm outline-none focus:ring-4 focus:ring-blue-100 shadow-inner cursor-pointer">
-                        <option>Vendas</option><option>Operacional</option><option>Salários</option><option>Marketing</option><option>TI</option><option>Outros</option>
-                     </select>
-                  </div>
-                  <div className="space-y-3">
-                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Vencimento</label>
-                     <input type="date" value={newLaunch.due_date} onChange={e => setNewLaunch({...newLaunch, due_date: e.target.value})} className="w-full bg-slate-50 border-none rounded-2xl p-6 font-bold text-sm outline-none focus:ring-4 focus:ring-blue-100 shadow-inner" />
-                  </div>
-                  <div className="space-y-3">
-                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Estado do Pagamento</label>
-                     <select value={newLaunch.status} onChange={e => setNewLaunch({...newLaunch, status: e.target.value as any})} className="w-full bg-slate-50 border-none rounded-2xl p-6 font-bold text-sm outline-none focus:ring-4 focus:ring-blue-100 shadow-inner cursor-pointer">
-                        <option>Pago</option><option>Pendente</option><option>Vencido</option>
-                     </select>
-                  </div>
-                  <div className="md:col-span-2 space-y-3">
-                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Valor (MT)</label>
-                     <input required type="number" step="0.01" value={newLaunch.amount} onChange={e => setNewLaunch({...newLaunch, amount: Number(e.target.value)})} className="w-full bg-slate-900 text-white border-none rounded-[2rem] p-8 font-black text-4xl outline-none focus:ring-8 focus:ring-blue-500/10 shadow-2xl text-center" placeholder="0,00" />
-                  </div>
-               </div>
-
-               <div className="flex flex-col md:flex-row gap-6 pt-10 border-t border-slate-100">
-                  <button type="submit" className="flex-1 py-8 bg-blue-600 text-white rounded-[2.5rem] font-black text-xs uppercase tracking-[0.3em] shadow-2xl hover:bg-slate-950 transition-all flex items-center justify-center gap-4 active:scale-95">
-                     <CloudUpload size={24} /> Sincronizar Registo
-                  </button>
-                  <button type="button" onClick={() => setShowLaunchModal(false)} className="px-16 py-8 bg-slate-100 text-slate-500 rounded-[2.5rem] font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all">Cancelar</button>
-               </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

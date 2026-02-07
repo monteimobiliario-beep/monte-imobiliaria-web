@@ -23,7 +23,10 @@ import {
   ArrowUpDown,
   SortAsc,
   SortDesc,
-  FileText
+  FileText,
+  Palette,
+  Image as ImageIcon,
+  Link as LinkIcon
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { UserRole, Employee, User } from '../types';
@@ -84,11 +87,15 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'users' | 'roles'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'settings'>('users');
   const [editingRolePermissions, setEditingRolePermissions] = useState<RoleRecord | null>(null);
   const [rolesLoading, setRolesLoading] = useState(false);
 
-  // Estados de Filtro de Auditoria
+  // Logo Config
+  const [tempLogoUrl, setTempLogoUrl] = useState(localStorage.getItem('monte_custom_logo') || 'https://i.ibb.co/LzfNdf7Y/building-logo.png');
+  const [isLogoSaving, setIsLogoSaving] = useState(false);
+
+  // Auditoria Filters
   const [logSearchAdmin, setLogSearchAdmin] = useState('');
   const [logSearchTarget, setLogSearchTarget] = useState('');
   const [logSearchAction, setLogSearchAction] = useState('');
@@ -136,13 +143,21 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
   async function fetchAuditLogs() {
     setLoadingLogs(true);
     try {
-      // Nota: Fetch inicial maior para permitir filtragem local eficiente
       const { data, error } = await supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(200);
       if (!error) setAuditLogs(data || []);
     } catch (e) {} finally { setLoadingLogs(false); }
   }
 
-  // Lógica de filtragem e ordenação local dos Logs
+  const handleUpdateLogo = () => {
+    setIsLogoSaving(true);
+    localStorage.setItem('monte_custom_logo', tempLogoUrl);
+    window.dispatchEvent(new CustomEvent('monteLogoUpdated', { detail: tempLogoUrl }));
+    setTimeout(() => {
+      setIsLogoSaving(false);
+      logAction('SISTEMA_BRANDING_UPDATE', 'Logomarca', `URL do logotipo alterada para: ${tempLogoUrl.substring(0, 30)}...`);
+    }, 800);
+  };
+
   const filteredAndSortedLogs = useMemo(() => {
     let result = auditLogs.filter(log => {
       const matchesAdmin = log.admin_name?.toLowerCase().includes(logSearchAdmin.toLowerCase());
@@ -212,7 +227,6 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
   return (
     <div className="space-y-10 animate-in fade-in duration-700 pb-20 max-w-[1600px] mx-auto">
       
-      {/* HEADER DE COMANDO */}
       <div className="relative bg-white rounded-[3rem] p-10 md:p-14 border border-slate-100 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-10 overflow-hidden" style={meshStyle}>
          <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-indigo-500/5 via-transparent to-transparent pointer-events-none"></div>
          <div className="flex items-center gap-8 relative z-10">
@@ -236,19 +250,20 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
          </div>
       </div>
 
-      {/* SELETOR DE MÓDULO ADMIN */}
-      <div className="flex p-2 bg-white rounded-[2.5rem] border border-slate-100 w-full max-w-xl mx-auto shadow-xl">
-         <button onClick={() => setActiveTab('users')} className={`flex-1 py-4 rounded-[2rem] text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${activeTab === 'users' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400'}`}>
-            <UserCheck size={16} /> Overrides Utilizador
+      <div className="flex p-2 bg-white rounded-[2.5rem] border border-slate-100 w-full max-w-2xl mx-auto shadow-xl">
+         <button onClick={() => setActiveTab('users')} className={`flex-1 py-4 rounded-[2rem] text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${activeTab === 'users' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400'}`}>
+            <UserCheck size={16} /> Utilizadores
          </button>
-         <button onClick={() => setActiveTab('roles')} className={`flex-1 py-4 rounded-[2rem] text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${activeTab === 'roles' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400'}`}>
-            <Award size={16} /> Matriz de Cargos
+         <button onClick={() => setActiveTab('roles')} className={`flex-1 py-4 rounded-[2rem] text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${activeTab === 'roles' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400'}`}>
+            <Award size={16} /> Matriz Cargos
+         </button>
+         <button onClick={() => setActiveTab('settings')} className={`flex-1 py-4 rounded-[2rem] text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${activeTab === 'settings' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400'}`}>
+            <Palette size={16} /> Identidade
          </button>
       </div>
 
-      {/* CONTEÚDO DINÂMICO */}
       <div className="animate-in slide-in-from-bottom-6 duration-700">
-         {activeTab === 'users' ? (
+         {activeTab === 'users' && (
             <div className="bg-white rounded-[4rem] border border-slate-100 shadow-2xl overflow-hidden" style={meshStyle}>
                <div className="p-10 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div className="relative flex-1 max-w-md">
@@ -272,7 +287,7 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
                                  <div className="flex items-center gap-6">
                                     <div className="relative">
                                        <img src={user.avatar} className="w-16 h-16 rounded-[1.8rem] object-cover ring-4 ring-slate-100 transition-transform group-hover:scale-110 shadow-sm" alt="" />
-                                       <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-4 border-white shadow-sm"></div>
+                                       <div className={`absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-4 border-white shadow-sm`}></div>
                                     </div>
                                     <div>
                                        <p className="text-lg font-black text-slate-900 leading-none mb-2">{user.name}</p>
@@ -300,7 +315,9 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
                   </table>
                </div>
             </div>
-         ) : (
+         )}
+
+         {activeTab === 'roles' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                {rolesLoading ? (
                   <div className="col-span-full py-24 flex justify-center"><Loader2 className="animate-spin text-indigo-600" size={48} /></div>
@@ -320,9 +337,59 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
                ))}
             </div>
          )}
+
+         {activeTab === 'settings' && (
+            <div className="max-w-4xl mx-auto bg-white rounded-[4rem] border border-slate-100 shadow-2xl p-16 animate-in slide-in-from-right-10 duration-700">
+               <div className="flex items-center gap-6 mb-12">
+                  <div className="w-16 h-16 bg-indigo-600 rounded-3xl flex items-center justify-center text-white shadow-xl">
+                     <Palette size={32} />
+                  </div>
+                  <div>
+                     <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase italic">Configuração de <span className="text-indigo-600">Marca</span></h2>
+                     <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Identidade Visual do Ecossistema Monte</p>
+                  </div>
+               </div>
+
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                  <div className="space-y-8">
+                     <div className="space-y-3">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 flex items-center gap-2">
+                           <LinkIcon size={14} className="text-indigo-600" /> URL da Logomarca (PNG/SVG)
+                        </label>
+                        <input 
+                           value={tempLogoUrl}
+                           onChange={e => setTempLogoUrl(e.target.value)}
+                           className="w-full bg-slate-50 border-none rounded-[2rem] p-6 font-bold text-sm outline-none focus:ring-4 focus:ring-indigo-100 shadow-inner"
+                           placeholder="https://sua-imagem.png"
+                        />
+                        <p className="text-[9px] text-slate-400 font-medium ml-2">Recomendamos imagens com fundo transparente e proporção quadrada ou horizontal compacta.</p>
+                     </div>
+                     
+                     <button 
+                        onClick={handleUpdateLogo}
+                        disabled={isLogoSaving}
+                        className="w-full py-6 bg-slate-900 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-widest shadow-2xl hover:bg-indigo-600 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
+                     >
+                        {isLogoSaving ? <Loader2 size={16} className="animate-spin" /> : <><Save size={16} /> Sincronizar Identidade</>}
+                     </button>
+                  </div>
+
+                  <div className="flex flex-col items-center gap-6">
+                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pré-visualização</p>
+                     <div className="w-full aspect-square bg-slate-50 rounded-[4rem] border-4 border-dashed border-slate-200 flex items-center justify-center p-12 group hover:border-indigo-300 transition-all">
+                        {tempLogoUrl ? (
+                           <img src={tempLogoUrl} alt="Preview" className="max-w-full max-h-full object-contain drop-shadow-xl transition-transform group-hover:scale-110" />
+                        ) : (
+                           <ImageIcon size={48} className="text-slate-200" />
+                        )}
+                     </div>
+                  </div>
+               </div>
+            </div>
+         )}
       </div>
 
-      {/* MODAL: EDITOR DE MATRIZ (CARGO OU USER) */}
+      {/* MODAL: EDITOR DE MATRIZ */}
       {(editingUser || editingRolePermissions) && (
          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-3xl animate-in fade-in duration-500">
             <div className="bg-white rounded-[5rem] w-full max-w-5xl h-[90vh] flex flex-col shadow-2xl relative border-t-[20px] border-indigo-600 animate-in zoom-in-95 duration-500 overflow-hidden" style={meshStyle}>
@@ -391,7 +458,7 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
          </div>
       )}
 
-      {/* MODAL: AUDITORIA REFINADA COM FILTROS */}
+      {/* MODAL: AUDITORIA REFINADA */}
       {showAuditModal && (
          <div className="fixed inset-0 z-[210] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-3xl animate-in fade-in duration-500">
             <div className="bg-white rounded-[5rem] w-full max-w-6xl h-[90vh] flex flex-col shadow-2xl relative border-t-[20px] border-emerald-600 animate-in zoom-in-95 duration-500 overflow-hidden" style={meshStyle}>
@@ -414,7 +481,6 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
                     </div>
                   </div>
 
-                  {/* BARRA DE FILTROS AVANÇADA */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50/50 p-6 rounded-[2.5rem] border border-slate-100">
                      <div className="relative group">
                         <UserCog className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" size={18} />
@@ -470,7 +536,6 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
                         </div>
                         <div className="pl-6 border-l-4 border-emerald-500/20 py-2">
                            <div className="flex items-start gap-4 bg-black/5 p-6 rounded-[2rem] border border-black/5">
-                              {/* Fix: Added FileText to lucide-react imports */}
                               <FileText size={18} className="text-slate-400 shrink-0 mt-1" />
                               <p className="text-xs font-medium text-slate-600 font-mono leading-relaxed">{log.change_details}</p>
                            </div>

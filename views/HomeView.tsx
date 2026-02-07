@@ -1,13 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, ThumbsUp, ArrowRight, Star, Loader2, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Search, MapPin, ThumbsUp, ArrowRight, Star, Loader2, Sparkles, TrendingUp, Building2, ShieldCheck, Waves, CheckCircle2 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { Property } from '../types';
 
 const HERO_CONTENT = [
-  { type: 'image', url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=1600' },
-  { type: 'image', url: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&q=80&w=1600' },
-  { type: 'image', url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1600' }
+  { type: 'image', url: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=1600' },
+  { type: 'image', url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=1600' },
+  { type: 'image', url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=1600' }
 ];
 
 interface HomeViewProps {
@@ -29,95 +29,102 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onViewProperty }) => {
   }, []);
 
   async function fetchFeatured() {
-    const { data } = await supabase.from('properties').select('*').eq('featured', true).limit(3);
-    setFeaturedProperties(data || []);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase.from('properties').select('*').eq('featured', true).limit(4);
+      if (error) throw error;
+      setFeaturedProperties(data || []);
+    } catch (err) {
+      console.error("Erro ao carregar destaques:", err);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div className="animate-in fade-in duration-700 space-y-12">
-      {/* Hero Section */}
-      <section className="w-full relative h-[300px] md:h-[380px] flex items-center justify-center overflow-hidden bg-slate-950">
+    <div className="animate-in fade-in duration-1000 space-y-0">
+      
+      {/* Hero Section - Clean top without ticker */}
+      <section className="w-full relative h-[400px] md:h-[500px] flex items-center justify-center overflow-hidden bg-slate-950">
         <div className="absolute inset-0 z-0">
           {HERO_CONTENT.map((slide, idx) => (
             <div 
               key={idx}
-              className={`absolute inset-0 transition-all duration-[1500ms] ${idx === currentSlideIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'}`}
+              className={`absolute inset-0 transition-all duration-[2000ms] ${idx === currentSlideIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'}`}
             >
-              <img src={slide.url} className="w-full h-full object-cover" alt="" />
-              <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/20 to-slate-950/70"></div>
+              <img src={slide.url} className="w-full h-full object-cover" alt="Luxury House" />
+              <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-transparent to-slate-950/80"></div>
             </div>
           ))}
         </div>
 
         <div className="relative z-10 w-full max-w-7xl px-8 text-center">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-2xl border border-white/20 px-6 py-2 rounded-full text-indigo-300 text-[9px] font-black uppercase tracking-[0.4em] mb-4">
-            <Sparkles size={12} className="animate-pulse" /> Monte Imobiliária
+          <div className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-[0.4em] mb-6 shadow-2xl shadow-indigo-500/20">
+            <Sparkles size={10} /> Exclusividade Monte
           </div>
           
-          <h1 className="text-3xl md:text-5xl font-black text-white mb-3 leading-none tracking-tighter">
-            Excelência <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-400">Moçambicana</span>
+          <h1 className="text-3xl md:text-6xl font-black text-white mb-4 leading-none tracking-tighter">
+            Definindo o <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300">Padrão de Ouro</span>
           </h1>
           
-          <p className="text-slate-300 text-xs md:text-sm font-medium max-w-xl mx-auto mb-6 leading-relaxed">
-            Imobiliária de luxo e manutenção técnica industrial pela Monte Imobiliária.
+          <p className="text-slate-300 text-xs md:text-base font-medium max-w-xl mx-auto mb-10 leading-relaxed drop-shadow-lg">
+            Curadoria de imóveis extraordinários e gestão de ativos com rigor técnico internacional em Moçambique.
           </p>
 
-          <div className="bg-white/95 backdrop-blur-xl p-1.5 rounded-[2rem] shadow-2xl flex flex-col md:flex-row gap-2 max-w-2xl mx-auto border border-white/20">
-            <div className="flex-1 flex items-center px-6 py-3 gap-3 md:border-r border-slate-100">
-              <MapPin size={18} className="text-indigo-600" />
-              <div className="text-left flex-1">
-                <input type="text" placeholder="Procurar no catálogo..." className="w-full bg-transparent outline-none text-slate-900 font-bold text-xs" />
-              </div>
+          <div className="bg-white/90 backdrop-blur-3xl p-1.5 rounded-[2rem] shadow-2xl flex flex-col md:flex-row gap-2 max-w-2xl mx-auto border border-white/30 transform hover:-translate-y-1 transition-all duration-500">
+            <div className="flex-1 flex items-center px-8 py-4 gap-4 md:border-r border-slate-200/50">
+              <Search size={20} className="text-indigo-600" />
+              <input type="text" placeholder="Procurar investimento..." className="w-full bg-transparent outline-none text-slate-900 font-bold text-sm placeholder:text-slate-400" />
             </div>
             <button 
               onClick={() => onNavigate('imoveis')} 
-              className="bg-indigo-600 hover:bg-slate-900 text-white px-8 py-4 rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-xl active:scale-95"
+              className="bg-slate-900 hover:bg-indigo-600 text-white px-10 py-5 rounded-[2rem] font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl"
             >
-              <Search size={14} /> Ver Imóveis
+              Ver Catálogo <ArrowRight size={14} />
             </button>
           </div>
         </div>
       </section>
 
       {/* Featured Properties */}
-      <section className="py-8 px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-8 text-center md:text-left">
-            <div className="max-w-xl">
-              <p className="text-indigo-600 font-black text-[10px] uppercase tracking-[0.3em] mb-3">Património Selecionado</p>
-              <h2 className="text-3xl font-black text-slate-900 tracking-tighter mb-2">Destaques da Semana</h2>
-              <p className="text-slate-500 font-medium text-base italic">"Curadoria técnica Monte Imobiliária."</p>
+      <section className="py-20 px-8 bg-slate-50">
+        <div className="max-w-[1400px] mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-14 gap-8">
+            <div className="max-w-xl text-center md:text-left">
+              <div className="flex items-center gap-2 text-indigo-600 font-black text-[9px] uppercase tracking-[0.5em] mb-4">
+                 <TrendingUp size={14} /> Investimentos em Alta
+              </div>
+              <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter mb-4">Selecção Privada</h2>
+              <p className="text-slate-500 font-medium text-lg italic opacity-80 leading-relaxed">"Engenharia de ponta e o melhor estilo de vida da Beira."</p>
             </div>
-            <button onClick={() => onNavigate('imoveis')} className="flex items-center gap-3 text-indigo-600 font-black text-[10px] uppercase tracking-widest hover:translate-x-2 transition-transform">
-              Catálogo Completo <ArrowRight size={18} />
+            <button onClick={() => onNavigate('imoveis')} className="group flex items-center gap-4 text-slate-900 font-black text-[10px] uppercase tracking-widest hover:text-indigo-600 transition-colors">
+              Explorar Completo <div className="p-3 bg-white rounded-full shadow-sm group-hover:shadow-md group-hover:bg-indigo-50 transition-all"><ArrowRight size={16} /></div>
             </button>
           </div>
 
           {loading ? (
-            <div className="flex justify-center py-20"><Loader2 className="animate-spin text-indigo-600" size={40} /></div>
+            <div className="flex justify-center py-24"><Loader2 className="animate-spin text-indigo-600" size={40} /></div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {featuredProperties.map((property) => (
                 <div 
                   key={property.id} 
                   onClick={() => onViewProperty(property.id)} 
-                  className="group cursor-pointer bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-700 overflow-hidden"
+                  className="group cursor-pointer bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-700 overflow-hidden relative"
                 >
-                  <div className="h-56 overflow-hidden relative">
-                    <img src={property.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2000ms]" alt="" />
-                    <div className="absolute top-5 left-5 bg-slate-900/80 backdrop-blur-md text-white text-[8px] font-black uppercase px-3 py-1 rounded-full">
+                  <div className="h-60 overflow-hidden relative">
+                    <img src={property.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2000ms]" alt={property.title} />
+                    <div className="absolute top-5 left-5 bg-white/90 backdrop-blur-md text-slate-900 text-[8px] font-black uppercase px-3 py-1 rounded-lg shadow-lg">
                       {property.dealType}
                     </div>
                   </div>
-                  <div className="p-7">
-                    <div className="flex items-center justify-between mb-4">
-                      <p className="text-indigo-600 font-black text-lg tracking-tighter">{property.price.toLocaleString()} MT</p>
-                      <div className="flex gap-1">{[1, 2, 3, 4, 5].map(s => <Star key={s} size={8} className="fill-amber-400 text-amber-400" />)}</div>
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-indigo-600 font-black text-xl tracking-tighter">{property.price.toLocaleString()} MT</p>
+                      <div className="flex gap-0.5">{[1, 2, 3, 4, 5].map(s => <Star key={s} size={7} className="fill-amber-400 text-amber-400" />)}</div>
                     </div>
-                    <h3 className="text-lg font-black text-slate-900 mb-3 group-hover:text-indigo-600 transition-colors truncate">{property.title}</h3>
-                    <div className="flex items-center gap-2 text-[9px] font-bold text-slate-400 uppercase">
-                      <MapPin size={10} className="text-indigo-500" /> {property.location}
+                    <h3 className="text-[13px] font-black text-slate-900 mb-4 group-hover:text-indigo-600 transition-colors uppercase tracking-tight truncate">{property.title}</h3>
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">
+                      <MapPin size={12} className="text-indigo-600" /> {property.location}
                     </div>
                   </div>
                 </div>
@@ -127,30 +134,61 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onViewProperty }) => {
         </div>
       </section>
 
-      {/* Corporate Strength */}
-      <section className="py-16 bg-slate-50 overflow-hidden relative">
-         <div className="max-w-7xl mx-auto px-8 flex flex-col lg:flex-row items-center gap-16">
-            <div className="lg:w-[45%] relative">
-               <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl aspect-video ring-1 ring-slate-200">
-                  <img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=1200" alt="Monte Experts" className="w-full h-full object-cover" />
-               </div>
-               <div className="absolute -bottom-6 -right-6 w-40 h-40 bg-indigo-600 rounded-[2.5rem] p-6 text-white shadow-2xl z-20 hidden lg:block">
-                  <ThumbsUp size={24} className="mb-3" />
-                  <p className="text-lg font-black leading-tight tracking-tight mb-1">Qualidade <br />Elite</p>
-                  <p className="text-[8px] font-black text-indigo-300 uppercase tracking-widest">Selo Monte Imobiliária</p>
+      {/* Service Ecosystem */}
+      <section className="py-24 bg-slate-950 text-white relative overflow-hidden">
+         <div className="max-w-[1400px] mx-auto px-8 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+            <div className="relative hidden lg:block">
+               <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-4 pt-10">
+                     <div className="rounded-[2.5rem] overflow-hidden aspect-square ring-4 ring-white/5 shadow-2xl">
+                        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800" className="w-full h-full object-cover" alt="" />
+                     </div>
+                     <div className="bg-indigo-600 p-8 rounded-[2.5rem] shadow-2xl">
+                        <Star className="text-white mb-4" size={24} />
+                        <p className="text-2xl font-black italic">Excelência <br/>Certificada</p>
+                     </div>
+                  </div>
+                  <div className="space-y-4">
+                     <div className="bg-slate-900 p-8 rounded-[2.5rem] border border-white/5 border-dashed">
+                        <Building2 className="text-indigo-400 mb-4" size={24} />
+                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Património Sob Gestão</p>
+                        <p className="text-3xl font-black tracking-tighter mt-1">+2.4B MT</p>
+                     </div>
+                     <div className="rounded-[2.5rem] overflow-hidden aspect-square ring-4 ring-white/5 shadow-2xl">
+                        <img src="https://images.unsplash.com/photo-1600607687940-4e524cb35297?auto=format&fit=crop&q=80&w=800" className="w-full h-full object-cover" alt="" />
+                     </div>
+                  </div>
                </div>
             </div>
-            <div className="lg:w-[55%] space-y-8">
+            
+            <div className="space-y-10">
                <div>
-                  <h2 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight tracking-tighter mb-4">
-                    Liderança Técnica em <br /><span className="text-indigo-600">Gestão de Ativos</span>
-                  </h2>
-                  <p className="text-base text-slate-500 font-medium leading-relaxed">
-                    A Monte Imobiliária une consultoria jurídica, engenharia civil e gestão hoteleira em um só hub técnico na Beira.
+                  <span className="text-indigo-400 font-black text-[10px] uppercase tracking-[0.5em] mb-4 block">Monte Intelligence</span>
+                  <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-none mb-6">A Ciência por trás da <span className="italic text-indigo-400">Valorização</span></h2>
+                  <p className="text-slate-400 text-lg font-medium leading-relaxed italic">
+                    Utilizamos inteligência técnica para garantir que o seu imóvel seja um ativo financeiro resiliente no mercado moçambicano.
                   </p>
                </div>
-               <button onClick={() => onNavigate('sobre')} className="px-10 py-4 bg-slate-900 text-white rounded-[1.5rem] font-black text-[9px] uppercase tracking-[0.3em] hover:bg-indigo-600 transition-all shadow-2xl flex items-center gap-2">
-                 Nossa História <ArrowRight size={16} />
+               
+               <div className="space-y-6">
+                  {[
+                    { title: "Manutenção Preditiva", sub: "Evite surpresas com vistorias técnicas mensais." },
+                    { title: "Assessoria Fiscal", sub: "Otimização tributária completa para o seu portfólio." },
+                  ].map((item, i) => (
+                    <div key={i} className="flex gap-5 group bg-white/5 p-6 rounded-[2rem] border border-white/5">
+                       <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg">
+                          <CheckCircle2 size={20} />
+                       </div>
+                       <div>
+                          <h4 className="text-lg font-black tracking-tight">{item.title}</h4>
+                          <p className="text-sm text-slate-500 font-medium">{item.sub}</p>
+                       </div>
+                    </div>
+                  ))}
+               </div>
+               
+               <button onClick={() => onNavigate('sobre')} className="group flex items-center gap-6 bg-white text-slate-950 px-10 py-5 rounded-[2.5rem] font-black text-[11px] uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all shadow-2xl active:scale-95">
+                  Conheça a Nossa História <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />
                </button>
             </div>
          </div>

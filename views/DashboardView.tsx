@@ -19,16 +19,22 @@ import {
   TrendingDown,
   BarChart3,
   Palette,
-  FileImage
+  FileImage,
+  Gauge,
+  Activity,
+  History,
+  Briefcase,
+  UserPlus,
+  Linkedin
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
-  ResponsiveContainer, PieChart, Pie, Cell
+  ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
 import { supabase } from '../supabaseClient';
 import { getStrategicInsight } from '../geminiService';
 import TodoList from '../components/TodoList';
-import { Transaction } from '../types';
+import { Transaction, JobApplication } from '../types';
 
 const DashboardView: React.FC = () => {
   const [stats, setStats] = useState({ 
@@ -40,15 +46,12 @@ const DashboardView: React.FC = () => {
     pendingApps: 0 
   });
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+  const [recentApps, setRecentApps] = useState<JobApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [aiInsight, setAiInsight] = useState<string>('Processando dados...');
+  const [aiInsight, setAiInsight] = useState<string>('Analisando pulso financeiro...');
   
-  // Branding States
   const [logoUrl, setLogoUrl] = useState(localStorage.getItem('monte_custom_logo') || 'https://i.ibb.co/LzfNdf7Y/building-logo.png');
-  const [isUpdatingLogo, setIsUpdatingLogo] = useState(false);
-  const [showLogoSuccess, setShowLogoSuccess] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchGlobalStats();
@@ -57,16 +60,18 @@ const DashboardView: React.FC = () => {
   async function fetchGlobalStats() {
     setIsSyncing(true);
     try {
-      const [txRes, empRes, propRes, contactRes, appCountRes] = await Promise.all([
+      const [txRes, empRes, propRes, contactRes, appCountRes, recentAppsRes] = await Promise.all([
         supabase.from('transactions').select('*'),
         supabase.from('employees').select('*', { count: 'exact', head: true }),
         supabase.from('properties').select('*', { count: 'exact', head: true }),
         supabase.from('contact_requests').select('*', { count: 'exact', head: true }),
-        supabase.from('job_applications').select('*', { count: 'exact', head: true }).eq('status', 'Pendente')
+        supabase.from('job_applications').select('*', { count: 'exact', head: true }).eq('status', 'Pendente'),
+        supabase.from('job_applications').select('*').order('created_at', { ascending: false }).limit(3)
       ]);
 
       const txs = txRes.data || [];
       setAllTransactions(txs);
+      setRecentApps(recentAppsRes.data || []);
       
       const rev = txs.filter(t => t.type === 'RECEITA').reduce((a, b) => a + Number(b.amount || 0), 0);
       const exp = txs.filter(t => t.type === 'DESPESA').reduce((a, b) => a + Number(b.amount || 0), 0);
@@ -80,7 +85,7 @@ const DashboardView: React.FC = () => {
         pendingApps: appCountRes.count || 0
       });
       
-      const insight = await getStrategicInsight(`Saldo: ${rev-exp}MT, Staff: ${empRes.count}`);
+      const insight = await getStrategicInsight(`Saldo: ${rev-exp}MT, Staff: ${empRes.count}, Candidaturas: ${appCountRes.count}`);
       setAiInsight(insight);
     } catch (error: any) {
     } finally {
@@ -111,153 +116,153 @@ const DashboardView: React.FC = () => {
     return months;
   }, [allTransactions]);
 
-  const handleUpdateLogo = async () => {
-    setIsUpdatingLogo(true);
-    localStorage.setItem('monte_custom_logo', logoUrl);
-    window.dispatchEvent(new CustomEvent('monteLogoUpdated', { detail: logoUrl }));
-    await new Promise(r => setTimeout(r, 600));
-    setIsUpdatingLogo(false);
-    setShowLogoSuccess(true);
-    setTimeout(() => setShowLogoSuccess(false), 3000);
-  };
-
   const pieData = [
-    { name: 'Venda', value: 65, color: '#8b5cf6' },
-    { name: 'Arrend.', value: 25, color: '#10b981' },
-    { name: 'Obras', value: 10, color: '#fb923c' },
+    { name: 'Luxo', value: 65, color: '#8b5cf6' },
+    { name: 'Comercial', value: 25, color: '#10b981' },
+    { name: 'Desenvolvimento', value: 10, color: '#fb923c' },
   ];
 
   if (loading) return (
     <div className="h-[70vh] flex flex-col items-center justify-center gap-4">
       <Loader2 className="animate-spin text-blue-600" size={32} />
-      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse tracking-[0.3em]">Sincronizando Sistema...</p>
+      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse tracking-[0.3em]">Neural Monte Core...</p>
     </div>
   );
 
   return (
-    <div className="space-y-4 animate-in fade-in duration-700 pb-10 max-w-[1800px] mx-auto">
+    <div className="space-y-4 animate-in fade-in duration-1000 pb-4 max-w-[1800px] mx-auto">
       
-      {/* Mini Breadcrumb/Status Bar */}
-      <div className="flex items-center justify-between px-5 py-2.5 bg-white border border-slate-100 rounded-xl shadow-sm">
-         <div className="flex items-center gap-2">
-            <div className={`w-1.5 h-1.5 rounded-full ${isSyncing ? 'bg-indigo-500 animate-ping' : 'bg-emerald-500'}`}></div>
-            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Monte Imobiliária Central Hub</p>
-         </div>
-         <button onClick={fetchGlobalStats} className="p-1 bg-slate-50 text-slate-400 rounded-md hover:text-indigo-600 transition-all">
-            <RefreshCw size={12} className={isSyncing ? 'animate-spin' : ''} />
-         </button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-         {/* BRANDING CARD - Smaller */}
-         <div className="lg:col-span-3 bg-white rounded-2xl p-4 border border-slate-100 shadow-sm relative overflow-hidden">
-            <div className="flex items-center gap-2 mb-4">
-               <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg shadow-inner"><Palette size={14}/></div>
-               <h3 className="text-[11px] font-black text-slate-900 tracking-tight uppercase italic">Branding</h3>
-            </div>
-            <div className="space-y-3">
-               <div className="p-3 bg-slate-900 rounded-xl flex items-center justify-center border-2 border-slate-800 shadow-lg relative cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                  <img src={logoUrl} className="h-10 object-contain brightness-0 invert" alt="Logo" />
-               </div>
-               <input type="text" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} className="w-full bg-slate-50 border-none rounded-lg p-2 font-bold text-[9px] outline-none shadow-inner truncate" />
-               <button onClick={handleUpdateLogo} disabled={isUpdatingLogo} className="w-full py-2 bg-slate-900 text-white rounded-lg font-black text-[9px] uppercase tracking-widest hover:bg-blue-600 transition-all shadow-md active:scale-95 disabled:opacity-50">
-                  {isUpdatingLogo ? <Loader2 size={12} className="animate-spin mx-auto" /> : 'Aplicar Marca'}
-               </button>
-            </div>
-         </div>
-
-         {/* AI INSIGHT CARD - More compact */}
-         <div className="lg:col-span-9 bg-white rounded-2xl border border-slate-100 p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
-            <div className="flex items-center gap-5 flex-1">
-               <div className="w-12 h-12 bg-slate-950 rounded-xl flex items-center justify-center shadow-lg shrink-0">
-                  <Bot size={24} className="text-indigo-400" />
+      {/* 1. Cockpit Header */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+         <div className="lg:col-span-3 bg-slate-950 rounded-2xl border border-white/5 p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-indigo-500/20 transition-all duration-1000"></div>
+            <div className="flex items-center gap-6 relative z-10 flex-1 min-w-0">
+               <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center shadow-inner border border-white/10 shrink-0">
+                  <Bot size={28} className="text-indigo-400 animate-pulse" />
                </div>
                <div className="min-w-0">
-                  <span className="text-[8px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-md mb-1 inline-block">Directriz IA</span>
-                  <h2 className="text-base font-black text-slate-900 tracking-tight leading-snug italic truncate">"{aiInsight}"</h2>
+                  <div className="flex items-center gap-2 mb-0.5">
+                     <span className="text-[7px] font-black text-indigo-400 uppercase tracking-[0.4em] bg-indigo-400/10 px-2 py-0.5 rounded-full">Inteligência Estratégica</span>
+                     <span className="text-[7px] font-black text-emerald-400 uppercase tracking-[0.4em] bg-emerald-400/10 px-2 py-0.5 rounded-full flex items-center gap-1"><Activity size={8}/> Live</span>
+                  </div>
+                  <h2 className="text-lg font-black text-white tracking-tight leading-snug italic truncate">"{aiInsight}"</h2>
                </div>
             </div>
-            <button className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg font-black text-[10px] uppercase tracking-widest hover:bg-slate-950 transition-all shadow-md shrink-0">
-               Explorar Insights <ArrowUpRight size={12} className="inline ml-1" />
+            <button onClick={fetchGlobalStats} className="bg-white/5 hover:bg-white/10 text-white px-5 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all border border-white/10 flex items-center gap-2 relative z-10 group/btn">
+               <RefreshCw size={12} className={`group-hover/btn:rotate-180 transition-transform duration-700 ${isSyncing ? 'animate-spin' : ''}`} /> Sincronizar
             </button>
+         </div>
+
+         <div className="bg-white rounded-2xl p-4 md:p-6 border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
+             <div className="relative mb-1">
+                <Gauge size={24} className="text-indigo-600 mb-1" />
+             </div>
+             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Eficiência</p>
+             <h3 className="text-xl font-black text-slate-900 tracking-tighter">94.8%</h3>
+             <div className="w-full bg-slate-50 h-1 rounded-full mt-2 overflow-hidden">
+                <div className="h-full bg-emerald-500 w-[94.8%] shadow-[0_0_8px_#10b981]"></div>
+             </div>
          </div>
       </div>
       
-      {/* KPI GRID - Compacted p-4 */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* 2. KPI GRID - Compacted */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[
-          { label: 'Lucro Líquido', val: `${(stats.revenue - stats.expenses).toLocaleString()} MT`, icon: <Wallet size={16}/>, grad: 'bg-emerald-500', text: 'text-emerald-500' },
-          { label: 'Staff Ativo', val: stats.employees, icon: <Users size={16}/>, grad: 'bg-indigo-500', text: 'text-indigo-500' },
-          { label: 'Activos Totais', val: stats.properties, icon: <Home size={16}/>, grad: 'bg-purple-500', text: 'text-purple-500' },
-          { label: 'Novos Leads', val: stats.contacts, icon: <Zap size={16}/>, grad: 'bg-orange-500', text: 'text-rose-500' },
+          { label: 'Fluxo de Caixa', val: `${(stats.revenue - stats.expenses).toLocaleString()} MT`, icon: <Wallet size={16}/>, color: 'text-emerald-500', trend: '+12%', bg: 'bg-emerald-500/10' },
+          { label: 'Asset Capacity', val: stats.properties, icon: <Home size={16}/>, color: 'text-indigo-500', trend: '+2', bg: 'bg-indigo-500/10' },
+          { label: 'Monte Staff', val: stats.employees, icon: <Users size={16}/>, color: 'text-blue-500', trend: 'Active', bg: 'bg-blue-500/10' },
+          { label: 'Talentos Pendentes', val: stats.pendingApps, icon: <UserPlus size={16}/>, color: 'text-purple-500', trend: 'Novos', bg: 'bg-purple-500/10' },
+          { label: 'Lead Velocity', val: stats.contacts, icon: <Zap size={16}/>, color: 'text-amber-500', trend: 'High', bg: 'bg-amber-500/10' },
         ].map((kpi, i) => (
-          <div key={i} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm group hover:shadow-lg transition-all">
-             <div className="flex justify-between items-start mb-3">
-                <div className={`w-8 h-8 ${kpi.grad} text-white rounded-lg flex items-center justify-center shadow-md`}>
+          <div key={i} className="bg-white p-3 md:p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:scale-[1.01] transition-all group overflow-hidden relative">
+             <div className="flex justify-between items-start mb-2">
+                <div className={`w-8 h-8 ${kpi.bg} ${kpi.color} rounded-xl flex items-center justify-center shadow-inner group-hover:rotate-12 transition-transform`}>
                    {kpi.icon}
                 </div>
+                <span className={`text-[7px] font-black ${kpi.color} uppercase tracking-tighter`}>{kpi.trend}</span>
              </div>
              <div>
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{kpi.label}</p>
+                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-0.5">{kpi.label}</p>
                 <h3 className="text-base font-black text-slate-900 tracking-tighter">{kpi.val}</h3>
              </div>
           </div>
         ))}
       </div>
 
+      {/* 3. Main Data Core */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
-        <div className="xl:col-span-8 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+        
+        {/* Gráfico Performance */}
+        <div className="xl:col-span-8 bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm">
            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-[11px] font-black text-slate-900 uppercase italic flex items-center gap-2">
-                <TrendingDown className="text-rose-500" size={14} /> Fluxo Financeiro <span className="text-rose-600">Mensal</span>
+              <h3 className="text-[10px] font-black text-slate-900 uppercase italic flex items-center gap-2">
+                <BarChart3 className="text-indigo-600" size={14} /> Performance de Ativos
               </h3>
-              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Tempo Real</p>
            </div>
-           <div className="h-[250px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                 <BarChart data={expenseChartData}>
-                    <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#00000005" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 900, fill: '#94a3b8' }} />
+           <div className="h-[220px] md:h-[260px] w-full min-h-[220px]">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                 <AreaChart data={expenseChartData}>
+                    <defs>
+                      <linearGradient id="colorVal" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1}/>
+                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#00000003" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 8, fontWeight: 900, fill: '#cbd5e1' }} />
                     <YAxis hide />
-                    <Tooltip cursor={{ fill: '#f43f5e05' }} contentStyle={{ borderRadius: '0.75rem', border: 'none', backgroundColor: '#0f172a', padding: '10px', color: '#fff' }} />
-                    <Bar dataKey="valor" fill="#f43f5e" radius={[4, 4, 0, 0]} barSize={32} />
-                 </BarChart>
+                    <Tooltip cursor={{ stroke: '#6366f1', strokeWidth: 2 }} contentStyle={{ borderRadius: '0.5rem', border: 'none', backgroundColor: '#0f172a', padding: '8px', color: '#fff', fontSize: '9px' }} />
+                    <Area type="monotone" dataKey="valor" stroke="#6366f1" strokeWidth={2.5} fillOpacity={1} fill="url(#colorVal)" />
+                 </AreaChart>
               </ResponsiveContainer>
            </div>
         </div>
 
+        {/* Candidaturas Recentes Column */}
         <div className="xl:col-span-4 space-y-4">
-           <div className="bg-slate-950 p-6 rounded-2xl text-white shadow-xl relative overflow-hidden">
-              <div className="relative z-10">
-                 <h4 className="text-[9px] font-black uppercase tracking-widest text-indigo-400 mb-4 flex items-center gap-2">
-                    <PieIcon size={12} /> Mix de Portfólio
+           <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full">
+              <div className="flex justify-between items-center mb-4">
+                 <h4 className="text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                    <Briefcase size={12} className="text-purple-600" /> Fluxo de Talentos
                  </h4>
-                 <div className="h-[120px] w-full mb-4">
-                    <ResponsiveContainer width="100%" height="100%">
-                       <PieChart>
-                          <Pie data={pieData} innerRadius={40} outerRadius={52} paddingAngle={4} dataKey="value">
-                             {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />)}
-                          </Pie>
-                       </PieChart>
-                    </ResponsiveContainer>
-                 </div>
-                 <div className="grid grid-cols-1 gap-1.5">
-                    {pieData.map((item, i) => (
-                       <div key={i} className="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
-                          <div className="flex items-center gap-2">
-                             <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: item.color }}></div>
-                             <span className="text-[9px] font-black uppercase tracking-widest opacity-60">{item.name}</span>
-                          </div>
-                          <span className="text-[10px] font-black">{item.value}%</span>
-                       </div>
-                    ))}
-                 </div>
+                 <History size={10} className="text-slate-300" />
               </div>
-           </div>
-           <div className="h-[200px]">
-              <TodoList />
+              
+              <div className="flex-1 space-y-3">
+                 {recentApps.length > 0 ? recentApps.map((app) => (
+                    <div key={app.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group hover:bg-white hover:shadow-md transition-all">
+                       <div className="min-w-0">
+                          <p className="text-[10px] font-black text-slate-900 truncate uppercase">{app.applicant_name}</p>
+                          <p className="text-[8px] font-bold text-indigo-600 uppercase tracking-tighter truncate">{app.job_title}</p>
+                       </div>
+                       <div className="flex gap-1.5 shrink-0">
+                          {app.applicant_linkedin && (
+                             <a href={app.applicant_linkedin} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-white text-blue-600 rounded-lg shadow-sm border border-slate-100 hover:scale-110 transition-all">
+                                <Linkedin size={10} />
+                             </a>
+                          )}
+                          <div className="p-1.5 bg-white text-slate-400 rounded-lg border border-slate-100">
+                             <CheckCircle2 size={10} className={app.status === 'Pendente' ? 'text-amber-400' : 'text-emerald-500'} />
+                          </div>
+                       </div>
+                    </div>
+                 )) : (
+                    <div className="flex flex-col items-center justify-center py-10 opacity-30 text-center">
+                       <UserPlus size={24} className="mb-2" />
+                       <p className="text-[8px] font-black uppercase tracking-widest">Sem candidaturas recentes</p>
+                    </div>
+                 )}
+              </div>
+              
+              <button onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'hr' }))} className="mt-4 w-full py-2 bg-slate-900 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all">
+                 Ver Todas no RH
+              </button>
            </div>
         </div>
+      </div>
+
+      <div className="h-[200px] md:h-[240px] shadow-sm rounded-2xl overflow-hidden border border-slate-100">
+         <TodoList />
       </div>
     </div>
   );

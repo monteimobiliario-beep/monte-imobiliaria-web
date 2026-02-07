@@ -19,7 +19,7 @@ import CatalogView from './views/CatalogView';
 import FleetView from './views/FleetView';
 import LoginView from './views/LoginView';
 import OverviewView from './views/OverviewView';
-import BeneficiariesView from './views/BeneficiariesView'; // Importação do novo módulo
+import BeneficiariesView from './views/BeneficiariesView'; 
 
 // Public Views
 import HomeView from './views/HomeView';
@@ -44,7 +44,6 @@ const App: React.FC = () => {
     document.documentElement.classList.remove('dark');
     localStorage.removeItem('monte_theme');
     
-    // Listener para atualizações de marca globais
     const handleLogoUpdate = (e: any) => {
       if (e.detail) setSystemLogo(e.detail);
     };
@@ -155,8 +154,9 @@ const App: React.FC = () => {
             onOpenSidebar={() => setIsSidebarOpen(true)} 
             onViewProperty={handleViewProperty}
           />
-          <main className="flex-1 overflow-y-auto p-6 md:p-14 custom-scrollbar">
-            <div className="max-w-[1600px] mx-auto">{renderContent()}</div>
+          {/* Otimização de Espaço: Padding reduzido de p-14 para p-4 md:p-8 */}
+          <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+            <div className="max-w-[1800px] mx-auto">{renderContent()}</div>
           </main>
         </div>
       </div>
