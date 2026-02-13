@@ -51,8 +51,6 @@ const DashboardView: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [aiInsight, setAiInsight] = useState<string>('Analisando pulso financeiro...');
   
-  const [logoUrl, setLogoUrl] = useState(localStorage.getItem('monte_custom_logo') || 'https://i.ibb.co/LzfNdf7Y/building-logo.png');
-
   useEffect(() => {
     fetchGlobalStats();
   }, []);
@@ -66,7 +64,7 @@ const DashboardView: React.FC = () => {
         supabase.from('properties').select('*', { count: 'exact', head: true }),
         supabase.from('contact_requests').select('*', { count: 'exact', head: true }),
         supabase.from('job_applications').select('*', { count: 'exact', head: true }).eq('status', 'Pendente'),
-        supabase.from('job_applications').select('*').order('created_at', { ascending: false }).limit(3)
+        supabase.from('job_applications').select('*').order('created_at', { ascending: false }).limit(4)
       ]);
 
       const txs = txRes.data || [];
@@ -85,7 +83,7 @@ const DashboardView: React.FC = () => {
         pendingApps: appCountRes.count || 0
       });
       
-      const insight = await getStrategicInsight(`Saldo: ${rev-exp}MT, Staff: ${empRes.count}, Candidaturas: ${appCountRes.count}`);
+      const insight = await getStrategicInsight(`Saldo: ${rev-exp}MT, Staff: ${empRes.count}, Candidatos: ${appCountRes.count}`);
       setAiInsight(insight);
     } catch (error: any) {
     } finally {
@@ -132,7 +130,6 @@ const DashboardView: React.FC = () => {
   return (
     <div className="space-y-4 animate-in fade-in duration-1000 pb-4 max-w-[1800px] mx-auto">
       
-      {/* 1. Cockpit Header */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
          <div className="lg:col-span-3 bg-slate-950 rounded-2xl border border-white/5 p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-indigo-500/20 transition-all duration-1000"></div>
@@ -165,14 +162,13 @@ const DashboardView: React.FC = () => {
          </div>
       </div>
       
-      {/* 2. KPI GRID - Compacted */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[
           { label: 'Fluxo de Caixa', val: `${(stats.revenue - stats.expenses).toLocaleString()} MT`, icon: <Wallet size={16}/>, color: 'text-emerald-500', trend: '+12%', bg: 'bg-emerald-500/10' },
           { label: 'Asset Capacity', val: stats.properties, icon: <Home size={16}/>, color: 'text-indigo-500', trend: '+2', bg: 'bg-indigo-500/10' },
-          { label: 'Monte Staff', val: stats.employees, icon: <Users size={16}/>, color: 'text-blue-500', trend: 'Active', bg: 'bg-blue-500/10' },
-          { label: 'Talentos Pendentes', val: stats.pendingApps, icon: <UserPlus size={16}/>, color: 'text-purple-500', trend: 'Novos', bg: 'bg-purple-500/10' },
-          { label: 'Lead Velocity', val: stats.contacts, icon: <Zap size={16}/>, color: 'text-amber-500', trend: 'High', bg: 'bg-amber-500/10' },
+          { label: 'Monte Staff', val: stats.employees, icon: <Users size={16}/>, color: 'text-blue-500', trend: 'Ativo', bg: 'bg-blue-500/10' },
+          { label: 'Candidatos', val: stats.pendingApps, icon: <UserPlus size={16}/>, color: 'text-purple-500', trend: 'Novos', bg: 'bg-purple-500/10' },
+          { label: 'Lead Velocity', val: stats.contacts, icon: <Zap size={16}/>, color: 'text-amber-500', trend: 'Alta', bg: 'bg-amber-500/10' },
         ].map((kpi, i) => (
           <div key={i} className="bg-white p-3 md:p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:scale-[1.01] transition-all group overflow-hidden relative">
              <div className="flex justify-between items-start mb-2">
@@ -189,17 +185,14 @@ const DashboardView: React.FC = () => {
         ))}
       </div>
 
-      {/* 3. Main Data Core */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
-        
-        {/* Gráfico Performance */}
-        <div className="xl:col-span-8 bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm">
+        <div className="xl:col-span-8 bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm h-full flex flex-col min-h-[300px]">
            <div className="flex items-center justify-between mb-6">
               <h3 className="text-[10px] font-black text-slate-900 uppercase italic flex items-center gap-2">
                 <BarChart3 className="text-indigo-600" size={14} /> Performance de Ativos
               </h3>
            </div>
-           <div className="h-[220px] md:h-[260px] w-full min-h-[220px]">
+           <div className="flex-1 w-full h-[220px] md:h-[260px]">
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                  <AreaChart data={expenseChartData}>
                     <defs>
@@ -218,12 +211,11 @@ const DashboardView: React.FC = () => {
            </div>
         </div>
 
-        {/* Candidaturas Recentes Column */}
-        <div className="xl:col-span-4 space-y-4">
-           <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full">
+        <div className="xl:col-span-4 space-y-4 flex flex-col">
+           <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex-1 flex flex-col">
               <div className="flex justify-between items-center mb-4">
                  <h4 className="text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                    <Briefcase size={12} className="text-purple-600" /> Fluxo de Talentos
+                    <Briefcase size={12} className="text-purple-600" /> Novas Candidaturas
                  </h4>
                  <History size={10} className="text-slate-300" />
               </div>
@@ -255,7 +247,7 @@ const DashboardView: React.FC = () => {
               </div>
               
               <button onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'hr' }))} className="mt-4 w-full py-2 bg-slate-900 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all">
-                 Ver Todas no RH
+                 Gerir Talentos no RH
               </button>
            </div>
         </div>

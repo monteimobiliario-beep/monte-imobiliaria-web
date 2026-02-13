@@ -159,7 +159,7 @@ const CareerView: React.FC = () => {
               <>
                 <div className="mb-8">
                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Candidatura <br/><span className="text-blue-600 text-lg uppercase">{selectedJob?.title}</span></h2>
-                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Preencha os dados ou candidate-se por email abaixo</p>
+                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Preencha os dados abaixo ou opte pelo email</p>
                 </div>
 
                 <form onSubmit={handleApplySubmit} className="space-y-4">
@@ -175,7 +175,7 @@ const CareerView: React.FC = () => {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Link de Perfil (LinkedIn ou CV Online)</label>
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Link LinkedIn ou Perfil CV Online</label>
                     <div className="relative">
                       <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500" size={14} />
                       <input disabled={isApplying} value={applyForm.linkedin} onChange={e => setApplyForm({...applyForm, linkedin: e.target.value})} className="w-full bg-slate-50 rounded-xl p-4 pl-12 font-bold text-xs outline-none focus:ring-2 focus:ring-blue-100" placeholder="https://linkedin.com/in/perfil..." />
@@ -183,30 +183,30 @@ const CareerView: React.FC = () => {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Carta de Apresentação / Mensagem</label>
-                    <textarea required disabled={isApplying} value={applyForm.message} onChange={e => setApplyForm({...applyForm, message: e.target.value})} rows={3} className="w-full bg-slate-50 rounded-2xl p-6 text-xs font-medium outline-none resize-none shadow-inner" placeholder="Conte-nos brevemente sobre sua experiência..." />
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Mensagem Curta</label>
+                    <textarea required disabled={isApplying} value={applyForm.message} onChange={e => setApplyForm({...applyForm, message: e.target.value})} rows={3} className="w-full bg-slate-50 rounded-2xl p-6 text-xs font-medium outline-none resize-none shadow-inner" placeholder="Conte-nos sobre si..." />
                   </div>
 
                   <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100">
                     <input required type="checkbox" checked={hasConsent} onChange={e => setHasConsent(e.target.checked)} className="mt-1 w-4 h-4 rounded text-blue-600" />
-                    <label className="text-[9px] text-slate-500 font-medium leading-tight">Autorizo a Monte Imobiliária a processar os meus dados para fins de recrutamento conforme a política de privacidade.</label>
+                    <label className="text-[9px] text-slate-500 font-medium leading-tight">Autorizo a Monte Imobiliária a processar os meus dados para fins de recrutamento.</label>
                   </div>
 
                   <button disabled={isApplying || !hasConsent} type="submit" className="w-full py-5 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-2xl hover:bg-slate-900 transition-all flex items-center justify-center gap-2 active:scale-95">
-                    {isApplying ? <Loader2 className="animate-spin" /> : <><Send size={14} /> Submeter Candidatura Cloud</>}
+                    {isApplying ? <Loader2 className="animate-spin" /> : <><Send size={14} /> Submeter Candidatura</>}
                   </button>
                 </form>
 
                 <div className="mt-8 pt-6 border-t border-slate-100">
                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-center">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Preferência por Email?</p>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Ou prefere enviar por correio eletrónico?</p>
                       <a 
-                        href={`mailto:monteimobiliario@gmail.com?subject=Candidatura: ${selectedJob?.title} - ${applyForm.name || 'Candidato'}`}
+                        href={`mailto:monteimobiliario@gmail.com?subject=Candidatura: ${selectedJob?.title} - ${applyForm.name || 'Candidato'}&body=Olá, gostaria de me candidatar à vaga de ${selectedJob?.title}. Segue em anexo o meu currículo.`}
                         className="inline-flex items-center gap-2 text-blue-600 font-black text-[11px] uppercase tracking-widest hover:text-slate-900 transition-colors"
                       >
-                        <Mail size={16} /> Enviar Candidatura via Correio Eletrónico
+                        <Mail size={16} /> Enviar Candidatura via Email
                       </a>
-                      <p className="mt-2 text-[8px] text-slate-400 font-medium">Lembre-se de anexar o seu CV em PDF.</p>
+                      <p className="mt-2 text-[8px] text-slate-400 font-medium">Lembre-se de anexar o seu CV em formato PDF.</p>
                    </div>
                 </div>
               </>

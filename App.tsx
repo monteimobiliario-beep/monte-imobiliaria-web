@@ -36,7 +36,9 @@ const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
-  const [systemLogo, setSystemLogo] = useState(localStorage.getItem('monte_custom_logo') || 'https://i.ibb.co/LzfNdf7Y/building-logo.png');
+  
+  // URL da Logo Corrigida e com suporte a Customização
+  const [systemLogo, setSystemLogo] = useState(localStorage.getItem('monte_custom_logo') || 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/building-2.svg');
 
   const ADMIN_GERAL_EMAIL = 'monteimobiliario@gmail.com';
 
@@ -154,7 +156,6 @@ const App: React.FC = () => {
             onOpenSidebar={() => setIsSidebarOpen(true)} 
             onViewProperty={handleViewProperty}
           />
-          {/* Otimização de Espaço: Padding reduzido de p-14 para p-4 md:p-8 */}
           <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
             <div className="max-w-[1800px] mx-auto">{renderContent()}</div>
           </main>

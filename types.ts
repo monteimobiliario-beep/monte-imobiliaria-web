@@ -152,7 +152,6 @@ export interface Task {
   created_at?: string;
 }
 
-// Fix: Added missing interface exports used in multiple views and constants
 export interface Partner {
   id: string;
   name: string;
