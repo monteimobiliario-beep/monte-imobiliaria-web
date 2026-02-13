@@ -10,7 +10,9 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, isLoggedIn }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [systemLogo, setSystemLogo] = useState(localStorage.getItem('monte_custom_logo') || 'https://i.ibb.co/LzfNdf7Y/building-logo.png');
+  
+  const DEFAULT_LOGO = 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/building-2.svg';
+  const [systemLogo, setSystemLogo] = useState(localStorage.getItem('monte_custom_logo') || DEFAULT_LOGO);
 
   useEffect(() => {
     const handleLogoUpdate = (e: any) => {
@@ -49,7 +51,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, isLoggedIn }) 
       {/* Main Navbar - Thinner py-1.5 */}
       <nav className="bg-white/95 backdrop-blur-sm border-b border-slate-100 shadow-sm px-4 lg:px-8 py-1.5">
         <div className="max-w-[1800px] mx-auto flex items-center justify-between">
-          <button onClick={() => onNavigate('home')} className="flex items-center gap-2 group">
+          <button onClick={() => onNavigate('home')} className="flex items-center gap-2 group text-left">
             <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1 shadow-sm group-hover:scale-105 transition-transform overflow-hidden border border-slate-50">
               <img src={systemLogo} alt="Monte Logo" className="w-full h-full object-contain" />
             </div>

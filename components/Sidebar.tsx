@@ -19,8 +19,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, user, isOpen
   const [stats, setStats] = useState({ revenue: 0, employees: 0, properties: 0 });
   const [isHovered, setIsHovered] = useState(false);
   
-  // Estado do logotipo sincronizado
-  const [systemLogo, setSystemLogo] = useState(localStorage.getItem('monte_custom_logo') || 'https://i.ibb.co/LzfNdf7Y/building-logo.png');
+  const DEFAULT_LOGO = 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/building-2.svg';
+  const [systemLogo, setSystemLogo] = useState(localStorage.getItem('monte_custom_logo') || DEFAULT_LOGO);
 
   useEffect(() => {
     fetchMiniStats();

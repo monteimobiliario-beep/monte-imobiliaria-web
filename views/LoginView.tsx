@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { Mail, Lock, Zap, Loader2, AlertCircle, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, Zap, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { UserRole } from '../types';
 
 interface LoginViewProps {
@@ -14,7 +14,9 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [systemLogo, setSystemLogo] = useState(localStorage.getItem('monte_custom_logo') || 'https://i.ibb.co/LzfNdf7Y/building-logo.png');
+
+  const DEFAULT_LOGO = 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/building-2.svg';
+  const [systemLogo, setSystemLogo] = useState(localStorage.getItem('monte_custom_logo') || DEFAULT_LOGO);
 
   useEffect(() => {
     const handleLogoUpdate = (e: any) => {

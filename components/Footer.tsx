@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Phone, Mail, MapPin, Facebook, Instagram, Linkedin } from 'lucide-react';
 
 interface FooterProps {
@@ -7,7 +7,16 @@ interface FooterProps {
 }
 
 const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
-  const systemLogo = localStorage.getItem('monte_custom_logo') || 'https://i.ibb.co/LzfNdf7Y/building-logo.png';
+  const DEFAULT_LOGO = 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/building-2.svg';
+  const [systemLogo, setSystemLogo] = useState(localStorage.getItem('monte_custom_logo') || DEFAULT_LOGO);
+
+  useEffect(() => {
+    const handleLogoUpdate = (e: any) => {
+      if (e.detail) setSystemLogo(e.detail);
+    };
+    window.addEventListener('monteLogoUpdated', handleLogoUpdate);
+    return () => window.removeEventListener('monteLogoUpdated', handleLogoUpdate);
+  }, []);
 
   return (
     <footer className="bg-slate-900 text-slate-300 pt-16 pb-8 px-4 md:px-8">
@@ -31,18 +40,18 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         <div>
           <h4 className="text-white font-bold mb-6">Links Rápidos</h4>
           <ul className="space-y-4 text-sm">
-            <li><button onClick={() => onNavigate('home')} className="hover:text-white hover:translate-x-1 transition-all">Início</button></li>
-            <li><button onClick={() => onNavigate('imoveis')} className="hover:text-white hover:translate-x-1 transition-all">Ver Imóveis</button></li>
-            <li><button onClick={() => onNavigate('servicos')} className="hover:text-white hover:translate-x-1 transition-all">Nossos Serviços</button></li>
+            <li><button onClick={() => onNavigate('home')} className="hover:text-white hover:translate-x-1 transition-all text-left">Início</button></li>
+            <li><button onClick={() => onNavigate('imoveis')} className="hover:text-white hover:translate-x-1 transition-all text-left">Ver Imóveis</button></li>
+            <li><button onClick={() => onNavigate('servicos')} className="hover:text-white hover:translate-x-1 transition-all text-left">Nossos Serviços</button></li>
           </ul>
         </div>
 
         <div>
           <h4 className="text-white font-bold mb-6">Serviços</h4>
           <ul className="space-y-4 text-sm">
-            <li><button onClick={() => onNavigate('servicos')} className="hover:text-white">Pintura e Acabamento</button></li>
-            <li><button onClick={() => onNavigate('servicos')} className="hover:text-white">Canalização e Hidráulica</button></li>
-            <li><button onClick={() => onNavigate('servicos')} className="hover:text-white">Consultoria Imobiliária</button></li>
+            <li><button onClick={() => onNavigate('servicos')} className="hover:text-white text-left">Pintura e Acabamento</button></li>
+            <li><button onClick={() => onNavigate('servicos')} className="hover:text-white text-left">Canalização e Hidráulica</button></li>
+            <li><button onClick={() => onNavigate('servicos')} className="hover:text-white text-left">Consultoria Imobiliária</button></li>
           </ul>
         </div>
 

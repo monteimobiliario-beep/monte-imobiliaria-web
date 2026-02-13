@@ -37,8 +37,9 @@ const App: React.FC = () => {
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   
-  // URL da Logo Corrigida e com suporte a Customização
-  const [systemLogo, setSystemLogo] = useState(localStorage.getItem('monte_custom_logo') || 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/building-2.svg');
+  // URL da Logo Corrigida (Evitando 404) e com suporte a Customização
+  const DEFAULT_LOGO = 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/building-2.svg';
+  const [systemLogo, setSystemLogo] = useState(localStorage.getItem('monte_custom_logo') || DEFAULT_LOGO);
 
   const ADMIN_GERAL_EMAIL = 'monteimobiliario@gmail.com';
 
@@ -46,6 +47,7 @@ const App: React.FC = () => {
     document.documentElement.classList.remove('dark');
     localStorage.removeItem('monte_theme');
     
+    // Listener Global para atualização da Logomarca em tempo real entre componentes
     const handleLogoUpdate = (e: any) => {
       if (e.detail) setSystemLogo(e.detail);
     };

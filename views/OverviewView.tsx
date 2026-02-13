@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BookOpen, 
   ShieldCheck, 
@@ -15,7 +15,16 @@ import {
 } from 'lucide-react';
 
 const OverviewView: React.FC = () => {
-  const systemLogo = localStorage.getItem('monte_custom_logo') || 'https://i.ibb.co/LzfNdf7Y/building-logo.png';
+  const DEFAULT_LOGO = 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/building-2.svg';
+  const [systemLogo, setSystemLogo] = useState(localStorage.getItem('monte_custom_logo') || DEFAULT_LOGO);
+
+  useEffect(() => {
+    const handleLogoUpdate = (e: any) => {
+      if (e.detail) setSystemLogo(e.detail);
+    };
+    window.addEventListener('monteLogoUpdated', handleLogoUpdate);
+    return () => window.removeEventListener('monteLogoUpdated', handleLogoUpdate);
+  }, []);
 
   return (
     <div className="space-y-12 animate-in fade-in duration-700 pb-20">
@@ -26,7 +35,7 @@ const OverviewView: React.FC = () => {
           <div className="inline-flex items-center gap-2 bg-indigo-500/20 backdrop-blur-xl border border-indigo-400/20 px-6 py-2 rounded-full text-indigo-400 text-[10px] font-black uppercase tracking-[0.3em] mb-10">
             <BookOpen size={16} /> Ecossistema Corporativo
           </div>
-          <div className="w-32 h-32 bg-white rounded-[3rem] p-6 mb-8 shadow-2xl">
+          <div className="w-32 h-32 bg-white rounded-[3rem] p-6 mb-8 shadow-2xl flex items-center justify-center overflow-hidden">
             <img src={systemLogo} className="w-full h-full object-contain" alt="Branding" />
           </div>
           <p className="text-slate-400 text-xl md:text-2xl font-medium leading-relaxed italic max-w-2xl">
@@ -35,7 +44,6 @@ const OverviewView: React.FC = () => {
         </div>
       </div>
 
-      {/* Módulos */}
       <div className="bg-white rounded-[4rem] border border-slate-100 shadow-sm overflow-hidden">
         <div className="p-16 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-8 bg-slate-50/30">
            <div>

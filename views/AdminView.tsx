@@ -92,7 +92,8 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
   const [rolesLoading, setRolesLoading] = useState(false);
 
   // Logo Config
-  const [tempLogoUrl, setTempLogoUrl] = useState(localStorage.getItem('monte_custom_logo') || 'https://i.ibb.co/LzfNdf7Y/building-logo.png');
+  const DEFAULT_LOGO = 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/building-2.svg';
+  const [tempLogoUrl, setTempLogoUrl] = useState(localStorage.getItem('monte_custom_logo') || DEFAULT_LOGO);
   const [isLogoSaving, setIsLogoSaving] = useState(false);
 
   // Auditoria Filters
@@ -151,10 +152,11 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
   const handleUpdateLogo = () => {
     setIsLogoSaving(true);
     localStorage.setItem('monte_custom_logo', tempLogoUrl);
+    // Dispara o evento para atualizar todos os componentes em tempo real
     window.dispatchEvent(new CustomEvent('monteLogoUpdated', { detail: tempLogoUrl }));
     setTimeout(() => {
       setIsLogoSaving(false);
-      logAction('SISTEMA_BRANDING_UPDATE', 'Logomarca', `URL do logotipo alterada para: ${tempLogoUrl.substring(0, 30)}...`);
+      logAction('SISTEMA_BRANDING_UPDATE', 'Logomarca', `URL do logotipo alterada para: ${tempLogoUrl.substring(0, 50)}...`);
     }, 800);
   };
 
@@ -362,7 +364,7 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
                            className="w-full bg-slate-50 border-none rounded-[2rem] p-6 font-bold text-sm outline-none focus:ring-4 focus:ring-indigo-100 shadow-inner"
                            placeholder="https://sua-imagem.png"
                         />
-                        <p className="text-[9px] text-slate-400 font-medium ml-2">Recomendamos imagens com fundo transparente e proporção quadrada ou horizontal compacta.</p>
+                        <p className="text-[9px] text-slate-400 font-medium ml-2">Recomendamos URLs diretas de imagens com fundo transparente.</p>
                      </div>
                      
                      <button 
@@ -378,7 +380,9 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pré-visualização</p>
                      <div className="w-full aspect-square bg-slate-50 rounded-[4rem] border-4 border-dashed border-slate-200 flex items-center justify-center p-12 group hover:border-indigo-300 transition-all">
                         {tempLogoUrl ? (
-                           <img src={tempLogoUrl} alt="Preview" className="max-w-full max-h-full object-contain drop-shadow-xl transition-transform group-hover:scale-110" />
+                           <img src={tempLogoUrl} alt="Preview" className="max-w-full max-h-full object-contain drop-shadow-xl transition-transform group-hover:scale-110" 
+                             onError={(e) => (e.currentTarget.src = 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/image-off.svg')}
+                           />
                         ) : (
                            <ImageIcon size={48} className="text-slate-200" />
                         )}
@@ -396,8 +400,8 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
                <button onClick={() => { setEditingUser(null); setEditingRolePermissions(null); }} className="absolute top-10 right-10 p-5 bg-slate-50 text-slate-400 hover:text-slate-900 rounded-[2rem] transition-all hover:rotate-90 duration-500"><X size={28} /></button>
                
                <div className="p-16 border-b border-slate-100 flex flex-col md:flex-row md:items-center gap-10">
-                  <div className="w-24 h-24 bg-slate-950 rounded-[3rem] flex items-center justify-center text-indigo-400 shadow-2xl border border-white/10">
-                     {editingUser ? <img src={editingUser.avatar} className="w-full h-full rounded-[3rem] object-cover" /> : <Award size={48} />}
+                  <div className="w-24 h-24 bg-slate-950 rounded-[3rem] flex items-center justify-center text-indigo-400 shadow-2xl border border-white/10 overflow-hidden">
+                     {editingUser ? <img src={editingUser.avatar} className="w-full h-full object-cover" /> : <Award size={48} />}
                   </div>
                   <div className="flex-1">
                      <h3 className="text-4xl md:text-5xl font-black tracking-tighter leading-none mb-3 uppercase italic">
