@@ -82,6 +82,11 @@ export interface Property {
   gallery: string[];
   description: string;
   featured?: boolean;
+  amenities?: string[];
+  nearby?: { label: string; distance: string }[];
+  status?: 'Disponível' | 'Reservado' | 'Vendido' | 'Arrendado';
+  video_url?: string;
+  map_coords?: { lat: number; lng: number };
 }
 
 export interface Project {

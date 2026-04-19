@@ -76,17 +76,25 @@ export const MOCK_PROPERTIES: Property[] = [
     type: 'Casa', 
     dealType: 'Venda', 
     price: 12500000, 
-    location: 'Alto da Manga', 
+    location: 'Alto da Manga, Beira', 
     beds: 4, 
     baths: 3, 
     area: 250, 
     image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800', 
     gallery: [
       'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1600607687940-4e524cb35297?auto=format&fit=crop&q=80&w=800'
+      'https://images.unsplash.com/photo-1600607687940-4e524cb35297?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1600566753190-17f0bac26914?auto=format&fit=crop&q=80&w=800'
     ],
-    description: 'Magnífica vivenda com acabamentos de luxo.',
-    featured: true 
+    description: 'Magnífica vivenda com acabamentos de luxo, localizada numa das zonas mais nobres da cidade. Possui uma ampla sala de estar, cozinha equipada e jardim privativo.',
+    featured: true,
+    amenities: ['Piscina Infinita', 'Cozinha Gourmet', 'Sistema de Segurança 24h', 'Garagem para 3 Carros', 'Gás Canalizado', 'Jardim Paisagístico'],
+    nearby: [
+      { label: 'Escola Internacional Beira', distance: '1.2 km' },
+      { label: 'Centro Comercial Monte', distance: '3.5 km' },
+      { label: 'Hospital Central', distance: '5.0 km' }
+    ],
+    status: 'Disponível'
   },
   { 
     id: '2', 
@@ -94,14 +102,24 @@ export const MOCK_PROPERTIES: Property[] = [
     type: 'Apartamento', 
     dealType: 'Aluguel', 
     price: 45000, 
-    location: 'Centro da Cidade', 
+    location: 'Centro da Cidade, Beira', 
     beds: 2, 
     baths: 1, 
     area: 85, 
     image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=800', 
-    gallery: [],
-    description: 'Apartamento prático e central.',
-    featured: true 
+    gallery: [
+      'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800'
+    ],
+    description: 'Apartamento prático e central, ideal para jovens profissionais ou pequenas famílias. Próximo a todas as conveniências urbanas.',
+    featured: true,
+    amenities: ['Ginásio no Edifício', 'Segurança 24h', 'Lugar de Estacionamento', 'Varanda com Vista'],
+    nearby: [
+      { label: 'Mercado Central', distance: '500 m' },
+      { label: 'Estação de Comboio', distance: '1.5 km' },
+      { label: 'Faculdade de Economia', distance: '800 m' }
+    ],
+    status: 'Disponível'
   },
 ];
 

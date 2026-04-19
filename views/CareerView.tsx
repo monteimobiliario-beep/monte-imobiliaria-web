@@ -86,53 +86,53 @@ const CareerView: React.FC = () => {
     <div className="animate-in fade-in duration-700" role="main">
       <section className="relative h-[240px] md:h-[300px] flex items-center justify-center text-center text-white overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1200" alt="Monte Corporate Environment" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-slate-900/75 backdrop-blur-[1px]"></div>
+          <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1200" referrerPolicy="no-referrer" alt="Monte Corporate Environment" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-market-navy/80 backdrop-blur-[2px]"></div>
         </div>
         <div className="relative z-10 max-w-4xl px-4">
-          <h1 className="text-3xl md:text-5xl font-black mb-3 leading-tight tracking-tighter">
-            Carreira na <span className="text-blue-400">Monte Imobiliária</span>
+          <h1 className="text-3xl md:text-5xl font-bold mb-3 leading-tight tracking-tight">
+            Carreira na <span className="text-market-blue">Monte Imobiliária</span>
           </h1>
-          <p className="text-slate-300 text-xs md:text-sm font-medium max-w-xl mx-auto mb-6 leading-relaxed italic opacity-80">
+          <p className="text-white/70 text-xs md:text-sm font-medium max-w-xl mx-auto mb-8 leading-relaxed">
             Construa o futuro do mercado imobiliário em Moçambique connosco.
           </p>
-          <a href="#vagas" className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest transition-all shadow-2xl">Ver Oportunidades</a>
+          <a href="#vagas" className="market-button market-button-primary px-10 py-4 text-[11px] uppercase tracking-widest">Ver Oportunidades</a>
         </div>
       </section>
 
-      <section id="vagas" className="py-16 px-4 md:px-8 bg-slate-50">
+      <section id="vagas" className="py-20 px-4 md:px-8 bg-market-bg">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-10">
-            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Vagas em Aberto</h2>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-slate-200 text-[9px] font-black text-slate-400 uppercase tracking-widest">
-               <ShieldCheck size={12} className="text-blue-600" /> Vagas Oficiais
+          <div className="flex items-center justify-between mb-12">
+            <h2 className="text-2xl font-bold text-market-navy tracking-tight">Vagas em Aberto</h2>
+            <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-slate-200 text-[10px] font-bold text-market-slate uppercase tracking-widest">
+               <ShieldCheck size={14} className="text-market-blue" /> Vagas Oficiais
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             {vacancies.length === 0 ? (
-              <div className="bg-white p-12 rounded-[2.5rem] border border-dashed border-slate-200 text-center">
-                 <Briefcase size={32} className="mx-auto text-slate-200 mb-3" />
-                 <p className="text-slate-400 font-bold uppercase text-[9px]">Não existem vagas de momento.</p>
+              <div className="market-card p-16 text-center border-dashed">
+                 <Briefcase size={40} className="mx-auto text-slate-200 mb-4" />
+                 <p className="text-market-slate font-bold uppercase text-[10px] tracking-widest">Não existem vagas de momento.</p>
               </div>
             ) : vacancies.map((job) => (
-              <div key={job.id} className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden transition-all hover:shadow-lg">
-                <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer" onClick={() => setExpandedId(expandedId === job.id ? null : job.id)}>
+              <div key={job.id} className="market-card overflow-hidden transition-all hover:shadow-xl group">
+                <div className="p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer" onClick={() => setExpandedId(expandedId === job.id ? null : job.id)}>
                    <div className="flex-1">
-                      <h3 className="text-xl font-black text-slate-900 mb-1">{job.title}</h3>
-                      <div className="flex flex-wrap gap-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                         <span className="flex items-center gap-1"><MapPin size={10} className="text-blue-600" /> {job.location}</span>
-                         <span className="flex items-center gap-1"><Briefcase size={10} className="text-blue-600" /> {job.area}</span>
+                      <h3 className="text-xl font-bold text-market-navy mb-2 group-hover:text-market-blue transition-colors">{job.title}</h3>
+                      <div className="flex flex-wrap gap-4 text-[10px] font-bold text-market-slate uppercase tracking-widest">
+                         <span className="flex items-center gap-1.5"><MapPin size={12} className="text-market-blue" /> {job.location}</span>
+                         <span className="flex items-center gap-1.5"><Briefcase size={12} className="text-market-blue" /> {job.area}</span>
                       </div>
                    </div>
-                   <div className="flex items-center gap-3">
-                      <button onClick={(e) => { e.stopPropagation(); handleOpenApply(job); }} className="px-6 py-3 bg-blue-600 text-white rounded-[1rem] font-black text-[9px] uppercase tracking-widest hover:bg-slate-900 transition-all">Candidatar</button>
-                      <div className={`p-2 rounded-full bg-slate-50 text-slate-400 transition-transform ${expandedId === job.id ? 'rotate-180' : ''}`}><ChevronDown size={18} /></div>
+                   <div className="flex items-center gap-4">
+                      <button onClick={(e) => { e.stopPropagation(); handleOpenApply(job); }} className="market-button market-button-primary px-8 py-3 text-[10px] uppercase tracking-widest">Candidatar</button>
+                      <div className={`p-2.5 rounded-full bg-slate-50 text-slate-400 transition-transform border border-slate-100 ${expandedId === job.id ? 'rotate-180' : ''}`}><ChevronDown size={20} /></div>
                    </div>
                 </div>
                 {expandedId === job.id && (
-                  <div className="px-8 pb-8 pt-2 border-t border-slate-50 animate-in slide-in-from-top-2 duration-300">
-                     <div className="prose prose-slate max-w-none text-slate-600 font-medium whitespace-pre-line leading-relaxed text-xs bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                  <div className="px-8 pb-8 pt-2 border-t border-slate-100 animate-in slide-in-from-top-2 duration-300">
+                     <div className="prose prose-slate max-w-none text-market-slate font-medium whitespace-pre-line leading-relaxed text-sm bg-slate-50 p-8 rounded-2xl border border-slate-100">
                         {job.description || "Dossiê em atualização."}
                      </div>
                   </div>
@@ -144,69 +144,69 @@ const CareerView: React.FC = () => {
       </section>
 
       {showApplyModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-xl animate-in fade-in">
-          <div className="bg-white rounded-[3rem] p-8 md:p-10 max-w-xl w-full shadow-2xl relative overflow-y-auto max-h-[90vh] border-t-8 border-blue-600">
-            <button onClick={() => !isApplying && setShowApplyModal(false)} className="absolute top-6 right-6 p-1.5 text-slate-400 hover:text-slate-900 bg-slate-50 rounded-xl transition-all"><X size={24} /></button>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-market-navy/90 backdrop-blur-xl animate-in fade-in">
+          <div className="bg-white rounded-3xl p-8 md:p-12 max-w-xl w-full shadow-2xl relative overflow-y-auto max-h-[90vh] border-t-8 border-market-blue">
+            <button onClick={() => !isApplying && setShowApplyModal(false)} className="absolute top-8 right-8 p-2 text-slate-400 hover:text-market-navy bg-slate-50 rounded-xl transition-all border border-slate-100"><X size={24} /></button>
             
             {applyStatus === 'success' ? (
               <div className="py-12 text-center">
-                <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner"><CheckCircle2 size={40} /></div>
-                <h2 className="text-2xl font-black text-slate-900 mb-2">Candidatura Enviada!</h2>
-                <p className="text-slate-500 font-medium mb-8 text-sm">Boa sorte!</p>
-                <button onClick={() => setShowApplyModal(false)} className="px-10 py-4 bg-slate-900 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-xl">Fechar</button>
+                <div className="w-20 h-20 bg-emerald-50 text-market-accent rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-inner border border-emerald-100"><CheckCircle2 size={40} /></div>
+                <h2 className="text-2xl font-bold text-market-navy mb-3">Candidatura Enviada!</h2>
+                <p className="text-market-slate font-medium mb-10">Agradecemos o seu interesse. A nossa equipa de RH irá analisar o seu perfil.</p>
+                <button onClick={() => setShowApplyModal(false)} className="market-button market-button-primary px-12 py-4 text-xs uppercase tracking-widest">Fechar</button>
               </div>
             ) : (
               <>
-                <div className="mb-8">
-                   <h2 className="text-2xl font-black text-slate-900 tracking-tight">Candidatura <br/><span className="text-blue-600 text-lg uppercase">{selectedJob?.title}</span></h2>
-                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Preencha os dados abaixo ou opte pelo email</p>
+                <div className="mb-10">
+                   <h2 className="text-2xl font-bold text-market-navy tracking-tight">Candidatura <br/><span className="text-market-blue text-lg uppercase">{selectedJob?.title}</span></h2>
+                   <p className="text-[11px] text-market-slate font-bold uppercase tracking-widest mt-2">Preencha os dados abaixo para iniciar o processo</p>
                 </div>
 
-                <form onSubmit={handleApplySubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome Completo</label>
-                      <input required disabled={isApplying} value={applyForm.name} onChange={e => setApplyForm({...applyForm, name: e.target.value})} className="w-full bg-slate-50 rounded-xl p-4 font-bold text-xs outline-none focus:ring-2 focus:ring-blue-100" placeholder="Seu Nome" />
+                <form onSubmit={handleApplySubmit} className="space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Nome Completo</label>
+                      <input required disabled={isApplying} value={applyForm.name} onChange={e => setApplyForm({...applyForm, name: e.target.value})} className="w-full bg-slate-50 rounded-xl p-4 font-medium text-sm outline-none border border-slate-200 focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" placeholder="Seu Nome" />
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Email</label>
-                      <input required disabled={isApplying} type="email" value={applyForm.email} onChange={e => setApplyForm({...applyForm, email: e.target.value})} className="w-full bg-slate-50 rounded-xl p-4 font-bold text-xs outline-none focus:ring-2 focus:ring-blue-100" placeholder="exemplo@email.com" />
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Email Profissional</label>
+                      <input required disabled={isApplying} type="email" value={applyForm.email} onChange={e => setApplyForm({...applyForm, email: e.target.value})} className="w-full bg-slate-50 rounded-xl p-4 font-medium text-sm outline-none border border-slate-200 focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" placeholder="exemplo@email.com" />
                     </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Link LinkedIn ou Perfil CV Online</label>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">LinkedIn ou Portfólio</label>
                     <div className="relative">
-                      <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500" size={14} />
-                      <input disabled={isApplying} value={applyForm.linkedin} onChange={e => setApplyForm({...applyForm, linkedin: e.target.value})} className="w-full bg-slate-50 rounded-xl p-4 pl-12 font-bold text-xs outline-none focus:ring-2 focus:ring-blue-100" placeholder="https://linkedin.com/in/perfil..." />
+                      <Linkedin className="absolute left-4 top-1/2 -translate-y-1/2 text-market-blue" size={16} />
+                      <input disabled={isApplying} value={applyForm.linkedin} onChange={e => setApplyForm({...applyForm, linkedin: e.target.value})} className="w-full bg-slate-50 rounded-xl p-4 pl-12 font-medium text-sm outline-none border border-slate-200 focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" placeholder="linkedin.com/in/perfil" />
                     </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Mensagem Curta</label>
-                    <textarea required disabled={isApplying} value={applyForm.message} onChange={e => setApplyForm({...applyForm, message: e.target.value})} rows={3} className="w-full bg-slate-50 rounded-2xl p-6 text-xs font-medium outline-none resize-none shadow-inner" placeholder="Conte-nos sobre si..." />
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Apresentação</label>
+                    <textarea required disabled={isApplying} value={applyForm.message} onChange={e => setApplyForm({...applyForm, message: e.target.value})} rows={4} className="w-full bg-slate-50 rounded-2xl p-6 text-sm font-medium outline-none border border-slate-200 focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all resize-none" placeholder="Conte-nos brevemente sobre a sua experiência..." />
                   </div>
 
-                  <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100">
-                    <input required type="checkbox" checked={hasConsent} onChange={e => setHasConsent(e.target.checked)} className="mt-1 w-4 h-4 rounded text-blue-600" />
-                    <label className="text-[9px] text-slate-500 font-medium leading-tight">Autorizo a Monte Imobiliária a processar os meus dados para fins de recrutamento.</label>
+                  <div className="flex items-start gap-3 p-5 bg-slate-50 rounded-xl border border-slate-200">
+                    <input required type="checkbox" checked={hasConsent} onChange={e => setHasConsent(e.target.checked)} className="mt-1 w-4 h-4 rounded border-slate-300 text-market-blue focus:ring-market-blue" />
+                    <label className="text-[10px] text-market-slate font-medium leading-relaxed">Autorizo a Monte Imobiliária a processar os meus dados para fins de recrutamento e seleção.</label>
                   </div>
 
-                  <button disabled={isApplying || !hasConsent} type="submit" className="w-full py-5 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-2xl hover:bg-slate-900 transition-all flex items-center justify-center gap-2 active:scale-95">
-                    {isApplying ? <Loader2 className="animate-spin" /> : <><Send size={14} /> Submeter Candidatura</>}
+                  <button disabled={isApplying || !hasConsent} type="submit" className="market-button market-button-primary w-full py-5 text-[11px] uppercase tracking-widest flex items-center justify-center gap-3">
+                    {isApplying ? <Loader2 className="animate-spin" /> : <><Send size={16} /> Submeter Candidatura</>}
                   </button>
                 </form>
 
-                <div className="mt-8 pt-6 border-t border-slate-100">
-                   <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-center">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Ou prefere enviar por correio eletrónico?</p>
+                <div className="mt-10 pt-8 border-t border-slate-100">
+                   <div className="bg-slate-50 p-8 rounded-2xl border border-slate-200 text-center">
+                      <p className="text-[10px] font-bold text-market-slate uppercase tracking-widest mb-4">Prefere enviar por email?</p>
                       <a 
                         href={`mailto:monteimobiliario@gmail.com?subject=Candidatura: ${selectedJob?.title} - ${applyForm.name || 'Candidato'}&body=Olá, gostaria de me candidatar à vaga de ${selectedJob?.title}. Segue em anexo o meu currículo.`}
-                        className="inline-flex items-center gap-2 text-blue-600 font-black text-[11px] uppercase tracking-widest hover:text-slate-900 transition-colors"
+                        className="inline-flex items-center gap-2 text-market-blue font-bold text-[11px] uppercase tracking-widest hover:text-market-navy transition-colors"
                       >
-                        <Mail size={16} /> Enviar Candidatura via Email
+                        <Mail size={18} /> Enviar Candidatura via Email
                       </a>
-                      <p className="mt-2 text-[8px] text-slate-400 font-medium">Lembre-se de anexar o seu CV em formato PDF.</p>
+                      <p className="mt-3 text-[9px] text-market-slate font-medium">Anexe o seu CV em formato PDF (Máx. 5MB).</p>
                    </div>
                 </div>
               </>

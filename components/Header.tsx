@@ -31,13 +31,13 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onOpenSidebar, onViewPr
 
     const channel = supabase
       .channel('header_notifications')
-      .on('postgres_changes', { event: 'INSERT', table: 'job_applications' }, () => {
+      .on('postgres_changes' as any, { event: 'INSERT', table: 'job_applications' }, () => {
         setUnreadApplications(prev => prev + 1);
         setShowNotificationPopup(true);
         if (audioRef.current) audioRef.current.play().catch(() => {});
         setTimeout(() => setShowNotificationPopup(false), 5000);
       })
-      .on('postgres_changes', { event: 'INSERT', table: 'properties' }, (payload) => {
+      .on('postgres_changes' as any, { event: 'INSERT', table: 'properties' }, (payload: any) => {
         const adminRoles = [UserRole.ADMIN, UserRole.CEO, UserRole.MANAGER];
         if (adminRoles.includes(user.role)) {
           setLastAddedProperty(payload.new as Property);
@@ -46,7 +46,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onOpenSidebar, onViewPr
           setTimeout(() => setShowPropertyNotification(false), 8000);
         }
       })
-      .on('postgres_changes', { event: 'UPDATE', table: 'job_applications' }, () => {
+      .on('postgres_changes' as any, { event: 'UPDATE', table: 'job_applications' }, () => {
         fetchInitialUnread();
       })
       .subscribe();

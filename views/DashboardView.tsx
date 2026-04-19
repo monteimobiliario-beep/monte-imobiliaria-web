@@ -131,55 +131,55 @@ const DashboardView: React.FC = () => {
     <div className="space-y-4 animate-in fade-in duration-1000 pb-4 max-w-[1800px] mx-auto">
       
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-         <div className="lg:col-span-3 bg-slate-950 rounded-2xl border border-white/5 p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-indigo-500/20 transition-all duration-1000"></div>
+         <div className="lg:col-span-3 bg-market-navy rounded-2xl border border-white/5 p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-market-blue/10 rounded-full blur-[80px] pointer-events-none group-hover:bg-market-blue/20 transition-all duration-1000"></div>
             <div className="flex items-center gap-6 relative z-10 flex-1 min-w-0">
                <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center shadow-inner border border-white/10 shrink-0">
-                  <Bot size={28} className="text-indigo-400 animate-pulse" />
+                  <Bot size={28} className="text-market-blue animate-pulse" />
                </div>
                <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                     <span className="text-[7px] font-black text-indigo-400 uppercase tracking-[0.4em] bg-indigo-400/10 px-2 py-0.5 rounded-full">Inteligência Estratégica</span>
-                     <span className="text-[7px] font-black text-emerald-400 uppercase tracking-[0.4em] bg-emerald-400/10 px-2 py-0.5 rounded-full flex items-center gap-1"><Activity size={8}/> Live</span>
+                     <span className="text-[7px] font-bold text-market-blue uppercase tracking-[0.4em] bg-market-blue/10 px-2 py-0.5 rounded-full">Inteligência Estratégica</span>
+                     <span className="text-[7px] font-bold text-market-accent uppercase tracking-[0.4em] bg-market-accent/10 px-2 py-0.5 rounded-full flex items-center gap-1"><Activity size={8}/> Live</span>
                   </div>
-                  <h2 className="text-lg font-black text-white tracking-tight leading-snug italic truncate">"{aiInsight}"</h2>
+                  <h2 className="text-lg font-bold text-white tracking-tight leading-snug italic truncate">"{aiInsight}"</h2>
                </div>
             </div>
-            <button onClick={fetchGlobalStats} className="bg-white/5 hover:bg-white/10 text-white px-5 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all border border-white/10 flex items-center gap-2 relative z-10 group/btn">
+            <button onClick={fetchGlobalStats} className="bg-white/5 hover:bg-white/10 text-white px-5 py-2.5 rounded-xl font-bold text-[9px] uppercase tracking-widest transition-all border border-white/10 flex items-center gap-2 relative z-10 group/btn">
                <RefreshCw size={12} className={`group-hover/btn:rotate-180 transition-transform duration-700 ${isSyncing ? 'animate-spin' : ''}`} /> Sincronizar
             </button>
          </div>
 
          <div className="bg-white rounded-2xl p-4 md:p-6 border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center">
              <div className="relative mb-1">
-                <Gauge size={24} className="text-indigo-600 mb-1" />
+                <Gauge size={24} className="text-market-blue mb-1" />
              </div>
-             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Eficiência</p>
-             <h3 className="text-xl font-black text-slate-900 tracking-tighter">94.8%</h3>
+             <p className="text-[8px] font-bold text-market-slate uppercase tracking-widest mb-0.5">Eficiência</p>
+             <h3 className="text-xl font-bold text-market-navy tracking-tighter">94.8%</h3>
              <div className="w-full bg-slate-50 h-1 rounded-full mt-2 overflow-hidden">
-                <div className="h-full bg-emerald-500 w-[94.8%] shadow-[0_0_8px_#10b981]"></div>
+                <div className="h-full bg-market-accent w-[94.8%] shadow-[0_0_8px_#10b981]"></div>
              </div>
          </div>
       </div>
       
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[
-          { label: 'Fluxo de Caixa', val: `${(stats.revenue - stats.expenses).toLocaleString()} MT`, icon: <Wallet size={16}/>, color: 'text-emerald-500', trend: '+12%', bg: 'bg-emerald-500/10' },
-          { label: 'Asset Capacity', val: stats.properties, icon: <Home size={16}/>, color: 'text-indigo-500', trend: '+2', bg: 'bg-indigo-500/10' },
-          { label: 'Monte Staff', val: stats.employees, icon: <Users size={16}/>, color: 'text-blue-500', trend: 'Ativo', bg: 'bg-blue-500/10' },
-          { label: 'Candidatos', val: stats.pendingApps, icon: <UserPlus size={16}/>, color: 'text-purple-500', trend: 'Novos', bg: 'bg-purple-500/10' },
+          { label: 'Fluxo de Caixa', val: `${(stats.revenue - stats.expenses).toLocaleString()} MT`, icon: <Wallet size={16}/>, color: 'text-market-accent', trend: '+12%', bg: 'bg-market-accent/10' },
+          { label: 'Asset Capacity', val: stats.properties, icon: <Home size={16}/>, color: 'text-market-blue', trend: '+2', bg: 'bg-market-blue/10' },
+          { label: 'Monte Staff', val: stats.employees, icon: <Users size={16}/>, color: 'text-market-blue', trend: 'Ativo', bg: 'bg-market-blue/10' },
+          { label: 'Candidatos', val: stats.pendingApps, icon: <UserPlus size={16}/>, color: 'text-market-blue', trend: 'Novos', bg: 'bg-market-blue/10' },
           { label: 'Lead Velocity', val: stats.contacts, icon: <Zap size={16}/>, color: 'text-amber-500', trend: 'Alta', bg: 'bg-amber-500/10' },
         ].map((kpi, i) => (
-          <div key={i} className="bg-white p-3 md:p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:scale-[1.01] transition-all group overflow-hidden relative">
+          <div key={i} className="market-card p-3 md:p-4 hover:shadow-xl hover:scale-[1.01] transition-all group overflow-hidden relative">
              <div className="flex justify-between items-start mb-2">
                 <div className={`w-8 h-8 ${kpi.bg} ${kpi.color} rounded-xl flex items-center justify-center shadow-inner group-hover:rotate-12 transition-transform`}>
                    {kpi.icon}
                 </div>
-                <span className={`text-[7px] font-black ${kpi.color} uppercase tracking-tighter`}>{kpi.trend}</span>
+                <span className={`text-[7px] font-bold ${kpi.color} uppercase tracking-tighter`}>{kpi.trend}</span>
              </div>
              <div>
-                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-0.5">{kpi.label}</p>
-                <h3 className="text-base font-black text-slate-900 tracking-tighter">{kpi.val}</h3>
+                <p className="text-[8px] font-bold text-market-slate uppercase tracking-[0.2em] mb-0.5">{kpi.label}</p>
+                <h3 className="text-base font-bold text-market-navy tracking-tighter">{kpi.val}</h3>
              </div>
           </div>
         ))}
@@ -188,8 +188,8 @@ const DashboardView: React.FC = () => {
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
         <div className="xl:col-span-8 bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm h-full flex flex-col min-h-[300px]">
            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-[10px] font-black text-slate-900 uppercase italic flex items-center gap-2">
-                <BarChart3 className="text-indigo-600" size={14} /> Performance de Ativos
+              <h3 className="text-[10px] font-bold text-market-navy uppercase italic flex items-center gap-2">
+                <BarChart3 className="text-market-blue" size={14} /> Performance de Ativos
               </h3>
            </div>
            <div className="flex-1 w-full h-[220px] md:h-[260px]">
@@ -197,15 +197,15 @@ const DashboardView: React.FC = () => {
                  <AreaChart data={expenseChartData}>
                     <defs>
                       <linearGradient id="colorVal" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1}/>
-                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#0052FF" stopOpacity={0.1}/>
+                        <stop offset="95%" stopColor="#0052FF" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#00000003" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 8, fontWeight: 900, fill: '#cbd5e1' }} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 8, fontWeight: 700, fill: '#64748B' }} />
                     <YAxis hide />
-                    <Tooltip cursor={{ stroke: '#6366f1', strokeWidth: 2 }} contentStyle={{ borderRadius: '0.5rem', border: 'none', backgroundColor: '#0f172a', padding: '8px', color: '#fff', fontSize: '9px' }} />
-                    <Area type="monotone" dataKey="valor" stroke="#6366f1" strokeWidth={2.5} fillOpacity={1} fill="url(#colorVal)" />
+                    <Tooltip cursor={{ stroke: '#0052FF', strokeWidth: 2 }} contentStyle={{ borderRadius: '0.5rem', border: 'none', backgroundColor: '#0F172A', padding: '8px', color: '#fff', fontSize: '9px' }} />
+                    <Area type="monotone" dataKey="valor" stroke="#0052FF" strokeWidth={2.5} fillOpacity={1} fill="url(#colorVal)" />
                  </AreaChart>
               </ResponsiveContainer>
            </div>
@@ -214,39 +214,39 @@ const DashboardView: React.FC = () => {
         <div className="xl:col-span-4 space-y-4 flex flex-col">
            <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex-1 flex flex-col">
               <div className="flex justify-between items-center mb-4">
-                 <h4 className="text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                    <Briefcase size={12} className="text-purple-600" /> Novas Candidaturas
+                 <h4 className="text-[8px] font-bold uppercase tracking-widest text-market-slate flex items-center gap-2">
+                    <Briefcase size={12} className="text-market-blue" /> Novas Candidaturas
                  </h4>
-                 <History size={10} className="text-slate-300" />
+                 <History size={10} className="text-market-slate" />
               </div>
               
               <div className="flex-1 space-y-3">
                  {recentApps.length > 0 ? recentApps.map((app) => (
                     <div key={app.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between group hover:bg-white hover:shadow-md transition-all">
                        <div className="min-w-0">
-                          <p className="text-[10px] font-black text-slate-900 truncate uppercase">{app.applicant_name}</p>
-                          <p className="text-[8px] font-bold text-indigo-600 uppercase tracking-tighter truncate">{app.job_title}</p>
+                          <p className="text-[10px] font-bold text-market-navy truncate uppercase">{app.applicant_name}</p>
+                          <p className="text-[8px] font-bold text-market-blue uppercase tracking-tighter truncate">{app.job_title}</p>
                        </div>
                        <div className="flex gap-1.5 shrink-0">
                           {app.applicant_linkedin && (
-                             <a href={app.applicant_linkedin} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-white text-blue-600 rounded-lg shadow-sm border border-slate-100 hover:scale-110 transition-all">
+                             <a href={app.applicant_linkedin} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-white text-market-blue rounded-lg shadow-sm border border-slate-100 hover:scale-110 transition-all">
                                 <Linkedin size={10} />
                              </a>
                           )}
-                          <div className="p-1.5 bg-white text-slate-400 rounded-lg border border-slate-100">
-                             <CheckCircle2 size={10} className={app.status === 'Pendente' ? 'text-amber-400' : 'text-emerald-500'} />
+                          <div className="p-1.5 bg-white text-market-slate rounded-lg border border-slate-100">
+                             <CheckCircle2 size={10} className={app.status === 'Pendente' ? 'text-amber-400' : 'text-market-accent'} />
                           </div>
                        </div>
                     </div>
                  )) : (
                     <div className="flex flex-col items-center justify-center py-10 opacity-30 text-center">
                        <UserPlus size={24} className="mb-2" />
-                       <p className="text-[8px] font-black uppercase tracking-widest">Sem candidaturas recentes</p>
+                       <p className="text-[8px] font-bold uppercase tracking-widest">Sem candidaturas recentes</p>
                     </div>
                  )}
               </div>
               
-              <button onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'hr' }))} className="mt-4 w-full py-2 bg-slate-900 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all">
+              <button onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'hr' }))} className="mt-4 w-full py-2 bg-market-navy text-white rounded-lg text-[8px] font-bold uppercase tracking-widest hover:bg-market-blue transition-all">
                  Gerir Talentos no RH
               </button>
            </div>

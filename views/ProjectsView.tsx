@@ -144,17 +144,17 @@ const ProjectsView: React.FC = () => {
     <div className="space-y-8 animate-in fade-in duration-500 pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-5">
-          <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-500/20">
+          <div className="w-14 h-14 bg-market-blue rounded-2xl flex items-center justify-center text-white shadow-xl shadow-market-blue/20">
             <Building size={28} />
           </div>
           <div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Projetos & Obras</h1>
-            <p className="text-slate-500 font-medium">Controle financeiro e execução em tempo real.</p>
+            <h1 className="text-3xl font-bold text-market-navy tracking-tight">Projetos & Obras</h1>
+            <p className="text-market-slate font-medium">Controle financeiro e execução em tempo real.</p>
           </div>
         </div>
         <button 
           onClick={() => handleOpenModal()}
-          className="flex items-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-[2rem] font-black text-sm shadow-xl shadow-blue-500/20 hover:bg-blue-700 transition-all hover:scale-105"
+          className="market-button market-button-primary px-8 py-4 text-sm flex items-center gap-2"
         >
           <Plus size={20} /> Iniciar Obra
         </button>
@@ -162,18 +162,18 @@ const ProjectsView: React.FC = () => {
 
       {message && (
         <div className={`p-5 rounded-[2rem] border-l-4 flex items-center justify-between gap-4 animate-in slide-in-from-top-4 ${
-          message.type === 'success' ? 'bg-emerald-50 border-emerald-500 text-emerald-800' : 'bg-rose-50 border-rose-500 text-rose-800'
+          message.type === 'success' ? 'bg-market-accent/10 border-market-accent text-market-accent' : 'bg-rose-50 border-rose-500 text-rose-800'
         }`}>
           <div className="flex items-center gap-4">
             {message.type === 'success' ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
-            <p className="text-sm font-black uppercase tracking-tight">{message.text}</p>
+            <p className="text-sm font-bold uppercase tracking-tight">{message.text}</p>
           </div>
           <button onClick={() => setMessage(null)} className="p-2 hover:bg-black/5 rounded-full transition-colors"><X size={18} /></button>
         </div>
       )}
 
       {loading ? (
-        <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-600" size={40} /></div>
+        <div className="flex justify-center py-20"><Loader2 className="animate-spin text-market-blue" size={40} /></div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {projects.map((project) => {
@@ -183,11 +183,11 @@ const ProjectsView: React.FC = () => {
             const styles = getProgressStyles(spentPercent);
 
             return (
-              <div key={project.id} className="bg-white rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col hover:shadow-2xl transition-all duration-500 group">
+              <div key={project.id} className="market-card overflow-hidden flex flex-col hover:shadow-2xl transition-all duration-500 group">
                 <div className="h-48 relative overflow-hidden">
                   <img src={project.image || 'https://images.unsplash.com/photo-1541888946425-d81bb19480c5?auto=format&fit=crop&q=80&w=800'} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={project.name} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent"></div>
-                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-xl text-[10px] font-black uppercase text-blue-600 shadow-sm">
+                  <div className="absolute inset-0 bg-gradient-to-t from-market-navy/80 to-transparent"></div>
+                  <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase text-market-blue shadow-sm border border-white/20">
                     {project.status}
                   </div>
                   <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between text-white">
@@ -196,36 +196,36 @@ const ProjectsView: React.FC = () => {
                         <img key={i} src={`https://picsum.photos/seed/${member}/100`} className="w-8 h-8 rounded-full border-2 border-white object-cover" title={member} alt="" />
                       ))}
                       {project.team && project.team.length > 3 && (
-                        <div className="w-8 h-8 rounded-full border-2 border-white bg-slate-800 flex items-center justify-center text-[10px] font-black">+{project.team.length - 3}</div>
+                        <div className="w-8 h-8 rounded-full border-2 border-white bg-market-navy flex items-center justify-center text-[10px] font-bold">+{project.team.length - 3}</div>
                       )}
                     </div>
-                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase">
-                       <Calendar size={12} className="text-blue-400" /> {project.deadline}
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase">
+                       <Calendar size={12} className="text-market-blue" /> {project.deadline}
                     </div>
                   </div>
                 </div>
 
                 <div className="p-8 flex-1 flex flex-col">
                   <div className="flex justify-between items-start mb-6">
-                    <h3 className="text-xl font-black text-slate-900 line-clamp-1 flex-1">{project.name}</h3>
+                    <h3 className="text-xl font-bold text-market-navy line-clamp-1 flex-1 group-hover:text-market-blue transition-colors">{project.name}</h3>
                     <div className="flex gap-1 ml-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => handleOpenModal(project)} className="p-2 text-slate-400 hover:text-blue-600 bg-slate-50 rounded-lg transition-all"><Edit3 size={16} /></button>
-                      <button onClick={() => handleDeleteProject(project.id)} className="p-2 text-slate-400 hover:text-rose-600 bg-slate-50 rounded-lg transition-all"><Trash2 size={16} /></button>
+                      <button onClick={() => handleOpenModal(project)} className="p-2 text-market-slate hover:text-market-blue bg-slate-50 rounded-lg transition-all"><Edit3 size={16} /></button>
+                      <button onClick={() => handleDeleteProject(project.id)} className="p-2 text-market-slate hover:text-rose-600 bg-slate-50 rounded-lg transition-all"><Trash2 size={16} /></button>
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4 mb-8">
-                    <div className="p-4 bg-slate-50 rounded-2xl">
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                        <DollarSign size={10} className="text-blue-500" /> Orçamento
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <p className="text-[9px] font-bold text-market-slate uppercase tracking-widest mb-1 flex items-center gap-1">
+                        <DollarSign size={10} className="text-market-blue" /> Orçamento
                       </p>
-                      <p className="text-sm font-black text-slate-900">{Number(project.budget).toLocaleString()} MT</p>
+                      <p className="text-sm font-bold text-market-navy">{Number(project.budget).toLocaleString()} MT</p>
                     </div>
-                    <div className={`p-4 rounded-2xl ${isOverBudget ? 'bg-rose-50' : 'bg-blue-50'}`}>
-                      <p className={`text-[9px] font-black uppercase tracking-widest mb-1 flex items-center gap-1 ${isOverBudget ? 'text-rose-600' : 'text-blue-600'}`}>
+                    <div className={`p-4 rounded-2xl border ${isOverBudget ? 'bg-rose-50 border-rose-100' : 'bg-market-blue/5 border-market-blue/10'}`}>
+                      <p className={`text-[9px] font-bold uppercase tracking-widest mb-1 flex items-center gap-1 ${isOverBudget ? 'text-rose-600' : 'text-market-blue'}`}>
                         {isOverBudget ? <TrendingUp size={10} /> : <TrendingDown size={10} />} Saldo
                       </p>
-                      <p className={`text-sm font-black ${isOverBudget ? 'text-rose-700' : 'text-blue-700'}`}>
+                      <p className={`text-sm font-bold ${isOverBudget ? 'text-rose-700' : 'text-market-navy'}`}>
                         {remaining.toLocaleString()} MT
                       </p>
                     </div>
@@ -234,12 +234,12 @@ const ProjectsView: React.FC = () => {
                   <div className="mt-auto">
                     <div className="flex justify-between items-end mb-3">
                       <div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Saúde Financeira</p>
-                        <p className={`text-sm font-black ${styles.text} ${isOverBudget ? 'animate-pulse' : ''}`}>
+                        <p className="text-[10px] font-bold text-market-slate uppercase tracking-widest leading-none mb-1">Saúde Financeira</p>
+                        <p className={`text-sm font-bold ${styles.text} ${isOverBudget ? 'animate-pulse' : ''}`}>
                           {styles.label} ({spentPercent}%)
                         </p>
                       </div>
-                      <div className={`text-xl font-black tracking-tighter ${styles.text}`}>
+                      <div className={`text-xl font-bold tracking-tighter ${styles.text}`}>
                         {spentPercent}%
                       </div>
                     </div>
@@ -255,9 +255,9 @@ const ProjectsView: React.FC = () => {
                     </div>
                     
                     <div className="flex justify-between mt-3 text-[10px] font-bold">
-                      <span className="text-slate-400 uppercase">Gasto: <span className="text-slate-900">{Number(project.spent).toLocaleString()} MT</span></span>
+                      <span className="text-market-slate uppercase">Gasto: <span className="text-market-navy">{Number(project.spent).toLocaleString()} MT</span></span>
                       {isOverBudget && (
-                        <span className="text-rose-600 flex items-center gap-1 uppercase font-black">
+                        <span className="text-rose-600 flex items-center gap-1 uppercase font-bold">
                           <AlertTriangle size={10}/> Risco Crítico
                         </span>
                       )}
@@ -272,48 +272,48 @@ const ProjectsView: React.FC = () => {
 
       {/* Project Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in">
-          <div className="bg-white rounded-[4rem] p-12 max-w-2xl w-full shadow-2xl relative overflow-y-auto max-h-[90vh]">
-            <button onClick={() => setShowModal(false)} className="absolute top-10 right-10 p-2 text-slate-400 hover:text-slate-900 bg-slate-50 rounded-xl"><X size={24} /></button>
-            <h2 className="text-2xl font-black text-slate-900 mb-10 flex items-center gap-3"><Building className="text-blue-600" /> {editingProject ? 'Editar Projeto' : 'Nova Obra Monte'}</h2>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-market-navy/60 backdrop-blur-md animate-in fade-in">
+          <div className="bg-white rounded-[3rem] p-12 max-w-2xl w-full shadow-2xl relative overflow-y-auto max-h-[90vh] border border-slate-100">
+            <button onClick={() => setShowModal(false)} className="absolute top-10 right-10 p-2 text-market-slate hover:text-market-navy bg-slate-50 rounded-xl transition-colors"><X size={24} /></button>
+            <h2 className="text-2xl font-bold text-market-navy mb-10 flex items-center gap-3"><Building className="text-market-blue" /> {editingProject ? 'Editar Projeto' : 'Nova Obra Monte'}</h2>
             <form onSubmit={handleSaveProject} className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="md:col-span-2 space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome do Projeto</label>
-                  <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-slate-50 rounded-2xl p-5 border-none focus:ring-2 focus:ring-blue-600 font-bold outline-none" placeholder="Ex: Reforma Condomínio Mar" />
+                  <label className="text-[11px] font-bold text-market-slate uppercase tracking-widest ml-1">Nome do Projeto</label>
+                  <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-slate-50 rounded-2xl p-5 border border-slate-200 focus:ring-4 focus:ring-market-blue/10 focus:border-market-blue font-medium outline-none transition-all" placeholder="Ex: Reforma Condomínio Mar" />
                 </div>
                 <div className="md:col-span-2 space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2"><UserPlus size={14} className="text-blue-600" /> Equipa (Nomes separados por vírgula)</label>
-                  <input value={teamInput} onChange={e => setTeamInput(e.target.value)} className="w-full bg-slate-50 rounded-2xl p-5 border-none focus:ring-2 focus:ring-blue-600 font-bold outline-none" placeholder="Ex: Ana Silva, Bruno Costa" />
+                  <label className="text-[11px] font-bold text-market-slate uppercase tracking-widest ml-1 flex items-center gap-2"><UserPlus size={14} className="text-market-blue" /> Equipa (Nomes separados por vírgula)</label>
+                  <input value={teamInput} onChange={e => setTeamInput(e.target.value)} className="w-full bg-slate-50 rounded-2xl p-5 border border-slate-200 focus:ring-4 focus:ring-market-blue/10 focus:border-market-blue font-medium outline-none transition-all" placeholder="Ex: Ana Silva, Bruno Costa" />
                 </div>
                 <div className="md:col-span-2 space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">URL da Imagem da Obra</label>
+                  <label className="text-[11px] font-bold text-market-slate uppercase tracking-widest ml-1">URL da Imagem da Obra</label>
                   <div className="relative">
-                    <Camera className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                    <input value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} className="w-full bg-slate-50 rounded-2xl p-5 pl-14 border-none focus:ring-2 focus:ring-blue-600 font-bold outline-none" placeholder="https://images.unsplash.com/..." />
+                    <Camera className="absolute left-5 top-1/2 -translate-y-1/2 text-market-slate" size={18} />
+                    <input value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} className="w-full bg-slate-50 rounded-2xl p-5 pl-14 border border-slate-200 focus:ring-4 focus:ring-market-blue/10 focus:border-market-blue font-medium outline-none transition-all" placeholder="https://images.unsplash.com/..." />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Orçamento Total (MT)</label>
-                  <input required type="number" value={formData.budget} onChange={e => setFormData({...formData, budget: Number(e.target.value)})} className="w-full bg-slate-50 rounded-2xl p-5 border-none focus:ring-2 focus:ring-blue-600 font-bold outline-none" />
+                  <label className="text-[11px] font-bold text-market-slate uppercase tracking-widest ml-1">Orçamento Total (MT)</label>
+                  <input required type="number" value={formData.budget} onChange={e => setFormData({...formData, budget: Number(e.target.value)})} className="w-full bg-slate-50 rounded-2xl p-5 border border-slate-200 focus:ring-4 focus:ring-market-blue/10 focus:border-market-blue font-medium outline-none transition-all" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Valor Gasto Atual (MT)</label>
-                  <input required type="number" value={formData.spent} onChange={e => setFormData({...formData, spent: Number(e.target.value)})} className="w-full bg-slate-50 rounded-2xl p-5 border-none focus:ring-2 focus:ring-blue-600 font-bold outline-none" />
+                  <label className="text-[11px] font-bold text-market-slate uppercase tracking-widest ml-1">Valor Gasto Atual (MT)</label>
+                  <input required type="number" value={formData.spent} onChange={e => setFormData({...formData, spent: Number(e.target.value)})} className="w-full bg-slate-50 rounded-2xl p-5 border border-slate-200 focus:ring-4 focus:ring-market-blue/10 focus:border-market-blue font-medium outline-none transition-all" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Status Atual</label>
-                  <select value={formData.status} onChange={e => setFormData({...formData, status: e.target.value as any})} className="w-full bg-slate-50 rounded-2xl p-5 border-none font-bold outline-none cursor-pointer">
+                  <label className="text-[11px] font-bold text-market-slate uppercase tracking-widest ml-1">Status Atual</label>
+                  <select value={formData.status} onChange={e => setFormData({...formData, status: e.target.value as any})} className="w-full bg-slate-50 rounded-2xl p-5 border border-slate-200 font-medium outline-none cursor-pointer focus:ring-4 focus:ring-market-blue/10 focus:border-market-blue transition-all">
                     <option>Planejado</option><option>Em Andamento</option><option>Concluído</option>
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Data de Entrega</label>
-                  <input required type="date" value={formData.deadline} onChange={e => setFormData({...formData, deadline: e.target.value})} className="w-full bg-slate-50 rounded-2xl p-5 border-none focus:ring-2 focus:ring-blue-600 font-bold outline-none" />
+                  <label className="text-[11px] font-bold text-market-slate uppercase tracking-widest ml-1">Data de Entrega</label>
+                  <input required type="date" value={formData.deadline} onChange={e => setFormData({...formData, deadline: e.target.value})} className="w-full bg-slate-50 rounded-2xl p-5 border border-slate-200 focus:ring-4 focus:ring-market-blue/10 focus:border-market-blue font-medium outline-none transition-all" />
                 </div>
               </div>
-              <button type="submit" disabled={isSubmitting} className="w-full py-6 bg-blue-600 text-white font-black rounded-[2.5rem] shadow-2xl hover:bg-blue-700 transition-all flex items-center justify-center disabled:opacity-50">
-                {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : <Save size={20} className="mr-2" />}
+              <button type="submit" disabled={isSubmitting} className="market-button market-button-primary w-full py-6 text-sm flex items-center justify-center gap-3">
+                {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
                 {editingProject ? 'Guardar Alterações' : 'Iniciar Projeto na Cloud'}
               </button>
             </form>

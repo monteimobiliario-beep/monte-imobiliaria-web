@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { UserRole, User } from './types';
+import { ArrowUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Navbar from './components/Navbar';
@@ -36,6 +38,7 @@ const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   
   // URL da Logo Corrigida (Evitando 404) e com suporte a Customização
   const DEFAULT_LOGO = 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/building-2.svg';
@@ -52,7 +55,16 @@ const App: React.FC = () => {
       if (e.detail) setSystemLogo(e.detail);
     };
     window.addEventListener('monteLogoUpdated', handleLogoUpdate);
-    return () => window.removeEventListener('monteLogoUpdated', handleLogoUpdate);
+
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('monteLogoUpdated', handleLogoUpdate);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   useEffect(() => {
@@ -159,7 +171,10 @@ const App: React.FC = () => {
             onViewProperty={handleViewProperty}
           />
           <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
-            <div className="max-w-[1800px] mx-auto">{renderContent()}</div>
+            <div className="max-w-[1800px] mx-auto min-h-[calc(100vh-theme(spacing.40))]">{renderContent()}</div>
+            <div className="mt-12 -mx-4 md:-mx-8">
+              <Footer onNavigate={setCurrentPath} />
+            </div>
           </main>
         </div>
       </div>
@@ -171,6 +186,21 @@ const App: React.FC = () => {
       <Navbar currentPath={currentPath} onNavigate={setCurrentPath} isLoggedIn={!!currentUser} />
       <main className="flex-1">{renderContent()}</main>
       <Footer onNavigate={setCurrentPath} />
+
+      {/* Scroll to Top */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.5, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.5, y: 20 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="fixed bottom-8 right-8 z-[100] w-12 h-12 bg-market-blue text-white rounded-2xl shadow-2xl flex items-center justify-center hover:bg-market-navy hover:-translate-y-2 transition-all"
+          >
+            <ArrowUp size={20} />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

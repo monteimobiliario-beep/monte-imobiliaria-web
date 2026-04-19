@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-market-blue: var(--market-blue, #0052FF);
+  --color-market-navy: #0F172A;
+  --color-market-slate: #64748B;
+  --color-market-bg: #F8FAFC;
+  --color-market-accent: var(--market-accent, #10B981);
+  --color-market-gold: #D4AF37;
+}
+
+@layer base {
+  body {
+    @apply bg-market-bg text-market-navy antialiased font-sans;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold tracking-tight;
+  }
+}
+
+@layer components {
+  .market-card {
+    @apply bg-white rounded-[2rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_60px_rgb(0,0,0,0.08)] transition-all duration-500 overflow-hidden;
+  }
+
+  .market-button {
+    @apply px-6 py-3 rounded-2xl font-display font-bold text-xs uppercase tracking-widest transition-all duration-300 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2;
+  }
+
+  .market-button-primary {
+    @apply bg-market-blue text-white hover:bg-market-navy shadow-lg shadow-market-blue/20 hover:shadow-market-navy/20;
+  }
+
+  .market-button-outline {
+    @apply border-2 border-slate-200 text-market-navy hover:border-market-blue hover:text-market-blue;
+  }
+
+  .market-badge {
+    @apply px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border;
+  }
+
+  .glass-morphism {
+    @apply backdrop-blur-xl bg-white/70 border border-white/20;
+  }
+
+  .premium-gradient {
+    @apply bg-gradient-to-br from-market-blue via-market-navy to-market-navy;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-market-blue to-market-accent;
+  }
+  
+  .oval-mask {
+    clip-path: ellipse(50% 40% at 50% 50%);
+  }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 rounded-full;
+}
+
+.custom-scrollbar-dark::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar-dark::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+.custom-scrollbar-dark::-webkit-scrollbar-thumb {
+  @apply bg-white/10 rounded-full;
+}
