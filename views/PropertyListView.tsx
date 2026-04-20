@@ -1,22 +1,44 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Filter, MapPin, Building2, Ruler, BedDouble, Bath, Search, Star, Maximize2, ChevronDown, CheckCircle2, ArrowRight } from 'lucide-react';
-import { MOCK_PROPERTIES } from '../constants';
-import { PropertyCategory } from '../types';
+import { Filter, MapPin, Building2, Ruler, BedDouble, Bath, Search, Star, Maximize2, ChevronDown, CheckCircle2, ArrowRight, Loader2 } from 'lucide-react';
+import { supabase } from '../supabaseClient';
+import { Property, PropertyCategory } from '../types';
+import { useBranding } from '../BrandingContext';
 
 interface PropertyListViewProps {
   onViewProperty: (id: string) => void;
 }
 
-import { useBranding } from '../BrandingContext';
-
 const PropertyListView: React.FC<PropertyListViewProps> = ({ onViewProperty }) => {
   const { settings } = useBranding();
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
   const [dealTypeFilter, setDealTypeFilter] = useState('Todos');
   const [categoryFilter, setCategoryFilter] = useState<PropertyCategory | 'Todas'>('Todas');
 
   const categories: (PropertyCategory | 'Todas')[] = ['Todas', 'Casa', 'Apartamento', 'Guest House', 'Hotel', 'Condomínio', 'Terreno'];
+
+  useEffect(() => {
+    fetchProperties();
+  }, []);
+
+  async function fetchProperties() {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.from('properties').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      setProperties(data || []);
+    } catch (err) {
+      console.error("Erro ao carregar imóveis:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const filteredProperties = properties
+    .filter(p => (dealTypeFilter === 'Todos' || p.dealType === dealTypeFilter))
+    .filter(p => (categoryFilter === 'Todas' || p.type === categoryFilter));
 
   return (
     <div className="bg-[#FDFCFB]">
@@ -107,9 +129,7 @@ const PropertyListView: React.FC<PropertyListViewProps> = ({ onViewProperty }) =
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                   Resultados: <span className="text-market-navy">
-                    {MOCK_PROPERTIES
-                    .filter(p => (dealTypeFilter === 'Todos' || p.dealType === dealTypeFilter))
-                    .filter(p => (categoryFilter === 'Todas' || p.type === categoryFilter)).length} Unidades
+                    {filteredProperties.length} Unidades
                   </span>
                </p>
                <div className="text-[10px] font-bold text-market-navy flex items-center gap-2 cursor-pointer hover:text-market-blue transition-colors">
@@ -118,11 +138,14 @@ const PropertyListView: React.FC<PropertyListViewProps> = ({ onViewProperty }) =
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              <AnimatePresence mode="popLayout">
-                {MOCK_PROPERTIES
-                  .filter(p => (dealTypeFilter === 'Todos' || p.dealType === dealTypeFilter))
-                  .filter(p => (categoryFilter === 'Todas' || p.type === categoryFilter))
-                  .map((property, idx) => (
+              {loading ? (
+                <div className="col-span-full py-20 flex flex-col items-center gap-4">
+                  <Loader2 className="animate-spin text-market-blue" size={32} />
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Consultando Portfólio...</p>
+                </div>
+              ) : (
+                <AnimatePresence mode="popLayout">
+                  {filteredProperties.map((property, idx) => (
                   <motion.div 
                     key={property.id} 
                     initial={{ opacity: 0, scale: 0.98 }}
@@ -165,11 +188,10 @@ const PropertyListView: React.FC<PropertyListViewProps> = ({ onViewProperty }) =
                   </motion.div>
                 ))}
               </AnimatePresence>
-            </div>
+            )}
+          </div>
             
-            {MOCK_PROPERTIES
-              .filter(p => (dealTypeFilter === 'Todos' || p.dealType === dealTypeFilter))
-              .filter(p => (categoryFilter === 'Todas' || p.type === categoryFilter)).length === 0 && (
+            {!loading && filteredProperties.length === 0 && (
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

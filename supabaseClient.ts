@@ -7,4 +7,10 @@ const supabaseUrl = 'https://xhtgkvwtxmhsgifpewqv.supabase.co';
 const supabaseAnonKey = 'sb_publishable_9A2Mld3ty3AfhVGiipFQUA_9z_Y8nl6';
 
 // Inicialização do cliente Supabase
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+});

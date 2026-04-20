@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { MOCK_PROPERTIES } from '../constants';
 import { 
   MapPin, BedDouble, Bath, Ruler, ArrowLeft, Share2, Heart, 
   ShieldCheck, ChevronRight, ChevronLeft, MessageSquare, Phone, Mail, 
@@ -26,16 +25,17 @@ interface PropertyDetailViewProps {
 const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ propertyId, onBack }) => {
   const { settings } = useBranding();
   const [isLoading, setIsLoading] = useState(true);
-  const property = MOCK_PROPERTIES.find(p => p.id === propertyId);
-  const relatedProperties = MOCK_PROPERTIES.filter(p => p.id !== propertyId).slice(0, 3);
+  const [property, setProperty] = useState<Property | null>(null);
+  const [relatedProperties, setRelatedProperties] = useState<Property[]>([]);
   
-  const images = property ? [property.image, ...property.gallery] : [];
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
   const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
+  const images = property ? [property.image, ...(property.gallery || [])] : [];
+
   // Chat States
   const [messages, setMessages] = useState<Message[]>([
     { id: '1', text: 'Olá! Como posso ajudar com este imóvel?', sender: 'agent', timestamp: new Date() }
@@ -48,15 +48,36 @@ const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ propertyId, onB
   // Video State
   const [showVideo, setShowVideo] = useState(false);
 
-  // Simulação de busca de dados
   useEffect(() => {
-    setIsLoading(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
-    return () => clearTimeout(timer);
+    if (propertyId) {
+      fetchProperty();
+    }
   }, [propertyId]);
+
+  async function fetchProperty() {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.from('properties').select('*').eq('id', propertyId).single();
+      if (error) throw error;
+      
+      const p = {
+        ...data,
+        gallery: Array.isArray(data.gallery) ? data.gallery : (typeof data.gallery === 'string' ? JSON.parse(data.gallery) : [])
+      } as Property;
+      
+      setProperty(p);
+      
+      // Fetch related
+      const { data: related } = await supabase.from('properties').select('*').neq('id', propertyId).limit(3);
+      setRelatedProperties(related || []);
+      
+    } catch (err) {
+      console.error("Erro ao carregar detalhes:", err);
+    } finally {
+      setIsLoading(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
 
   // Navegação via Teclado
   useEffect(() => {

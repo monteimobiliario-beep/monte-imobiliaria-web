@@ -76,22 +76,38 @@ const App: React.FC = () => {
       if (session) {
         await fetchAndSetUser(session.user);
       } else {
+        // Se não há sessão, limpamos o utilizador se ele estava logado ou se foi um logout explícito
         setCurrentUser(null);
+        
+        // Se estivermos numa rota de ERP, voltamos para home
         const erpPaths = ['dashboard', 'finance', 'hr', 'projects', 'plans', 'reports', 'admin', 'catalog', 'fleet', 'overview', 'beneficiaries'];
-        if (erpPaths.includes(currentPath)) setCurrentPath('home');
+        if (erpPaths.includes(currentPath)) {
+          setCurrentPath('home');
+        }
       }
     });
     return () => {
       subscription.unsubscribe();
       window.removeEventListener('navigate', handleInternalNav);
     };
-  }, []);
+  }, [currentPath]);
 
   async function checkUser() {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Session Error:", error.message);
+        if (error.message.includes('Refresh Token Not Found') || error.message.includes('invalid') || error.message.includes('not found')) {
+          await supabase.auth.signOut();
+        }
+        return;
+      }
       if (session?.user) await fetchAndSetUser(session.user);
-    } catch (err) {} finally { setIsInitializing(false); }
+    } catch (err) {
+      console.error("CheckUser catch:", err);
+    } finally { 
+      setIsInitializing(false); 
+    }
   }
 
   async function fetchAndSetUser(sbUser: any) {
