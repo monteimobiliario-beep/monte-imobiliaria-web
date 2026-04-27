@@ -118,7 +118,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
               />
             </div>
 
-            <div className="pt-4 space-y-4">
+            <div className="pt-4">
               <button 
                 disabled={loading} 
                 type="submit" 
@@ -132,34 +132,14 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
                   </>
                 )}
               </button>
-
-              <button 
-                type="button"
-                onClick={() => {
-                  const demoUser = {
-                    id: 'demo-user-123',
-                    name: 'Utilizador Demo',
-                    email: 'demo@monte.mz',
-                    role: UserRole.EMPLOYEE,
-                    avatar: 'https://picsum.photos/seed/demo/100',
-                    permissions: ['dashboard.view', 'catalog.view']
-                  };
-                  onLoginSuccess(demoUser);
-                }}
-                className="w-full py-4 text-[10px] font-bold uppercase tracking-[0.3em] text-market-blue bg-market-blue/5 rounded-2xl hover:bg-market-blue/10 transition-all border border-market-blue/10"
-              >
-                Acesso Rápido (Demonstração)
-              </button>
             </div>
           </form>
 
-          <div className="mt-12 pt-8 border-t border-dashed border-slate-200 flex flex-col items-center gap-6">
-            <div className="text-center space-y-4">
-              <p className="text-[9px] font-bold text-market-slate uppercase tracking-widest leading-relaxed">
-                Para testes rápidos, utilize o <span className="text-market-blue">Acesso Rápido</span> acima. <br />
-                Ou entre como Admin Geral usando o seu e-mail corporativo.
-              </p>
-            </div>
+          <div className="mt-12 pt-8 border-t border-dashed border-slate-200 flex flex-col items-center gap-6 text-center">
+            <p className="text-[9px] font-bold text-market-slate uppercase tracking-widest leading-relaxed">
+              Autentique-se com o seu e-mail corporativo. <br />
+              Acesso monitorizado pelo Protocolo Core 15.0.
+            </p>
             
             <button onClick={onBack} className="group text-[10px] font-bold uppercase tracking-widest flex items-center gap-3 transition-colors text-market-slate hover:text-market-blue">
               <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Voltar ao Portal Público

@@ -25,7 +25,8 @@ import {
   History,
   Briefcase,
   UserPlus,
-  Linkedin
+  Linkedin,
+  Truck
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
@@ -43,13 +44,17 @@ const DashboardView: React.FC = () => {
     employees: 0, 
     properties: 0, 
     contacts: 0,
-    pendingApps: 0 
+    pendingApps: 0,
+    projects: 0,
+    fleet: 0
   });
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const [recentApps, setRecentApps] = useState<JobApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [aiInsight, setAiInsight] = useState<string>('Analisando pulso financeiro...');
+  
+  const [propertyTypes, setPropertyTypes] = useState<{name: string, value: number, color: string}[]>([]);
   
   useEffect(() => {
     fetchGlobalStats();
@@ -58,16 +63,19 @@ const DashboardView: React.FC = () => {
   async function fetchGlobalStats() {
     setIsSyncing(true);
     try {
-      const [txRes, empRes, propRes, contactRes, appCountRes, recentAppsRes] = await Promise.all([
+      const [txRes, empRes, propRes, contactRes, appCountRes, recentAppsRes, projectRes, vehicleRes] = await Promise.all([
         supabase.from('transactions').select('*'),
         supabase.from('employees').select('*', { count: 'exact', head: true }),
-        supabase.from('properties').select('*', { count: 'exact', head: true }),
+        supabase.from('properties').select('*'),
         supabase.from('contact_requests').select('*', { count: 'exact', head: true }),
         supabase.from('job_applications').select('*', { count: 'exact', head: true }).eq('status', 'Pendente'),
-        supabase.from('job_applications').select('*').order('created_at', { ascending: false }).limit(4)
+        supabase.from('job_applications').select('*').order('created_at', { ascending: false }).limit(4),
+        supabase.from('projects').select('*', { count: 'exact', head: true }),
+        supabase.from('vehicles').select('*', { count: 'exact', head: true })
       ]);
 
       const txs = txRes.data || [];
+      const props = propRes.data || [];
       setAllTransactions(txs);
       setRecentApps(recentAppsRes.data || []);
       
@@ -78,14 +86,32 @@ const DashboardView: React.FC = () => {
         revenue: rev, 
         expenses: exp,
         employees: empRes.count || 0,
-        properties: propRes.count || 0, 
+        properties: props.length || 0, 
         contacts: contactRes.count || 0,
-        pendingApps: appCountRes.count || 0
+        pendingApps: appCountRes.count || 0,
+        projects: projectRes.count || 0,
+        fleet: vehicleRes.count || 0
       });
+
+      // Dinamizar gráfico de tipos de propriedades
+      if (props.length > 0) {
+        const counts: Record<string, number> = {};
+        props.forEach(p => {
+          counts[p.type] = (counts[p.type] || 0) + 1;
+        });
+        const colors = ['#0052FF', '#FF3B30', '#8b5cf6', '#10b981', '#fb923c'];
+        const dynamicPie = Object.entries(counts).map(([name, value], idx) => ({
+          name, 
+          value, 
+          color: colors[idx % colors.length]
+        }));
+        setPropertyTypes(dynamicPie);
+      }
       
-      const insight = await getStrategicInsight(`Saldo: ${rev-exp}MT, Staff: ${empRes.count}, Candidatos: ${appCountRes.count}`);
+      const insight = await getStrategicInsight(`Saldo: ${rev-exp}MT, Propriedades: ${props.length}, Projetos: ${projectRes.count}, Frota: ${vehicleRes.count}`);
       setAiInsight(insight);
     } catch (error: any) {
+      console.error("Dashboard Sync Error:", error);
     } finally {
       setLoading(false);
       setIsSyncing(false);
@@ -162,13 +188,15 @@ const DashboardView: React.FC = () => {
          </div>
       </div>
       
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         {[
           { label: 'Fluxo de Caixa', val: `${(stats.revenue - stats.expenses).toLocaleString()} MT`, icon: <Wallet size={16}/>, color: 'text-market-accent', trend: '+12%', bg: 'bg-market-accent/10' },
           { label: 'Asset Capacity', val: stats.properties, icon: <Home size={16}/>, color: 'text-market-blue', trend: '+2', bg: 'bg-market-blue/10' },
           { label: 'Monte Staff', val: stats.employees, icon: <Users size={16}/>, color: 'text-market-blue', trend: 'Ativo', bg: 'bg-market-blue/10' },
+          { label: 'Projetos Ops', val: stats.projects, icon: <Briefcase size={16}/>, color: 'text-market-blue', trend: 'V14', bg: 'bg-market-blue/10' },
+          { label: 'Frota Ativa', val: stats.fleet, icon: <Truck size={16}/>, color: 'text-market-blue', trend: 'Log', bg: 'bg-market-blue/10' },
           { label: 'Candidatos', val: stats.pendingApps, icon: <UserPlus size={16}/>, color: 'text-market-blue', trend: 'Novos', bg: 'bg-market-blue/10' },
-          { label: 'Lead Velocity', val: stats.contacts, icon: <Zap size={16}/>, color: 'text-amber-500', trend: 'Alta', bg: 'bg-amber-500/10' },
+          { label: 'Lead Velocity', val: stats.stats?.contacts || stats.contacts, icon: <Zap size={16}/>, color: 'text-amber-500', trend: 'Alta', bg: 'bg-amber-500/10' },
         ].map((kpi, i) => (
           <div key={i} className="market-card p-3 md:p-4 hover:shadow-xl hover:scale-[1.01] transition-all group overflow-hidden relative">
              <div className="flex justify-between items-start mb-2">
@@ -186,6 +214,47 @@ const DashboardView: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
+        <div className="xl:col-span-4 bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full min-h-[300px]">
+           <div className="flex items-center justify-between mb-6">
+              <h3 className="text-[10px] font-bold text-market-navy uppercase italic flex items-center gap-2">
+                <PieIcon className="text-market-blue" size={14} /> Mix de Ativos
+              </h3>
+           </div>
+           <div className="flex-1 w-full h-[180px]">
+              {propertyTypes.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={propertyTypes}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={70}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {propertyTypes.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ borderRadius: '0.5rem', border: 'none', backgroundColor: '#0F172A', padding: '8px', color: '#fff', fontSize: '9px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-slate-300 text-[8px] font-bold uppercase tracking-widest">Aguardando dados...</div>
+              )}
+           </div>
+           <div className="grid grid-cols-2 gap-2 mt-4">
+              {propertyTypes.slice(0, 4).map((t, i) => (
+                <div key={i} className="flex items-center gap-2">
+                   <div className="w-2 h-2 rounded-full" style={{ backgroundColor: t.color }}></div>
+                   <span className="text-[9px] font-bold text-market-navy truncate">{t.name}</span>
+                   <span className="text-[9px] font-medium text-slate-400 ml-auto">{t.value}</span>
+                </div>
+              ))}
+           </div>
+        </div>
+
         <div className="xl:col-span-8 bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm h-full flex flex-col min-h-[300px]">
            <div className="flex items-center justify-between mb-6">
               <h3 className="text-[10px] font-bold text-market-navy uppercase italic flex items-center gap-2">

@@ -63,27 +63,27 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, user, isOpen
       <aside 
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className={`fixed inset-y-0 left-0 z-[110] p-4 flex flex-col transition-all duration-700 cubic-bezier(0.19, 1, 0.22, 1) ${
+        className={`fixed inset-y-0 left-0 z-[110] p-3 flex flex-col transition-all duration-700 cubic-bezier(0.19, 1, 0.22, 1) ${
           isHovered || isOpen ? 'translate-x-0 opacity-100' : '-translate-x-[90%] opacity-0 pointer-events-none'
-        } w-72 md:w-80`}
+        } w-64 md:w-72`}
       >
-        <div className="flex-1 bg-market-navy/95 backdrop-blur-3xl rounded-[2.5rem] border border-white/10 shadow-[40px_0_100px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden relative ring-1 ring-white/10">
+        <div className="flex-1 bg-market-navy/95 backdrop-blur-3xl rounded-[2rem] border border-white/10 shadow-[40px_0_100px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden relative ring-1 ring-white/10">
           <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
           
-          <div className="p-4 border-b border-white/5 flex items-center justify-between relative z-10">
+          <div className="p-3 border-b border-white/5 flex items-center justify-between relative z-10">
             <div className="flex items-center group/logo cursor-pointer" onClick={() => onNavigate('dashboard')}>
-              <div className="w-11 h-11 bg-white/5 rounded-2xl flex items-center justify-center p-1.5 shadow-2xl group-hover/logo:scale-110 group-hover/logo:rotate-3 transition-all duration-500 overflow-hidden">
+              <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center p-1.5 shadow-2xl group-hover/logo:scale-110 group-hover/logo:rotate-3 transition-all duration-500 overflow-hidden">
                 <img src={systemLogo} className="w-full h-full object-contain" alt="Logo" />
               </div>
             </div>
-            <button onClick={toggleSidebar} className="md:hidden text-slate-500 hover:text-white transition-colors p-2"><X size={20} /></button>
+            <button onClick={toggleSidebar} className="md:hidden text-slate-500 hover:text-white transition-colors p-2"><X size={18} /></button>
           </div>
 
-          <nav className="flex-1 px-3 py-3 space-y-1.5 overflow-y-auto custom-scrollbar-dark relative z-10">
-            <div className="mb-2 px-2 flex items-center justify-between">
-              <span className="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em]">Operações</span>
+          <nav className="flex-1 px-2.5 py-2 space-y-1 overflow-y-auto custom-scrollbar-dark relative z-10">
+            <div className="mb-1.5 px-2 flex items-center justify-between">
+              <span className="text-[7px] font-black text-slate-500 uppercase tracking-[0.3em]">Operações Core</span>
               <button onClick={fetchMiniStats} className="p-1 hover:bg-white/5 rounded-lg text-slate-600 hover:text-market-blue transition-all active:rotate-180 duration-700">
-                <RefreshCw size={10} />
+                <RefreshCw size={9} />
               </button>
             </div>
 
@@ -96,52 +96,52 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, user, isOpen
                     onNavigate(item.path);
                     if (window.innerWidth < 768) toggleSidebar();
                   }}
-                  className={`w-full group flex items-center justify-between p-1.5 rounded-xl transition-all duration-500 border ${
+                  className={`w-full group flex items-center justify-between p-1.5 rounded-lg transition-all duration-500 border ${
                     isActive 
-                    ? `bg-white/10 border-white/20 shadow-xl scale-[1.01] ${item.glowColor} brightness-110` 
-                    : 'hover:bg-white/[0.05] border-transparent hover:border-white/10 hover:scale-[1.02] hover:brightness-110'
+                    ? `bg-white/10 border-white/20 shadow-xl ${item.glowColor} brightness-110` 
+                    : 'hover:bg-white/[0.05] border-transparent hover:border-white/10'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-2">
                     <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-700 ${
                       isActive ? `${item.activeColor} text-white shadow-lg` : 'bg-white/5 text-slate-500 group-hover:text-white group-hover:bg-white/10'
-                    } group-hover:scale-110 group-hover:-rotate-3`}>
+                    }`}>
                       {React.cloneElement(item.icon as React.ReactElement, { size: 12 })}
                     </div>
                     <div className="text-left">
-                      <span className={`block text-[8px] font-black uppercase tracking-[0.05em] leading-none mb-0.5 transition-all group-hover:tracking-wider ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}`}>{item.label}</span>
+                      <span className={`block text-[7px] font-black uppercase tracking-[0.05em] leading-none mb-0.5 transition-all ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}`}>{item.label}</span>
                       <span className={`text-[6px] font-bold uppercase tracking-widest transition-all ${isActive ? 'text-white/40' : 'text-slate-600 group-hover:text-slate-400'}`}>{item.sub}</span>
                     </div>
                   </div>
                   <div className="text-right flex items-center gap-1.5">
-                    <span className={`text-[8px] font-black tracking-tighter transition-all group-hover:scale-110 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-white'}`}>{item.val}</span>
-                    <ChevronRight size={10} className={`transition-all duration-700 ${isActive ? 'text-white opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-1'}`} />
+                    <span className={`text-[7px] font-black tracking-tighter transition-all ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-white'}`}>{item.val}</span>
+                    <ChevronRight size={9} className={`transition-all duration-700 ${isActive ? 'text-white opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0'}`} />
                   </div>
                 </button>
               );
             })}
           </nav>
 
-          <div className="p-3 bg-black/50 mt-auto border-t border-white/5">
-            <div className="bg-white/[0.02] rounded-[1.5rem] p-3 border border-white/5 flex flex-col gap-2 group/footer transition-all duration-500 hover:bg-white/[0.05] hover:border-white/10 shadow-inner">
+          <div className="p-3 bg-black/40 mt-auto border-t border-white/5">
+            <div className="bg-white/[0.01] rounded-[1.5rem] p-2.5 border border-white/5 flex flex-col gap-2 group/footer transition-all duration-500 hover:bg-white/[0.03] hover:border-white/10 shadow-inner">
                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                     <div className="w-1.5 h-1.5 bg-market-accent rounded-full animate-pulse shadow-[0_0_8px_#10b981]"></div>
-                     <span className="text-[8px] font-black text-market-accent uppercase tracking-[0.2em]">Sincronizado</span>
+                     <div className="w-1 h-1 bg-market-accent rounded-full animate-pulse shadow-[0_0_8px_#10b981]"></div>
+                     <span className="text-[7px] font-black text-market-accent uppercase tracking-[0.2em]">Sync Active</span>
                   </div>
                   <Zap size={10} className="text-slate-700 group-hover/footer:text-market-blue transition-all duration-700 group-hover/footer:scale-110" />
                </div>
-               <div className="flex items-center gap-3">
+               <div className="flex items-center gap-2.5">
                   <div className="relative group/avatar">
-                     <img src={user.avatar} className="w-8 h-8 rounded-xl object-cover ring-2 ring-white/10 relative z-10 transition-transform duration-500 group-hover/avatar:scale-105" alt="User" />
+                     <img src={user.avatar} className="w-7 h-7 rounded-lg object-cover ring-2 ring-white/5 transition-transform duration-500 group-hover/avatar:scale-105" alt="User" />
                   </div>
                   <div className="min-w-0">
-                     <p className="text-[10px] font-black text-white truncate leading-none mb-1">{user.name}</p>
-                     <p className="text-[7px] font-bold text-slate-500 uppercase truncate tracking-widest">{user.role}</p>
+                     <p className="text-[9px] font-black text-white truncate leading-none mb-0.5">{user.name}</p>
+                     <p className="text-[6px] font-bold text-slate-500 uppercase truncate tracking-widest">{user.role}</p>
                   </div>
                </div>
             </div>
-            <p className="text-center mt-3 text-[6px] font-black text-slate-800 uppercase tracking-[0.6em]">Monte Hub v15.5</p>
+            <p className="text-center mt-3 text-[5px] font-black text-slate-800 uppercase tracking-[0.6em]">Monte Hub v15.5</p>
           </div>
         </div>
       </aside>

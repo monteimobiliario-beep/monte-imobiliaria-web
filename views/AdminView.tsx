@@ -88,9 +88,11 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'settings'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'settings' | 'health'>('users');
   const [editingRolePermissions, setEditingRolePermissions] = useState<RoleRecord | null>(null);
   const [rolesLoading, setRolesLoading] = useState(false);
+  const [dbHealth, setDbHealth] = useState<{table: string, status: 'ok' | 'error', count: number}[]>([]);
+  const [isCheckingHealth, setIsCheckingHealth] = useState(false);
 
   const { settings, updateSettings } = useBranding();
   const [tempSettings, setTempSettings] = useState(settings);
@@ -107,9 +109,31 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
     backgroundSize: '24px 24px'
   };
 
+  async function checkSystemHealth() {
+    setIsCheckingHealth(true);
+    const tables = ['properties', 'employees', 'transactions', 'projects', 'vehicles', 'beneficiaries', 'audit_logs', 'roles'];
+    try {
+      const results = await Promise.all(tables.map(async (table) => {
+        try {
+          const { count, error } = await supabase.from(table).select('*', { count: 'exact', head: true });
+          return { table, status: error ? 'error' : 'ok', count: count || 0 };
+        } catch (e) {
+          return { table, status: 'error', count: 0 };
+        }
+      }));
+      setDbHealth(results as any);
+    } catch (e) {
+      console.error("Health Check Error:", e);
+    } finally {
+      setIsCheckingHealth(false);
+      logAction('SISTEMA_HEALTH_CHECK', 'Diagnóstico Global', 'Verificação de integridade de tabelas cloud concluída.');
+    }
+  }
+
   useEffect(() => {
     fetchUsers();
     fetchRoles();
+    checkSystemHealth();
   }, []);
 
   async function logAction(action: string, target: string, details: string) {
@@ -260,6 +284,9 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
          <button onClick={() => setActiveTab('settings')} className={`flex-1 py-4 rounded-[2rem] text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${activeTab === 'settings' ? 'bg-market-blue text-white shadow-lg' : 'text-market-slate hover:text-market-navy'}`}>
             <Palette size={16} /> Identidade
          </button>
+         <button onClick={() => { setActiveTab('health'); checkSystemHealth(); }} className={`flex-1 py-4 rounded-[2rem] text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${activeTab === 'health' ? 'bg-market-blue text-white shadow-lg' : 'text-market-slate hover:text-market-navy'}`}>
+            <Database size={16} /> Integridade
+         </button>
       </div>
 
       <div className="animate-in slide-in-from-bottom-6 duration-700">
@@ -313,6 +340,66 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
                         ))}
                      </tbody>
                   </table>
+               </div>
+            </div>
+         )}
+
+         {activeTab === 'health' && (
+            <div className="max-w-4xl mx-auto space-y-8 animate-in zoom-in-95 duration-500">
+               <div className="bg-white rounded-[3rem] border border-slate-100 shadow-2xl p-10 md:p-14" style={meshStyle}>
+                  <div className="flex items-center justify-between mb-10">
+                     <div>
+                        <h3 className="text-3xl font-bold text-market-navy tracking-tight uppercase">Integridade <span className="text-market-blue">Cloud</span></h3>
+                        <p className="text-[10px] font-bold text-market-slate uppercase tracking-widest mt-1">Status da Camada de Persistência Supabase</p>
+                     </div>
+                     <button 
+                        onClick={checkSystemHealth} 
+                        disabled={isCheckingHealth}
+                        className="p-4 bg-slate-50 text-market-blue rounded-2xl hover:bg-market-blue hover:text-white transition-all shadow-sm border border-slate-100"
+                     >
+                        <RefreshCw size={24} className={isCheckingHealth ? 'animate-spin' : ''} />
+                     </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     {dbHealth.map((h, i) => (
+                        <div key={i} className="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group hover:bg-white hover:shadow-xl transition-all">
+                           <div className="flex items-center gap-4">
+                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${h.status === 'ok' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                                 <Database size={20} />
+                              </div>
+                              <div>
+                                 <p className="text-xs font-black text-market-navy uppercase tracking-tight">{h.table}</p>
+                                 <p className="text-[9px] font-bold text-market-slate uppercase">{h.count} Registos</p>
+                              </div>
+                           </div>
+                           <div className="flex items-center gap-2">
+                              <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-full ${h.status === 'ok' ? 'bg-emerald-500 text-white shadow-[0_0_8px_#10b981]' : 'bg-rose-500 text-white shadow-[0_0_8px_#f43f5e]'}`}>
+                                 {h.status === 'ok' ? 'Online' : 'Falha'}
+                              </span>
+                           </div>
+                        </div>
+                     ))}
+                  </div>
+
+                  <div className="mt-12 p-8 bg-market-navy rounded-[2.5rem] border border-white/5 relative overflow-hidden">
+                     <div className="absolute top-0 right-0 w-32 h-32 bg-market-blue opacity-10 rounded-full translate-x-1/2 -translate-y-1/2"></div>
+                     <div className="flex items-start gap-4 mb-6">
+                        <Wrench className="text-market-blue" size={24} />
+                        <div>
+                           <h4 className="text-sm font-bold text-white uppercase tracking-widest">Ferramentas de Reparação</h4>
+                           <p className="text-white/30 text-[10px] mt-1 italic">Utilize estas opções caso detete inconsistências no sistema.</p>
+                        </div>
+                     </div>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button className="bg-white/5 hover:bg-white/10 text-white/60 hover:text-white p-4 rounded-xl text-[10px] font-bold uppercase tracking-widest border border-white/5 transition-all text-left flex items-center justify-between group">
+                           Sincronizar Esquema SQL <RotateCcw size={14} className="group-hover:rotate-180 transition-transform" />
+                        </button>
+                        <button className="bg-white/5 hover:bg-white/10 text-white/60 hover:text-white p-4 rounded-xl text-[10px] font-bold uppercase tracking-widest border border-white/5 transition-all text-left flex items-center justify-between group">
+                           Limpar Cache de Auditoria <History size={14} className="group-hover:scale-110 transition-transform" />
+                        </button>
+                     </div>
+                  </div>
                </div>
             </div>
          )}
