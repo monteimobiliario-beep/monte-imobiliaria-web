@@ -223,7 +223,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onViewProperty }) => {
               {[
                 { label: 'Oportunidades', title: 'Explorar Portfólio', path: 'imoveis', color: 'bg-market-blue' },
                 { label: 'Serviços', title: 'Consultoria Estratégica', path: 'servicos', color: 'bg-market-navy' },
-                { label: 'Gestão', title: 'Administração', path: 'gestao', color: 'bg-market-accent' },
+                { label: 'Gestão', title: 'Administração', path: 'login', color: 'bg-market-accent' },
               ].map((item, i) => (
                 <motion.div 
                   key={i}

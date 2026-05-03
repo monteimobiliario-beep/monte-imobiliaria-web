@@ -3,10 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { 
   Plus, Search, Edit3, Trash2, X, Check, Camera, 
   Loader2, Building2, MapPin, Star,
-  CheckCircle2, AlertCircle
+  CheckCircle2, AlertCircle, Image as ImageIcon
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { Property } from '../types';
+import { ImageUploadField } from '../components/ImageUploadField';
+import { formatImageUrl } from '../imageUtils';
 
 const CatalogView: React.FC = () => {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -164,7 +166,7 @@ const CatalogView: React.FC = () => {
           {properties.map(prop => (
             <div key={prop.id} className="group market-card overflow-hidden transition-all hover:shadow-xl relative border-slate-100 bg-white">
               <div className="h-40 relative overflow-hidden">
-                <img src={prop.image || defaultPlaceholder} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={prop.title} referrerPolicy="no-referrer" />
+                <img src={formatImageUrl(prop.image || defaultPlaceholder)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={prop.title} referrerPolicy="no-referrer" />
                 <div className="absolute top-3 left-3 flex flex-col gap-1.5">
                   <div className="bg-market-navy/90 backdrop-blur-md px-2.5 py-1 rounded text-[8px] font-bold uppercase text-white shadow-sm">
                     {prop.dealType}
@@ -254,36 +256,53 @@ const CatalogView: React.FC = () => {
                   <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Banheiros</label>
                   <input type="number" value={newProp.baths} onChange={e => setNewProp({...newProp, baths: Number(e.target.value)})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium text-sm outline-none focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" />
                 </div>
-                <div className="md:col-span-3 space-y-1.5">
-                  <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">URL Imagem de Destaque (Principal)</label>
-                  <input value={newProp.image} onChange={e => setNewProp({...newProp, image: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium text-sm outline-none focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" placeholder="Esta imagem aparecerá em destaque no catálogo e listagens..." />
+
+                <div className="md:col-span-3">
+                  <ImageUploadField 
+                    label="Imagem de Destaque (Principal)"
+                    value={newProp.image || ''}
+                    onChange={(url) => setNewProp({...newProp, image: url})}
+                    placeholder="Cole um link (Google Drive, etc) ou carregue da galeria..."
+                  />
                 </div>
 
                 <div className="md:col-span-3 space-y-4">
                   <label className="text-[10px] font-bold text-market-navy uppercase tracking-widest ml-1">Galeria de Imagens Complementares (Álbum)</label>
-                  <div className="flex gap-3">
-                    <input 
-                      value={galleryInput} 
-                      onChange={e => setGalleryInput(e.target.value)} 
-                      className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium text-sm outline-none focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" 
-                      placeholder="Adicione URLs de fotos do interior, detalhes ou planta..." 
-                    />
-                    <button type="button" onClick={handleAddGalleryImage} className="px-6 bg-market-navy text-white rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all hover:bg-market-blue">Adicionar Foto</button>
-                  </div>
                   
-                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                    {newProp.gallery?.map((url, i) => (
-                      <div key={i} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
-                        <img src={url} className="w-full h-full object-cover" alt="" referrerPolicy="no-referrer" />
-                        <button 
-                          type="button" 
-                          onClick={() => handleRemoveGalleryImage(i)}
-                          className="absolute top-1 right-1 p-1 bg-rose-500 text-white rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X size={12} />
-                        </button>
+                  <div className="flex flex-col gap-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                    <div className="flex gap-3">
+                      <div className="flex-1">
+                        <ImageUploadField 
+                          label="Adicionar Nova Foto"
+                          value={galleryInput}
+                          onChange={setGalleryInput}
+                          placeholder="Link da imagem..."
+                        />
                       </div>
-                    ))}
+                      <button 
+                        type="button" 
+                        onClick={handleAddGalleryImage} 
+                        disabled={!galleryInput}
+                        className="self-end px-6 h-[46px] bg-market-navy text-white rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all hover:bg-market-blue disabled:opacity-50"
+                      >
+                        Adicionar ao Álbum
+                      </button>
+                    </div>
+                  
+                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                      {newProp.gallery?.map((url, i) => (
+                        <div key={i} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
+                          <img src={formatImageUrl(url)} className="w-full h-full object-cover" alt="" referrerPolicy="no-referrer" />
+                          <button 
+                            type="button" 
+                            onClick={() => handleRemoveGalleryImage(i)}
+                            className="absolute inset-0 bg-rose-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 

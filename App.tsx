@@ -92,6 +92,12 @@ const App: React.FC = () => {
     };
   }, [currentPath]);
 
+  useEffect(() => {
+    if (currentUser && currentPath === 'login') {
+      setCurrentPath('dashboard');
+    }
+  }, [currentUser, currentPath]);
+
   async function checkUser() {
     try {
       const { data: { session }, error } = await supabase.auth.getSession();
@@ -167,9 +173,52 @@ const App: React.FC = () => {
 
   if (isInitializing) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8 text-center">
-        <div className="w-24 h-24 bg-white rounded-[3rem] flex items-center justify-center p-5 shadow-[0_0_80px_rgba(255,255,255,0.05)] animate-pulse overflow-hidden">
-          <img src={systemLogo} className="w-full h-full object-contain" alt="Loading" />
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-market-blue rounded-full blur-[120px] animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-market-accent rounded-full blur-[120px] animate-pulse delay-700"></div>
+        </div>
+
+        <div className="relative z-10 flex flex-col items-center gap-8">
+          <div className="relative">
+            <div className="w-28 h-28 bg-white rounded-[2.5rem] flex items-center justify-center p-6 shadow-[0_0_100px_rgba(255,255,255,0.1)] relative z-20 overflow-hidden">
+              <motion.img 
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                src={systemLogo} 
+                className="w-full h-full object-contain" 
+                alt="Monte" 
+              />
+            </div>
+            {/* Spinning ring */}
+            <div className="absolute inset-[-10px] border-2 border-dashed border-white/10 rounded-[3rem] animate-[spin_10s_linear_infinite]"></div>
+          </div>
+
+          <div className="space-y-3">
+            <h2 className="text-white font-bold text-lg tracking-widest uppercase">Monte Imobiliária</h2>
+            <div className="flex items-center justify-center gap-2">
+              <div className="flex gap-1">
+                {[0, 1, 2].map((i) => (
+                  <motion.div
+                    key={i}
+                    animate={{ 
+                      height: [4, 12, 4],
+                      opacity: [0.3, 1, 0.3]
+                    }}
+                    transition={{ 
+                      duration: 1, 
+                      repeat: Infinity, 
+                      delay: i * 0.2 
+                    }}
+                    className="w-1 bg-market-blue rounded-full"
+                  />
+                ))}
+              </div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] animate-pulse">Sincronizando Ecossistema Cloud</p>
+            </div>
+          </div>
         </div>
       </div>
     );

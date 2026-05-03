@@ -3,10 +3,12 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   Users, AlertTriangle, Loader2, X, Mail, Phone, 
   Edit3, UserPlus, CheckCircle2, 
-  Search, Building2, Save, Trash2, ShieldCheck, Fingerprint, FileBadge, CreditCard, Map, Shield, Briefcase, Linkedin, ExternalLink, Filter
+  Search, Building2, Save, Trash2, ShieldCheck, Fingerprint, FileBadge, CreditCard, Map, Shield, Briefcase, Linkedin, ExternalLink, Filter, Camera
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { Employee, UserRole, JobVacancy, JobApplication } from '../types';
+import { ImageUploadField } from '../components/ImageUploadField';
+import { formatImageUrl } from '../imageUtils';
 
 const NOTIFICATION_SOUND = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3';
 
@@ -107,6 +109,19 @@ const HRView: React.FC = () => {
     }
   };
 
+  const handleDeleteEmployee = async (id: string) => {
+    if (confirm('Tem a certeza que deseja remover este colaborador? Está acção irá arquivar os dados permanentemente.')) {
+      try {
+        const { error } = await supabase.from('employees').delete().eq('id', id);
+        if (error) throw error;
+        fetchData();
+        setShowViewModal(false);
+      } catch (err: any) {
+        alert('Erro ao eliminar: ' + err.message);
+      }
+    }
+  };
+
   const handleUpdateAppStatus = async (id: string, status: 'Aprovado' | 'Rejeitado') => {
     try {
       await supabase.from('job_applications').update({ status }).eq('id', id);
@@ -177,7 +192,7 @@ const HRView: React.FC = () => {
               <div key={emp.id} onClick={() => {setViewingEmp(emp); setShowViewModal(true);}} className="market-card p-4 relative group hover:shadow-xl transition-all cursor-pointer overflow-hidden text-center">
                 <div className="flex flex-col items-center">
                   <div className="relative mb-3">
-                    <img src={emp.avatar} className="w-12 h-12 rounded-lg object-cover ring-2 ring-slate-50 shadow-sm" alt="" />
+                    <img src={formatImageUrl(emp.avatar)} className="w-12 h-12 rounded-lg object-cover ring-2 ring-slate-50 shadow-sm" alt="" />
                     <div className={`absolute -bottom-1 -right-1 w-3 h-3 border-2 border-white rounded-full ${emp.status === 'Ativo' ? 'bg-market-accent' : 'bg-amber-500'}`}></div>
                   </div>
                   <h3 className="text-[11px] font-bold text-market-navy truncate w-full mb-0.5 group-hover:text-market-blue transition-colors">{emp.name}</h3>
@@ -186,6 +201,164 @@ const HRView: React.FC = () => {
               </div>
             ))}
           </div>
+
+          {/* Add/Edit Modal */}
+          {showAddModal && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-market-navy/80 backdrop-blur-xl animate-in fade-in">
+              <div className="bg-white rounded-3xl p-8 md:p-10 max-w-4xl w-full shadow-2xl relative border-t-8 border-market-blue max-h-[90vh] overflow-y-auto custom-scrollbar">
+                <button onClick={() => setShowAddModal(false)} className="absolute top-8 right-8 p-2 text-slate-400 hover:text-market-navy bg-slate-50 rounded-xl transition-all border border-slate-100"><X size={24} /></button>
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-market-navy flex items-center gap-3">
+                    <UserPlus size={28} className="text-market-blue" />
+                    {editingEmpId ? 'Editar Funcionário' : 'Admissão de Novo Colaborador'}
+                  </h2>
+                  <p className="text-[10px] text-market-slate font-bold uppercase mt-1 tracking-widest">Documentação e Cadastro Centralizado</p>
+                </div>
+
+                <form onSubmit={handleSaveEmployee} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="md:col-span-3">
+                    <ImageUploadField 
+                      label="Fotografia (Avatar)"
+                      value={formState.avatar || ''}
+                      onChange={(url) => setFormState({...formState, avatar: url})}
+                      placeholder="Link da imagem (Google Drive, etc) ou upload da galeria..."
+                    />
+                  </div>
+
+                  <div className="md:col-span-2 space-y-1">
+                    <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Nome Completo</label>
+                    <input required value={formState.name} onChange={e => setFormState({...formState, name: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 focus:border-market-blue transition-all" />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Gênero</label>
+                    <select value={formState.gender} onChange={e => setFormState({...formState, gender: e.target.value as any})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 transition-all">
+                      <option value="M">Masculino</option>
+                      <option value="F">Feminino</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Cargo / Função</label>
+                    <select value={formState.role} onChange={e => setFormState({...formState, role: e.target.value as UserRole})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 transition-all">
+                      {Object.values(UserRole).map(role => <option key={role} value={role}>{role}</option>)}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Departamento</label>
+                    <select value={formState.department} onChange={e => setFormState({...formState, department: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 transition-all">
+                      {departments.filter(d => d !== 'Todos').map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Salário Base (MT)</label>
+                    <input type="number" required value={formState.salary} onChange={e => setFormState({...formState, salary: Number(e.target.value)})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 transition-all" />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Email Corporativo</label>
+                    <input type="email" required value={formState.email} onChange={e => setFormState({...formState, email: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 transition-all" />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Contacto Telefónico</label>
+                    <input required value={formState.phone} onChange={e => setFormState({...formState, phone: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 transition-all" />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Status Contratual</label>
+                    <select value={formState.status} onChange={e => setFormState({...formState, status: e.target.value as any})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 transition-all">
+                      <option value="Ativo">Ativo</option>
+                      <option value="Férias">Férias</option>
+                      <option value="Inativo">Inativo</option>
+                      <option value="Suspenso">Suspenso</option>
+                    </select>
+                  </div>
+
+                  <div className="md:col-span-3 grid grid-cols-2 lg:grid-cols-4 gap-4 p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="space-y-1">
+                       <label className="text-[8px] font-bold text-market-slate uppercase tracking-widest">Tipo Doc.</label>
+                       <select value={formState.document_type} onChange={e => setFormState({...formState, document_type: e.target.value})} className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs font-bold outline-none"><option>BI</option><option>Passaporte</option><option>DIRE</option></select>
+                    </div>
+                    <div className="space-y-1">
+                       <label className="text-[8px] font-bold text-market-slate uppercase tracking-widest">Nº Documento</label>
+                       <input value={formState.document_number} onChange={e => setFormState({...formState, document_number: e.target.value})} className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs font-bold outline-none" />
+                    </div>
+                    <div className="space-y-1">
+                       <label className="text-[8px] font-bold text-market-slate uppercase tracking-widest">NUIT</label>
+                       <input value={formState.nuit} onChange={e => setFormState({...formState, nuit: e.target.value})} className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs font-bold outline-none" />
+                    </div>
+                    <div className="space-y-1">
+                       <label className="text-[8px] font-bold text-market-slate uppercase tracking-widest">NISS</label>
+                       <input value={formState.niss} onChange={e => setFormState({...formState, niss: e.target.value})} className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs font-bold outline-none" />
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-3 flex gap-4 pt-6 border-t border-slate-100">
+                    <button type="submit" disabled={saving} className="market-button market-button-primary flex-1 py-4 text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg">
+                      {saving ? <Loader2 className="animate-spin" size={18} /> : <><Save size={18} /> {editingEmpId ? 'Actualizar Dados' : 'Confirmar Admissão'}</>}
+                    </button>
+                    <button type="button" onClick={() => setShowAddModal(false)} className="market-button market-button-outline px-8 py-4 text-[10px] uppercase tracking-widest">Cancelar</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* View Modal */}
+          {showViewModal && viewingEmp && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-market-navy/80 backdrop-blur-xl animate-in fade-in">
+              <div className="bg-white rounded-3xl p-0 max-w-4xl w-full shadow-2xl relative overflow-hidden flex flex-col md:flex-row h-[70vh]">
+                <div className="w-full md:w-1/3 bg-slate-50 p-10 flex flex-col items-center text-center border-r border-slate-100">
+                   <div className="relative mb-6">
+                      <img src={formatImageUrl(viewingEmp.avatar)} className="w-32 h-32 rounded-3xl object-cover shadow-2xl ring-4 ring-white" alt="" />
+                      <div className={`absolute -bottom-2 -right-2 px-3 py-1 rounded-full text-[9px] font-bold uppercase text-white shadow-lg ${viewingEmp.status === 'Ativo' ? 'bg-market-accent' : 'bg-amber-500'}`}>{viewingEmp.status}</div>
+                   </div>
+                   <h2 className="text-xl font-bold text-market-navy mb-1">{viewingEmp.name}</h2>
+                   <p className="text-[9px] font-bold text-market-blue uppercase tracking-widest mb-6 bg-market-blue/5 px-3 py-1 rounded-full">{viewingEmp.role}</p>
+                   
+                   <div className="w-full space-y-3 pt-6 border-t border-slate-200">
+                      <div className="flex items-center gap-3 text-market-slate"><Mail size={14} /><span className="text-[11px] font-medium truncate">{viewingEmp.email}</span></div>
+                      <div className="flex items-center gap-3 text-market-slate"><Phone size={14} /><span className="text-[11px] font-medium">{viewingEmp.phone}</span></div>
+                   </div>
+
+                   <div className="mt-auto flex gap-2 w-full pt-6">
+                      <button onClick={() => { setFormState(viewingEmp); setEditingEmpId(viewingEmp.id); setShowViewModal(false); setShowAddModal(true); }} className="flex-1 p-3 bg-white hover:bg-market-blue hover:text-white text-market-blue border border-market-blue/20 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 font-bold text-[10px] uppercase"><Edit3 size={16} /> Editar</button>
+                      <button onClick={() => handleDeleteEmployee(viewingEmp.id)} className="p-3 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white border border-rose-100 rounded-xl transition-all shadow-sm flex items-center justify-center"><Trash2 size={16}/></button>
+                      <button onClick={() => setShowViewModal(false)} className="p-3 bg-slate-200 text-slate-500 rounded-xl hover:bg-slate-300 transition-all"><X size={16}/></button>
+                   </div>
+                </div>
+                
+                <div className="flex-1 p-10 overflow-y-auto custom-scrollbar">
+                   <div className="grid grid-cols-2 gap-8">
+                      <div>
+                         <h4 className="text-[9px] font-bold text-market-slate uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><Fingerprint size={12} className="text-market-blue"/> Identificação</h4>
+                         <div className="space-y-4">
+                            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100"><p className="text-[8px] font-bold text-market-slate uppercase mb-0.5">Tipo de Documento</p><p className="text-xs font-bold text-market-navy">{viewingEmp.document_type || 'BI'}</p></div>
+                            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100"><p className="text-[8px] font-bold text-market-slate uppercase mb-0.5">Nº Documento</p><p className="text-xs font-bold text-market-navy">{viewingEmp.document_number || 'N/D'}</p></div>
+                            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100"><p className="text-[8px] font-bold text-market-slate uppercase mb-0.5">NUIT</p><p className="text-xs font-bold text-market-navy">{viewingEmp.nuit || 'N/D'}</p></div>
+                         </div>
+                      </div>
+                      <div>
+                         <h4 className="text-[9px] font-bold text-market-slate uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><CreditCard size={12} className="text-market-blue"/> Financeiro</h4>
+                         <div className="space-y-4">
+                            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100"><p className="text-[8px] font-bold text-market-slate uppercase mb-0.5">Salário Mensal</p><p className="text-xs font-bold text-market-accent">{Number(viewingEmp.salary).toLocaleString()} MT</p></div>
+                            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100"><p className="text-[8px] font-bold text-market-slate uppercase mb-0.5">Método de Pagamento</p><p className="text-xs font-bold text-market-navy">{viewingEmp.payment_method || 'Transferência'}</p></div>
+                         </div>
+                      </div>
+                      <div className="col-span-2">
+                         <h4 className="text-[9px] font-bold text-market-slate uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><Map size={12} className="text-market-blue"/> Localização</h4>
+                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                            <p className="text-xs font-medium text-market-navy italic">"{viewingEmp.address || 'Morada não especificada no sistema.'}"</p>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       ) : (
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden animate-in slide-in-from-right-4 duration-500">

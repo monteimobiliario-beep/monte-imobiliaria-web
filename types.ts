@@ -193,6 +193,19 @@ export interface Contract {
   status: string;
 }
 
+export interface Vehicle {
+  id: string;
+  plate: string;
+  model: string;
+  driver: string;
+  status: 'Disponível' | 'Em Rota' | 'Manutenção' | 'Reserva';
+  fuelLevel: number;
+  lastMaintenance: string;
+  mileage: string;
+  image?: string;
+  created_at?: string;
+}
+
 export interface RealEstateService {
   id: string;
   title: string;

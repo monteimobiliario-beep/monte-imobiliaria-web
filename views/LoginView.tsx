@@ -60,14 +60,14 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-market-bg">
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-market-bg relative">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-market-blue/10 rounded-full blur-[120px]"></div>
         <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-market-blue/5 rounded-full blur-[120px]"></div>
       </div>
 
-      <div className="w-full max-w-md relative animate-in fade-in slide-in-from-bottom-8 duration-700">
-        <div className="relative z-10 p-10 md:p-14 rounded-[4rem] border border-slate-100 shadow-2xl backdrop-blur-3xl bg-white shadow-slate-200/50">
+      <div className="w-full max-w-md relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+        <div className="relative pointer-events-auto z-10 p-10 md:p-14 rounded-[3rem] border border-slate-100 shadow-2xl bg-white shadow-slate-200/50">
           
           <div className="text-center mb-12">
             <div className="w-32 h-32 rounded-[3rem] flex items-center justify-center mx-auto mb-8 shadow-2xl p-6 group transition-transform hover:scale-110 duration-500 bg-white border border-slate-50 overflow-hidden">
@@ -85,44 +85,46 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
             </div>
           )}
 
-          <form onSubmit={handleSignIn} className="space-y-8">
+          <form onSubmit={handleSignIn} className="space-y-6 pointer-events-auto">
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest ml-2 flex items-center gap-2 text-market-slate">
+              <label htmlFor="email-field" className="text-[10px] font-bold uppercase tracking-widest ml-2 flex items-center gap-2 text-market-slate">
                 <Mail size={12} className="text-market-blue" /> Identificador Staff
               </label>
               <input 
+                id="email-field"
                 required 
                 type="email" 
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
-                className="w-full px-6 py-5 rounded-[1.8rem] border border-slate-200 font-bold text-sm transition-all outline-none focus:ring-4 bg-slate-50 text-market-navy placeholder:text-slate-300 focus:ring-market-blue/10 focus:border-market-blue shadow-inner"
+                className="w-full px-6 py-5 rounded-[1.8rem] border border-slate-200 font-bold text-sm transition-all outline-none focus:ring-4 bg-white text-market-navy placeholder:text-slate-300 focus:ring-market-blue/10 focus:border-market-blue pointer-events-auto relative z-20"
                 placeholder="nome@monte.mz"
               />
             </div>
 
             <div className="space-y-2">
               <div className="flex justify-between items-center ml-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-market-slate">
+                <label htmlFor="pass-field" className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-market-slate">
                   <Lock size={12} className="text-market-blue" /> Chave de Segurança
                 </label>
               </div>
               <input 
+                id="pass-field"
                 required 
                 type="password" 
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
-                className="w-full px-6 py-5 rounded-[1.8rem] border border-slate-200 font-bold text-sm transition-all outline-none focus:ring-4 bg-slate-50 text-market-navy placeholder:text-slate-300 focus:ring-market-blue/10 focus:border-market-blue shadow-inner"
+                className="w-full px-6 py-5 rounded-[1.8rem] border border-slate-200 font-bold text-sm transition-all outline-none focus:ring-4 bg-white text-market-navy placeholder:text-slate-300 focus:ring-market-blue/10 focus:border-market-blue pointer-events-auto relative z-20"
                 placeholder="••••••••••••"
               />
             </div>
 
-            <div className="pt-4">
+            <div className="pt-4 space-y-4 relative z-20">
               <button 
                 disabled={loading} 
                 type="submit" 
-                className="market-button market-button-primary w-full py-6 text-xs tracking-[0.3em] flex items-center justify-center gap-4"
+                className="market-button market-button-primary w-full py-6 text-xs tracking-[0.3em] flex items-center justify-center gap-4 pointer-events-auto shadow-xl"
               >
                 {loading ? (
                   <Loader2 className="animate-spin" size={22} />
@@ -131,6 +133,31 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
                     Entrar no Ecossistema <Zap size={18} className="fill-white" />
                   </>
                 )}
+              </button>
+
+              <div className="relative py-4 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center px-2">
+                  <div className="w-full border-t border-slate-100"></div>
+                </div>
+                <span className="relative z-10 bg-white px-4 text-[8px] font-black uppercase tracking-[0.4em] text-slate-300">Ou use Cloud ID</span>
+              </div>
+
+              <button 
+                type="button"
+                onClick={async () => {
+                  try {
+                    await supabase.auth.signInWithOAuth({
+                      provider: 'google',
+                      options: { redirectTo: window.location.origin }
+                    });
+                  } catch (err: any) {
+                    setError('Erro ao autenticar com Google: ' + err.message);
+                  }
+                }}
+                className="w-full py-5 rounded-[1.8rem] border border-slate-200 bg-white hover:bg-slate-50 transition-all flex items-center justify-center gap-4 text-xs font-bold text-market-navy relative z-20 pointer-events-auto"
+              >
+                <img src="https://www.google.com/favicon.ico" className="w-4 h-4" alt="Google" />
+                <span>Entrar com Google Cloud</span>
               </button>
             </div>
           </form>
