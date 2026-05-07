@@ -197,11 +197,13 @@ export interface Vehicle {
   id: string;
   plate: string;
   model: string;
-  driver: string;
-  status: 'Disponível' | 'Em Rota' | 'Manutenção' | 'Reserva';
-  fuelLevel: number;
-  lastMaintenance: string;
-  mileage: string;
+  year?: number;
+  type?: string;
+  status: 'Disponível' | 'Em Serviço' | 'Manutenção' | 'Lavagem';
+  current_driver?: string;
+  last_maintenance: string;
+  fuel_level: number;
+  odometer: number;
   image?: string;
   created_at?: string;
 }

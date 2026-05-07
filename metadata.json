@@ -1,7 +1,8 @@
 {
-  "name": "Monte Imobiliária ERP",
+  "name": "Monte Imobiliária",
   "description": "Sistema de Gestão Empresarial (ERP) premium para controle financeiro, recursos humanos, projetos e estratégia da Monte Imobiliária.",
   "requestFramePermissions": [
     "camera"
-  ]
+  ],
+  "majorCapabilities": []
 }

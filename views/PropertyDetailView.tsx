@@ -7,7 +7,7 @@ import {
   CheckCircle2, Star, Navigation, Camera, Calendar, Play, Building2
 } from 'lucide-react';
 import { Property } from '../types';
-import { supabase } from '../supabaseClient';
+import { db } from '../supabaseClient';
 import { useBranding } from '../BrandingContext';
 
 interface Message {
@@ -57,7 +57,7 @@ const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ propertyId, onB
   async function fetchProperty() {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.from('properties').select('*').eq('id', propertyId).single();
+      const { data, error } = await db.catalog('properties').select('*').eq('id', propertyId).single();
       if (error) throw error;
       
       const p = {
@@ -68,7 +68,7 @@ const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ propertyId, onB
       setProperty(p);
       
       // Fetch related
-      const { data: related } = await supabase.from('properties').select('*').neq('id', propertyId).limit(3);
+      const { data: related } = await db.catalog('properties').select('*').neq('id', propertyId).limit(3);
       setRelatedProperties(related || []);
       
     } catch (err) {
@@ -143,11 +143,11 @@ const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ propertyId, onB
     setIsSending(true);
 
     try {
-      await supabase.from('contact_requests').insert([{
+      await db.catalog('contact_requests').insert([{
         name: 'Interessado (Chat)',
         email: 'chat@web.user',
-        subject: `Dúvida Imóvel: ${property?.title}`,
-        message: inputText,
+        message: `Dúvida Imóvel: ${property?.title} - ${inputText}`,
+        property_id: propertyId,
         created_at: new Date().toISOString()
       }]);
 

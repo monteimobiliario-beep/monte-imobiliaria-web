@@ -28,9 +28,10 @@ import {
   Image as ImageIcon,
   Link as LinkIcon
 } from 'lucide-react';
-import { supabase } from '../supabaseClient';
+import { supabase, db } from '../supabaseClient';
 import { UserRole, Employee, User } from '../types';
 import { useBranding } from '../BrandingContext';
+import { ImageUploadField } from '../components/ImageUploadField';
 
 interface PermissionDefinition {
   id: string;
@@ -111,14 +112,24 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
 
   async function checkSystemHealth() {
     setIsCheckingHealth(true);
-    const tables = ['properties', 'employees', 'transactions', 'projects', 'vehicles', 'beneficiaries', 'audit_logs', 'roles'];
+    const tableMappings = [
+      { name: 'properties', schema: 'catalog' },
+      { name: 'employees', schema: 'hr' },
+      { name: 'transactions', schema: 'finance' },
+      { name: 'projects', schema: 'finance' },
+      { name: 'vehicles', schema: 'fleet' },
+      { name: 'beneficiaries', schema: 'finance' },
+      { name: 'audit_logs', schema: 'core' },
+      { name: 'roles', schema: 'core' }
+    ];
     try {
-      const results = await Promise.all(tables.map(async (table) => {
+      const results = await Promise.all(tableMappings.map(async (mapping) => {
         try {
-          const { count, error } = await supabase.from(table).select('*', { count: 'exact', head: true });
-          return { table, status: error ? 'error' : 'ok', count: count || 0 };
+          // @ts-ignore
+          const { count, error } = await db[mapping.schema](mapping.name).select('*', { count: 'exact', head: true });
+          return { table: mapping.name, status: error ? 'error' : 'ok', count: count || 0 };
         } catch (e) {
-          return { table, status: 'error', count: 0 };
+          return { table: mapping.name, status: 'error', count: 0 };
         }
       }));
       setDbHealth(results as any);
@@ -139,7 +150,7 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
   async function logAction(action: string, target: string, details: string) {
     if (!currentUser) return;
     try {
-      await supabase.from('audit_logs').insert([{
+      await db.core('audit_logs').insert([{
         admin_id: currentUser.id,
         admin_name: currentUser.name,
         target_user_name: target,
@@ -152,7 +163,7 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
   async function fetchRoles() {
     setRolesLoading(true);
     try {
-      const { data, error } = await supabase.from('roles').select('*').order('name');
+      const { data, error } = await db.core('roles').select('*').order('name');
       if (!error && data) setRoles(data);
     } catch (e) {} finally { setRolesLoading(false); }
   }
@@ -160,7 +171,7 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
   async function fetchUsers() {
     setLoading(true);
     try {
-      const { data, error } = await supabase.from('employees').select('*').order('name');
+      const { data, error } = await db.hr('employees').select('*').order('name');
       if (!error) setUsers(data || []);
     } catch (e) {} finally { setLoading(false); }
   }
@@ -168,7 +179,7 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
   async function fetchAuditLogs() {
     setLoadingLogs(true);
     try {
-      const { data, error } = await supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(200);
+      const { data, error } = await db.core('audit_logs').select('*').order('created_at', { ascending: false }).limit(200);
       if (!error) setAuditLogs(data || []);
     } catch (e) {} finally { setLoadingLogs(false); }
   }
@@ -201,7 +212,7 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
     if (!editingRolePermissions) return;
     setSaving(true);
     try {
-      const { error } = await supabase.from('roles').update({ permissions: editingRolePermissions.permissions }).eq('id', editingRolePermissions.id);
+      const { error } = await db.core('roles').update({ permissions: editingRolePermissions.permissions }).eq('id', editingRolePermissions.id);
       if (error) throw error;
       await logAction('MATRIZ_CARGO_SYNC', `Cargo: ${editingRolePermissions.name}`, `Matriz base atualizada para ${editingRolePermissions.permissions.length} funcionalidades.`);
       setEditingRolePermissions(null);
@@ -214,7 +225,7 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
     if (!editingUser) return;
     setSaving(true);
     try {
-      const { error } = await supabase.from('employees').update({ role: editingUser.role, permissions: editingUser.permissions || [] }).eq('id', editingUser.id);
+      const { error } = await db.hr('employees').update({ role: editingUser.role, permissions: editingUser.permissions || [] }).eq('id', editingUser.id);
       if (error) throw error;
       await logAction('USER_OVERRIDE_SYNC', editingUser.name, `Permissões específicas aplicadas: ${editingUser.permissions?.length || 0} itens.`);
       setEditingUser(null);
@@ -475,9 +486,33 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
                         <div className="space-y-6">
                            <h4 className="text-[10px] font-bold text-market-blue uppercase tracking-[0.4em] mb-4">Ativos Visuais</h4>
                            <div className="space-y-4">
-                              <div className="space-y-2">
-                                 <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1 flex items-center gap-2">URL do Logotipo <LinkIcon size={12} /></label>
-                                 <input value={tempSettings.logoUrl} onChange={e => setTempSettings({...tempSettings, logoUrl: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium text-sm focus:ring-4 focus:ring-market-blue/10 outline-none" />
+                              <div className="space-y-4">
+                                 <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1 flex items-center gap-2">Logomarca do Sistema <ImageIcon size={12} /></label>
+                                 <ImageUploadField 
+                                   value={tempSettings.logoUrl} 
+                                   onChange={url => setTempSettings({...tempSettings, logoUrl: url})} 
+                                   bucket="monte-assets"
+                                 />
+                                 <input 
+                                   value={tempSettings.logoUrl} 
+                                   onChange={e => setTempSettings({...tempSettings, logoUrl: e.target.value})} 
+                                   placeholder="Ou insira uma URL direta..."
+                                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs outline-none" 
+                                 />
+                              </div>
+                              <div className="space-y-4 pt-4">
+                                 <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1 flex items-center gap-2">URL do Favicon <LinkIcon size={12} /></label>
+                                 <ImageUploadField 
+                                   value={tempSettings.faviconUrl} 
+                                   onChange={url => setTempSettings({...tempSettings, faviconUrl: url})} 
+                                   bucket="monte-assets"
+                                 />
+                                 <input 
+                                   value={tempSettings.faviconUrl} 
+                                   onChange={e => setTempSettings({...tempSettings, faviconUrl: e.target.value})} 
+                                   placeholder="Ou insira uma URL direta para o favicon (.png o .ico)..."
+                                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs outline-none" 
+                                 />
                               </div>
                               <div className="space-y-2">
                                  <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1 flex items-center gap-2">URL Imagem Hero <ImageIcon size={12} /></label>

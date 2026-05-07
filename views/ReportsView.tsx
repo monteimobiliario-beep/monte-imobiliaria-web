@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { BarChart3, FileText, Download, Loader2, FileSpreadsheet, CheckCircle2 } from 'lucide-react';
-import { supabase } from '../supabaseClient';
+import { supabase, db } from '../supabaseClient';
 
 const ReportsView: React.FC = () => {
   const [isExporting, setIsExporting] = useState<string | null>(null);
@@ -83,18 +83,17 @@ const ReportsView: React.FC = () => {
       let filename = "";
 
       if (type === 'finance') {
-        const { data: res } = await supabase
-          .from('transactions')
+        const { data: res } = await db.finance('transactions')
           .select('*, beneficiary:beneficiaries(name)')
           .order('date', { ascending: false });
         data = (res || []).map(t => ({ ...t, beneficiary_name: t.beneficiary?.name || 'Fluxo Geral' }));
         filename = "Financeiro_Monte";
       } else if (type === 'staff') {
-        const { data: res } = await supabase.from('employees').select('*').order('name');
+        const { data: res } = await db.hr('employees').select('*').order('name');
         data = res || [];
         filename = "Recursos_Humanos_Monte";
       } else if (type === 'projects') {
-        const { data: res } = await supabase.from('projects').select('*').order('created_at');
+        const { data: res } = await db.finance('projects').select('*').order('created_at');
         data = res || [];
         filename = "Projetos_Obras_Monte";
       }

@@ -7,7 +7,7 @@ import {
   CheckCircle2, BedDouble, Maximize2, Trophy, Users, 
   Briefcase, ArrowUpRight
 } from 'lucide-react';
-import { supabase } from '../supabaseClient';
+import { supabase, db } from '../supabaseClient';
 import { UserRole, Property } from '../types';
 import { useBranding } from '../BrandingContext';
 
@@ -39,7 +39,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onViewProperty }) => {
 
   async function fetchFeatured() {
     try {
-      const { data, error } = await supabase.from('properties').select('*').eq('featured', true).limit(4);
+      const { data, error } = await db.catalog('properties').select('*').eq('featured', true).limit(4);
       if (error) throw error;
       setFeaturedProperties(data || []);
     } catch (err) {

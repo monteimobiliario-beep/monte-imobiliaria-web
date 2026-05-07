@@ -40,7 +40,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
   ResponsiveContainer, LineChart, Line, Cell, AreaChart, Area
 } from 'recharts';
-import { supabase } from '../supabaseClient';
+import { supabase, db } from '../supabaseClient';
 import { Transaction, Beneficiary, Project, TransactionStatus } from '../types';
 import { getFinancialInsights } from '../geminiService';
 
@@ -84,9 +84,9 @@ const FinanceView: React.FC = () => {
     setLoading(true);
     try {
       const [txRes, benRes, projRes] = await Promise.all([
-        supabase.from('transactions').select(`*, project:projects(name)`).order('date', { ascending: false }),
-        supabase.from('beneficiaries').select('*').order('name'),
-        supabase.from('projects').select('*').order('name')
+        db.finance('transactions').select(`*, project:projects(name)`).order('date', { ascending: false }),
+        db.finance('beneficiaries').select('*').order('name'),
+        db.finance('projects').select('*').order('name')
       ]);
 
       if (txRes.data) {
@@ -152,7 +152,7 @@ const FinanceView: React.FC = () => {
     setLoading(true);
     try {
       const payload = { ...newLaunch, date: new Date().toISOString() };
-      const { error } = await supabase.from('transactions').insert([payload]);
+      const { error } = await db.finance('transactions').insert([payload]);
       if (error) throw error;
       setShowLaunchModal(false);
       fetchData();

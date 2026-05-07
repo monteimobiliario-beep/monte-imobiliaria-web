@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Filter, MapPin, Building2, Ruler, BedDouble, Bath, Search, Star, Maximize2, ChevronDown, CheckCircle2, ArrowRight, Loader2 } from 'lucide-react';
-import { supabase } from '../supabaseClient';
+import { supabase, db } from '../supabaseClient';
 import { Property, PropertyCategory } from '../types';
 import { useBranding } from '../BrandingContext';
 
@@ -26,7 +26,7 @@ const PropertyListView: React.FC<PropertyListViewProps> = ({ onViewProperty }) =
   async function fetchProperties() {
     setLoading(true);
     try {
-      const { data, error } = await supabase.from('properties').select('*').order('created_at', { ascending: false });
+      const { data, error } = await db.catalog('properties').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       setProperties(data || []);
     } catch (err) {

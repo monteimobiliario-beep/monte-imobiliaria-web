@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Briefcase, MapPin, ArrowRight, UserPlus, Mail, Loader2, Info, ChevronDown, ChevronUp, Image as ImageIcon, X, Send, CheckCircle2, Globe, Link as LinkIcon, Phone, ShieldCheck, HelpCircle, AlertCircle, Linkedin } from 'lucide-react';
-import { supabase } from '../supabaseClient';
+import { supabase, db } from '../supabaseClient';
 import { JobVacancy } from '../types';
 
 const CareerView: React.FC = () => {
@@ -23,8 +23,7 @@ const CareerView: React.FC = () => {
   async function fetchVacancies() {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('job_vacancies')
+      const { data, error } = await db.hr('job_vacancies')
         .select('*')
         .eq('status', 'Open')
         .order('created_at', { ascending: false });
@@ -52,17 +51,14 @@ const CareerView: React.FC = () => {
 
     try {
       const now = new Date().toISOString();
-      const { error } = await supabase.from('job_applications').insert([{
-        job_id: selectedJob?.id, 
-        job_title: selectedJob?.title, 
-        applicant_name: applyForm.name.trim(),
-        applicant_email: applyForm.email.trim(), 
-        applicant_phone: applyForm.phone.trim(), 
-        applicant_linkedin: applyForm.linkedin.trim(),
+      const { error } = await db.hr('job_applications').insert([{
+        vacancy_id: selectedJob?.id, 
+        name: applyForm.name.trim(),
+        email: applyForm.email.trim(), 
+        phone: applyForm.phone.trim(), 
+        resume_url: applyForm.linkedin.trim(), // Reutilizando campo para LINK / CV
         message: applyForm.message.trim(), 
         status: 'Pendente', 
-        consent_given: true,
-        consent_timestamp: now,
         created_at: now
       }]);
       if (error) throw error;

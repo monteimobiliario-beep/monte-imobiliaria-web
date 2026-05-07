@@ -8,6 +8,7 @@ interface BrandingSettings {
   heroSubtitle: string;
   heroDescription: string;
   logoUrl: string;
+  faviconUrl: string;
   heroBgUrl: string;
   legacyTitle: string;
   primaryColor: string;
@@ -21,6 +22,7 @@ const DEFAULT_SETTINGS: BrandingSettings = {
   heroSubtitle: 'Onde o Legado Encontra o Destino', // Fallback for components using different labels
   heroDescription: 'A Monte Hub curadoria de patrimónios. Descubra a nova era do imobiliário de luxo em Moçambique.',
   logoUrl: 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/building-2.svg',
+  faviconUrl: 'https://monteimobiliaria.co.mz/wp-content/uploads/2024/04/Monte-Sloagn-01-2.png',
   heroBgUrl: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=1600',
   legacyTitle: 'Curadoria de Ativos Premium',
   primaryColor: '#0052FF', // market-blue
@@ -36,8 +38,13 @@ const BrandingContext = createContext<BrandingContextType | undefined>(undefined
 
 export const BrandingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<BrandingSettings>(() => {
-    const saved = localStorage.getItem('monte_branding_settings');
-    return saved ? { ...DEFAULT_SETTINGS, ...JSON.parse(saved) } : DEFAULT_SETTINGS;
+    try {
+      const saved = localStorage.getItem('monte_branding_settings');
+      return saved ? { ...DEFAULT_SETTINGS, ...JSON.parse(saved) } : DEFAULT_SETTINGS;
+    } catch (e) {
+      console.warn("Could not parse branding settings, using defaults", e);
+      return DEFAULT_SETTINGS;
+    }
   });
 
   const updateSettings = (newSettings: Partial<BrandingSettings>) => {
@@ -53,11 +60,22 @@ export const BrandingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
-  // Sync colors with CSS variables
+  // Sync colors and favicon with system
   useEffect(() => {
     document.documentElement.style.setProperty('--market-blue', settings.primaryColor);
     document.documentElement.style.setProperty('--market-accent', settings.accentColor);
-  }, [settings.primaryColor, settings.accentColor]);
+    
+    // Update Favicon
+    if (settings.faviconUrl) {
+      let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+      }
+      link.href = settings.faviconUrl;
+    }
+  }, [settings.primaryColor, settings.accentColor, settings.faviconUrl]);
 
   return (
     <BrandingContext.Provider value={{ settings, updateSettings }}>

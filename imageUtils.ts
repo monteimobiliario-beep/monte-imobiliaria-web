@@ -22,24 +22,59 @@ export function formatImageUrl(url: string): string {
  * Faz upload de uma imagem para o Supabase Storage
  */
 export async function uploadImage(file: File, bucket: string = 'monte-assets'): Promise<string> {
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
-  const filePath = `${fileName}`;
-
-  const { data, error } = await supabase.storage
-    .from(bucket)
-    .upload(filePath, file);
-
-  if (error) {
-    if (error.message.includes('bucket not found')) {
-      throw new Error('A pasta de armazenamento "monte-assets" não foi encontrada. Por favor, crie-a no painel do Supabase.');
-    }
-    throw error;
+  const fileExt = file.name.split('.').pop()?.toLowerCase();
+  const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+  
+  if (fileExt && !allowedExtensions.includes(fileExt)) {
+    throw new Error('Formato de arquivo não suportado. Use JPG, PNG, WEBP ou GIF.');
   }
 
-  const { data: { publicUrl } } = supabase.storage
-    .from(bucket)
-    .getPublicUrl(filePath);
+  const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+  const filePath = `uploads/${fileName}`;
 
-  return publicUrl;
+  try {
+    let uploadResult: any = null;
+    let retries = 0;
+    const maxRetries = 2;
+
+    while (retries <= maxRetries) {
+      try {
+        const { data, error } = await supabase.storage
+          .from(bucket)
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (error) {
+          if (error.message?.includes('Lock broken')) {
+            console.warn(`Auth lock conflict during upload. Retry ${retries + 1}/${maxRetries}`);
+            retries++;
+            await new Promise(r => setTimeout(r, 500));
+            continue;
+          }
+          if (error.message.includes('bucket not found') || error.message.includes('Bucket not found')) {
+            throw new Error(`O bucket "${bucket}" não foi encontrado. Por favor, crie este bucket no dashboard do Supabase em "Storage" com acesso público.`);
+          }
+          throw error;
+        }
+        
+        uploadResult = data;
+        break;
+      } catch (e: any) {
+        if (retries === maxRetries) throw e;
+        retries++;
+        await new Promise(r => setTimeout(r, 500));
+      }
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  } catch (err: any) {
+    console.error("Critical Upload Error:", err);
+    throw err;
+  }
 }

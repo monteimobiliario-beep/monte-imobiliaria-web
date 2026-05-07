@@ -19,7 +19,7 @@ import {
   UserCheck2,
   Factory
 } from 'lucide-react';
-import { supabase } from '../supabaseClient';
+import { db } from '../supabaseClient';
 import { Beneficiary } from '../types';
 
 const BeneficiariesView: React.FC = () => {
@@ -46,7 +46,7 @@ const BeneficiariesView: React.FC = () => {
   async function fetchData() {
     setLoading(true);
     try {
-      const { data, error } = await supabase.from('beneficiaries').select('*').order('name');
+      const { data, error } = await db.finance('beneficiaries').select('*').order('name');
       if (error) throw error;
       setBeneficiaries(data || []);
     } catch (e) {
@@ -71,9 +71,9 @@ const BeneficiariesView: React.FC = () => {
     setSaving(true);
     try {
       if (editingId) {
-        await supabase.from('beneficiaries').update(form).eq('id', editingId);
+        await db.finance('beneficiaries').update(form).eq('id', editingId);
       } else {
-        await supabase.from('beneficiaries').insert([form]);
+        await db.finance('beneficiaries').insert([form]);
       }
       setShowModal(false);
       fetchData();
@@ -87,7 +87,7 @@ const BeneficiariesView: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (!confirm("Remover esta entidade do sistema?")) return;
     try {
-      await supabase.from('beneficiaries').delete().eq('id', id);
+      await db.finance('beneficiaries').delete().eq('id', id);
       fetchData();
     } catch (e) {
       alert("Erro ao eliminar.");

@@ -7,7 +7,7 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import { supabase } from './supabaseClient';
+import { supabase, db } from './supabaseClient';
 
 // ERP Views
 import DashboardView from './views/DashboardView';
@@ -32,6 +32,8 @@ import ContactView from './views/ContactView';
 import AboutView from './views/AboutView';
 import CareerView from './views/CareerView';
 
+import { useBranding } from './BrandingContext';
+
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentPath, setCurrentPath] = useState('home');
@@ -40,9 +42,8 @@ const App: React.FC = () => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
   
-  // URL da Logo Corrigida (Evitando 404) e com suporte a Customização
-  const DEFAULT_LOGO = 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/building-2.svg';
-  const [systemLogo, setSystemLogo] = useState(localStorage.getItem('monte_custom_logo') || DEFAULT_LOGO);
+  const { settings } = useBranding();
+  // Using settings.logoUrl instead of local state
 
   const ADMIN_GERAL_EMAIL = 'monteimobiliario@gmail.com';
 
@@ -50,47 +51,54 @@ const App: React.FC = () => {
     document.documentElement.classList.remove('dark');
     localStorage.removeItem('monte_theme');
     
-    // Listener Global para atualização da Logomarca em tempo real entre componentes
-    const handleLogoUpdate = (e: any) => {
-      if (e.detail) setSystemLogo(e.detail);
-    };
-    window.addEventListener('monteLogoUpdated', handleLogoUpdate);
-
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 400);
     };
     window.addEventListener('scroll', handleScroll);
 
     return () => {
-      window.removeEventListener('monteLogoUpdated', handleLogoUpdate);
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
   useEffect(() => {
     checkUser();
-    const handleInternalNav = (e: any) => { if (e.detail) setCurrentPath(e.detail); };
-    window.addEventListener('navigate', handleInternalNav);
-
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth Event:", event);
       if (session) {
         await fetchAndSetUser(session.user);
       } else {
-        // Se não há sessão, limpamos o utilizador se ele estava logado ou se foi um logout explícito
         setCurrentUser(null);
-        
-        // Se estivermos numa rota de ERP, voltamos para home
-        const erpPaths = ['dashboard', 'finance', 'hr', 'projects', 'plans', 'reports', 'admin', 'catalog', 'fleet', 'overview', 'beneficiaries'];
-        if (erpPaths.includes(currentPath)) {
-          setCurrentPath('home');
-        }
+        lastFetchedEmail.current = null;
+        // We handle navigation in a separate effect that watches currentUser
       }
     });
+
     return () => {
       subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleInternalNav = (e: any) => { if (e.detail) setCurrentPath(e.detail); };
+    window.addEventListener('navigate', handleInternalNav);
+    
+    return () => {
       window.removeEventListener('navigate', handleInternalNav);
     };
-  }, [currentPath]);
+  }, []);
+
+  useEffect(() => {
+    // Se estivermos numa rota de ERP e o utilizador não estiver logado (e não estiver inicializando)
+    if (!isInitializing && !currentUser) {
+      const erpPaths = ['dashboard', 'finance', 'hr', 'projects', 'plans', 'reports', 'admin', 'catalog', 'fleet', 'overview', 'beneficiaries'];
+      if (erpPaths.includes(currentPath)) {
+        console.log("Redirecting to home: ERP route protected");
+        setCurrentPath('home');
+      }
+    }
+  }, [currentUser, currentPath, isInitializing]);
 
   useEffect(() => {
     if (currentUser && currentPath === 'login') {
@@ -100,25 +108,59 @@ const App: React.FC = () => {
 
   async function checkUser() {
     try {
+      console.log("Checking session status...");
       const { data: { session }, error } = await supabase.auth.getSession();
+      
       if (error) {
-        console.error("Session Error:", error.message);
+        if (error.message?.includes('Lock broken')) {
+          console.warn("Auth synchronization lock warning (expected in preview), retrying session fetch in 500ms.");
+          await new Promise(r => setTimeout(r, 500));
+          const { data: retryData } = await supabase.auth.getSession();
+          if (retryData.session?.user) await fetchAndSetUser(retryData.session.user);
+          return;
+        }
+        console.warn("Session Verification Warning:", error.message);
         if (error.message.includes('Refresh Token Not Found') || error.message.includes('invalid') || error.message.includes('not found')) {
           await supabase.auth.signOut();
         }
         return;
       }
-      if (session?.user) await fetchAndSetUser(session.user);
-    } catch (err) {
-      console.error("CheckUser catch:", err);
+      
+      if (session?.user) {
+        console.log("Found session for:", session.user.email);
+        await fetchAndSetUser(session.user);
+      } else {
+        console.log("No active session detected.");
+      }
+    } catch (err: any) {
+      console.error("Critical error in checkUser:", err);
     } finally { 
-      setIsInitializing(false); 
+      // Ensure we always stop initialize, but give a small grace for the user fetch
+      setTimeout(() => setIsInitializing(false), 500);
+      console.log("App initialization phase complete.");
     }
   }
 
+  const lastFetchedEmail = React.useRef<string | null>(null);
+
   async function fetchAndSetUser(sbUser: any) {
+    if (!sbUser || lastFetchedEmail.current === sbUser.email) return;
+    
     try {
-      const { data: emp } = await supabase.from('employees').select('*').eq('email', sbUser.email).maybeSingle();
+      lastFetchedEmail.current = sbUser.email;
+      let emp = null;
+      
+      try {
+        const { data, error: empError } = await db.hr('employees').select('*').eq('email', sbUser.email).maybeSingle();
+        if (!empError) {
+          emp = data;
+        } else {
+          console.warn("DICA: Se o erro for 'schema not found', lembre-se de expor os esquemas em Project Settings > API > Exposed schemas no Supabase.");
+        }
+      } catch (e) {
+        console.warn("Esquema HR ainda não acessível via API. Verifique a configuração de 'Exposed schemas' no Supabase.");
+      }
+
       const isOwner = sbUser.email === ADMIN_GERAL_EMAIL;
       const user: User = {
         id: sbUser.id,
@@ -131,6 +173,7 @@ const App: React.FC = () => {
       setCurrentUser(user);
       if (currentPath === 'login') setCurrentPath('dashboard');
     } catch (err) {
+      console.error("fetchAndSetUser error:", err);
       setCurrentUser({ id: sbUser.id, name: sbUser.email.split('@')[0], email: sbUser.email, role: UserRole.EMPLOYEE, avatar: `https://picsum.photos/seed/${sbUser.id}/100`, permissions: [] });
     }
   }
@@ -170,59 +213,6 @@ const App: React.FC = () => {
       default: return <HomeView onNavigate={setCurrentPath} onViewProperty={handleViewProperty} />;
     }
   };
-
-  if (isInitializing) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
-        {/* Animated Background Elements */}
-        <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-market-blue rounded-full blur-[120px] animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-market-accent rounded-full blur-[120px] animate-pulse delay-700"></div>
-        </div>
-
-        <div className="relative z-10 flex flex-col items-center gap-8">
-          <div className="relative">
-            <div className="w-28 h-28 bg-white rounded-[2.5rem] flex items-center justify-center p-6 shadow-[0_0_100px_rgba(255,255,255,0.1)] relative z-20 overflow-hidden">
-              <motion.img 
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                src={systemLogo} 
-                className="w-full h-full object-contain" 
-                alt="Monte" 
-              />
-            </div>
-            {/* Spinning ring */}
-            <div className="absolute inset-[-10px] border-2 border-dashed border-white/10 rounded-[3rem] animate-[spin_10s_linear_infinite]"></div>
-          </div>
-
-          <div className="space-y-3">
-            <h2 className="text-white font-bold text-lg tracking-widest uppercase">Monte Imobiliária</h2>
-            <div className="flex items-center justify-center gap-2">
-              <div className="flex gap-1">
-                {[0, 1, 2].map((i) => (
-                  <motion.div
-                    key={i}
-                    animate={{ 
-                      height: [4, 12, 4],
-                      opacity: [0.3, 1, 0.3]
-                    }}
-                    transition={{ 
-                      duration: 1, 
-                      repeat: Infinity, 
-                      delay: i * 0.2 
-                    }}
-                    className="w-1 bg-market-blue rounded-full"
-                  />
-                ))}
-              </div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] animate-pulse">Sincronizando Ecossistema Cloud</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (isERPRoute && currentUser) {
     return (

@@ -5,7 +5,7 @@ import {
   Loader2, Building2, MapPin, Star,
   CheckCircle2, AlertCircle, Image as ImageIcon
 } from 'lucide-react';
-import { supabase } from '../supabaseClient';
+import { supabase, db } from '../supabaseClient';
 import { Property } from '../types';
 import { ImageUploadField } from '../components/ImageUploadField';
 import { formatImageUrl } from '../imageUtils';
@@ -45,7 +45,7 @@ const CatalogView: React.FC = () => {
   async function fetchData() {
     setLoading(true);
     try {
-      const { data, error } = await supabase.from('properties').select('*').order('created_at', { ascending: false });
+      const { data, error } = await db.catalog('properties').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       setProperties((data || []).map(p => ({
         ...p,
@@ -61,7 +61,7 @@ const CatalogView: React.FC = () => {
   const handleDeleteProp = async (id: string) => {
     if(confirm('Eliminar este imóvel permanentemente?')) {
       try {
-        const { error } = await supabase.from('properties').delete().eq('id', id);
+        const { error } = await db.catalog('properties').delete().eq('id', id);
         if (error) throw error;
         setMessage({ type: 'success', text: 'Imóvel removido.' });
         setTimeout(() => setMessage(null), 3000);
@@ -106,8 +106,8 @@ const CatalogView: React.FC = () => {
 
     try {
       const { error } = editingItem 
-        ? await supabase.from('properties').update(payload).eq('id', editingItem.id)
-        : await supabase.from('properties').insert([payload]);
+        ? await db.catalog('properties').update(payload).eq('id', editingItem.id)
+        : await db.catalog('properties').insert([payload]);
 
       if (error) throw error;
 

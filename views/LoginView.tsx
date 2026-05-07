@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase, db } from '../supabaseClient';
 import { Mail, Lock, Zap, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { UserRole } from '../types';
 
@@ -32,20 +32,39 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
     setError(null);
 
     try {
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      const { data: authResult, error: authError } = await supabase.auth.signInWithPassword({
         email, password,
       });
       if (authError) throw authError;
 
-      const { data: empData } = await supabase
-        .from('employees')
-        .select('*')
-        .eq('email', email)
-        .single();
+      const authData = authResult;
+      
+      // Tentativa de buscar dados detalhados do colaborador, mas não bloqueia se não encontrar
+      let empData = null;
+      let empError: any = null;
+      
+      try {
+        const res = await db.hr('employees')
+          .select('*')
+          .eq('email', email)
+          .maybeSingle();
+        empData = res.data;
+        empError = res.error;
+      } catch (e: any) {
+        console.error("Erro crítico ao acessar esquema HR:", e);
+        empError = { message: "Esquema 'hr' não disponível ou não exposto na API do Supabase." };
+      }
+
+      if (empError) {
+        if (empError.message?.includes('PGRST106') || empError.message?.includes('schema')) {
+          console.warn("DICA: Certifique-se de expor os esquemas (hr, finance, etc) em Project Settings > API > Exposed schemas no console do Supabase.");
+        }
+        console.warn("Aviso na busca de colaborador:", empError.message);
+      }
 
       const userData = {
         id: authData.user?.id,
-        name: empData?.name || authData.user?.email?.split('@')[0],
+        name: empData?.name || authData.user?.email?.split('@')[0] || 'Utilizador Monte',
         email: authData.user?.email,
         role: empData?.role || UserRole.EMPLOYEE,
         avatar: empData?.avatar || `https://picsum.photos/seed/${authData.user?.id}/100`,
@@ -53,7 +72,14 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
 
       onLoginSuccess(userData);
     } catch (err: any) {
-      setError(err.message === 'Invalid login credentials' ? 'Credenciais de acesso inválidas.' : err.message);
+      console.error("Erro de Autenticação:", err);
+      if (err.message?.includes('Failed to fetch')) {
+        setError('Erro de conexão: Não foi possível alcançar o servidor de autenticação. Verifique sua rede e se a URL do Supabase está correta.');
+      } else if (err.message?.includes('Lock broken')) {
+        setError('Erro de sincronização de sessão. Por favor, tente clicar em entrar novamente.');
+      } else {
+        setError(err.message === 'Invalid login credentials' ? 'Credenciais de acesso inválidas. Verifique e-mail e senha.' : err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -134,6 +160,34 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
                   </>
                 )}
               </button>
+
+              <div className="flex justify-center">
+                <button 
+                  type="button"
+                  onClick={async () => {
+                    const email = prompt("E-mail corporativo para cadastro:");
+                    const pass = prompt("Defina uma senha (mínimo 6 caracteres):");
+                    if (email && pass) {
+                      if (pass.length < 6) {
+                        alert("A senha deve ter pelo menos 6 caracteres.");
+                        return;
+                      }
+                      setLoading(true);
+                      const { error } = await supabase.auth.signUp({ 
+                        email, 
+                        password: pass,
+                        options: { data: { name: email.split('@')[0] } }
+                      });
+                      setLoading(false);
+                      if (error) alert("Erro ao cadastrar: " + error.message);
+                      else alert("Cadastro iniciado! Se a confirmação de e-mail estiver ativa, verifique sua caixa de entrada. Caso contrário, tente fazer login.");
+                    }
+                  }}
+                  className="text-[9px] font-bold text-market-blue uppercase tracking-widest hover:underline opacity-60 hover:opacity-100 transition-all"
+                >
+                  Registar Novo Colaborador [Staff]
+                </button>
+              </div>
 
               <div className="relative py-4 flex items-center justify-center">
                 <div className="absolute inset-0 flex items-center px-2">

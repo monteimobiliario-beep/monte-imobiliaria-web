@@ -1,42 +1,52 @@
 
--- SQL para base de dados robusta da Monte Hub v15.0
--- Copie e cole este código no SQL Editor do Supabase
+-- SQL PARA ARQUITETURA MULTI-SCHEMA - MONTE HUB v19.0
+-- INSTRUÇÕES:
+-- 1. Execute este script no SQL Editor do Supabase.
+-- 2. Vá em Settings > API > Exposed Schemas e adicione: hr, finance, fleet, catalog, core.
 
--- 1. Tabela de Imóveis (Extensão de Catálogo)
-CREATE TABLE IF NOT EXISTS properties (
+-- 0. CRIAÇÃO DOS ESQUEMAS
+CREATE SCHEMA IF NOT EXISTS hr;
+CREATE SCHEMA IF NOT EXISTS fleet;
+CREATE SCHEMA IF NOT EXISTS finance;
+CREATE SCHEMA IF NOT EXISTS catalog;
+CREATE SCHEMA IF NOT EXISTS core;
+
+-- 1. PERMISSÕES DE ACESSO (CRITICAL PARA SUPABASE)
+DO $$
+DECLARE
+    schema_name TEXT;
+BEGIN
+    FOR schema_name IN SELECT unnest(ARRAY['hr', 'fleet', 'finance', 'catalog', 'core'])
+    LOOP
+        EXECUTE format('GRANT USAGE ON SCHEMA %I TO anon, authenticated, service_role', schema_name);
+        EXECUTE format('ALTER DEFAULT PRIVILEGES IN SCHEMA %I GRANT ALL ON TABLES TO anon, authenticated, service_role', schema_name);
+        EXECUTE format('ALTER DEFAULT PRIVILEGES IN SCHEMA %I GRANT ALL ON SEQUENCES TO anon, authenticated, service_role', schema_name);
+        EXECUTE format('ALTER DEFAULT PRIVILEGES IN SCHEMA %I GRANT ALL ON FUNCTIONS TO anon, authenticated, service_role', schema_name);
+        EXECUTE format('GRANT ALL ON ALL TABLES IN SCHEMA %I TO anon, authenticated, service_role', schema_name);
+    END LOOP;
+END $$;
+
+-- 2. ESQUEMA: CORE (Gestão)
+CREATE TABLE IF NOT EXISTS core.roles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title TEXT NOT NULL,
-  description TEXT,
-  price NUMERIC NOT NULL CHECK (price >= 0),
-  location TEXT NOT NULL,
-  bathrooms INTEGER DEFAULT 1,
-  bedrooms INTEGER DEFAULT 1,
-  area NUMERIC DEFAULT 0,
-  image TEXT,
-  gallery TEXT[] DEFAULT '{}',
-  type TEXT CHECK (type IN ('Casa', 'Apartamento', 'Guest House', 'Hotel', 'Condomínio', 'Terreno')),
-  deal_type TEXT CHECK (deal_type IN ('Venda', 'Aluguel')),
-  status TEXT DEFAULT 'Disponível' CHECK (status IN ('Disponível', 'Reservado', 'Vendido', 'Arrendado')),
-  featured BOOLEAN DEFAULT false,
-  amenities TEXT[] DEFAULT '{}',
-  video_url TEXT,
+  name TEXT UNIQUE NOT NULL,
+  permissions JSONB DEFAULT '[]'::jsonb,
+  is_deleted BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 2. Tabela de Beneficiários e Fornecedores
-CREATE TABLE IF NOT EXISTS beneficiaries (
+CREATE TABLE IF NOT EXISTS core.audit_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  category TEXT NOT NULL, -- 'Funcionário', 'Fornecedor', 'Parceiro', 'Outro'
-  phone TEXT,
-  email TEXT,
-  nuit TEXT,
-  bank_account TEXT,
+  admin_id UUID,
+  admin_name TEXT,
+  target_user_name TEXT,
+  action_type TEXT NOT NULL,
+  change_details TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 3. Tabela de Funcionários (Staff & RH)
-CREATE TABLE IF NOT EXISTS employees (
+-- 3. ESQUEMA: HR
+CREATE TABLE IF NOT EXISTS hr.employees (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   email TEXT UNIQUE NOT NULL,
@@ -48,88 +58,12 @@ CREATE TABLE IF NOT EXISTS employees (
   phone TEXT,
   join_date DATE DEFAULT CURRENT_DATE,
   nuit TEXT,
-  niss TEXT,
   address TEXT,
   permissions JSONB DEFAULT '[]'::jsonb,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 4. Tabela de Projetos (Engenharia & Obras)
-CREATE TABLE IF NOT EXISTS projects (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  description TEXT,
-  status TEXT DEFAULT 'Planejado' CHECK (status IN ('Planejado', 'Em Andamento', 'Concluído')),
-  budget NUMERIC DEFAULT 0,
-  spent NUMERIC DEFAULT 0,
-  deadline DATE,
-  team UUID[] DEFAULT '{}', -- Array de IDs de funcionários
-  image TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- 5. Tabela de Transações Financeiras (Contabilidade)
-CREATE TABLE IF NOT EXISTS transactions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  description TEXT NOT NULL,
-  amount NUMERIC NOT NULL,
-  type TEXT CHECK (type IN ('RECEITA', 'DESPESA')),
-  category TEXT,
-  date DATE DEFAULT CURRENT_DATE,
-  due_date DATE,
-  payment_date DATE,
-  status TEXT DEFAULT 'Pendente' CHECK (status IN ('Pago', 'Pendente', 'Vencido', 'Cancelado')),
-  payment_method TEXT CHECK (payment_method IN ('Banco', 'M-Pesa', 'e-Mola', 'Dinheiro', 'Cartão', 'Cheque')),
-  beneficiary_id UUID REFERENCES beneficiaries(id),
-  project_id UUID REFERENCES projects(id),
-  receipt_url TEXT,
-  is_recurring BOOLEAN DEFAULT false,
-  recurrence_period TEXT CHECK (recurrence_period IN ('Mensal', 'Anual', 'Semanal')),
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- 6. Tabela de Gestão de Frota (Veículos)
-CREATE TABLE IF NOT EXISTS vehicles (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  make TEXT NOT NULL,
-  model TEXT NOT NULL,
-  plate TEXT UNIQUE NOT NULL,
-  year INTEGER,
-  type TEXT,
-  status TEXT DEFAULT 'Disponível' CHECK (status IN ('Disponível', 'Em Serviço', 'Manutenção', 'Lavagem')),
-  current_driver UUID REFERENCES employees(id),
-  last_maintenance DATE,
-  fuel_level INTEGER DEFAULT 100,
-  odometer NUMERIC DEFAULT 0,
-  image TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- 7. Plano Estratégico (Metas Corporativas)
-CREATE TABLE IF NOT EXISTS strategic_plans (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  goal TEXT NOT NULL,
-  kpi TEXT,
-  progress INTEGER DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),
-  responsible UUID REFERENCES employees(id),
-  deadline DATE,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- 8. Tabela de Contactos e Leads
-CREATE TABLE IF NOT EXISTS contact_requests (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  email TEXT NOT NULL,
-  phone TEXT,
-  message TEXT,
-  property_id UUID REFERENCES properties(id),
-  status TEXT DEFAULT 'Novo' CHECK (status IN ('Novo', 'Em Contacto', 'Fechado', 'Perdido')),
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- 9. Tabela de Candidaturas e Vagas (Recrutamento)
-CREATE TABLE IF NOT EXISTS job_vacancies (
+CREATE TABLE IF NOT EXISTS hr.job_vacancies (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title TEXT NOT NULL,
   area TEXT,
@@ -141,9 +75,9 @@ CREATE TABLE IF NOT EXISTS job_vacancies (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE TABLE IF NOT EXISTS job_applications (
+CREATE TABLE IF NOT EXISTS hr.job_applications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  vacancy_id UUID REFERENCES job_vacancies(id),
+  vacancy_id UUID REFERENCES hr.job_vacancies(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   email TEXT NOT NULL,
   phone TEXT,
@@ -153,28 +87,96 @@ CREATE TABLE IF NOT EXISTS job_applications (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 10. Tabela de Logs de Auditoria
-CREATE TABLE IF NOT EXISTS audit_logs (
+-- 4. ESQUEMA: FINANCE
+CREATE TABLE IF NOT EXISTS finance.beneficiaries (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  admin_id UUID,
-  admin_name TEXT,
-  target_user_name TEXT,
-  action_type TEXT NOT NULL,
-  change_details TEXT,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  phone TEXT,
+  email TEXT,
+  nuit TEXT,
+  bank_account TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 11. Tabela de Cargos e Permissões Base
-CREATE TABLE IF NOT EXISTS roles (
+CREATE TABLE IF NOT EXISTS finance.projects (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT UNIQUE NOT NULL,
-  permissions JSONB DEFAULT '[]'::jsonb,
-  is_deleted BOOLEAN DEFAULT false,
+  name TEXT NOT NULL,
+  description TEXT,
+  status TEXT DEFAULT 'Planejado' CHECK (status IN ('Planejado', 'Em Andamento', 'Concluído')),
+  budget NUMERIC DEFAULT 0,
+  spent NUMERIC DEFAULT 0,
+  deadline DATE,
+  team UUID[] DEFAULT '{}',
+  image TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Dados Iniciais sugeridos
-INSERT INTO roles (name, permissions) VALUES 
-('Administrador', '["dashboard.view", "catalog.view", "catalog.manage", "finance.view", "finance.manage", "projects.view", "projects.manage", "hr.view", "hr.manage", "fleet.view", "fleet.manage", "plans.view", "plans.manage", "admin.access", "system.repair"]'),
-('Gestor', '["dashboard.view", "catalog.view", "catalog.manage", "finance.view", "projects.view", "hr.view"]'),
-('Consultor', '["dashboard.view", "catalog.view"]');
+CREATE TABLE IF NOT EXISTS finance.transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  description TEXT NOT NULL,
+  amount NUMERIC NOT NULL,
+  type TEXT CHECK (type IN ('RECEITA', 'DESPESA')),
+  category TEXT,
+  date DATE DEFAULT CURRENT_DATE,
+  due_date DATE,
+  payment_date DATE,
+  status TEXT DEFAULT 'Pendente' CHECK (status IN ('Pago', 'Pendente', 'Vencido', 'Cancelado')),
+  payment_method TEXT CHECK (payment_method IN ('Banco', 'M-Pesa', 'e-Mola', 'Dinheiro', 'Cartão', 'Cheque')),
+  beneficiary_id UUID REFERENCES finance.beneficiaries(id) ON DELETE SET NULL,
+  project_id UUID REFERENCES finance.projects(id) ON DELETE SET NULL,
+  receipt_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 5. ESQUEMA: FLEET
+CREATE TABLE IF NOT EXISTS fleet.vehicles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  make TEXT NOT NULL,
+  model TEXT NOT NULL,
+  plate TEXT UNIQUE NOT NULL,
+  year INTEGER,
+  status TEXT DEFAULT 'Disponível' CHECK (status IN ('Disponível', 'Em Serviço', 'Manutenção', 'Lavagem')),
+  current_driver_id UUID REFERENCES hr.employees(id) ON DELETE SET NULL,
+  last_maintenance DATE,
+  fuel_level INTEGER DEFAULT 100,
+  odometer NUMERIC DEFAULT 0,
+  image TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 6. ESQUEMA: CATALOG
+CREATE TABLE IF NOT EXISTS catalog.properties (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  description TEXT,
+  price NUMERIC NOT NULL CHECK (price >= 0),
+  location TEXT NOT NULL,
+  bathrooms INTEGER DEFAULT 1,
+  bedrooms INTEGER DEFAULT 1,
+  area NUMERIC DEFAULT 0,
+  image TEXT,
+  type TEXT CHECK (type IN ('Casa', 'Apartamento', 'Guest House', 'Hotel', 'Condomínio', 'Terreno')),
+  deal_type TEXT CHECK (deal_type IN ('Venda', 'Aluguel')),
+  status TEXT DEFAULT 'Disponível' CHECK (status IN ('Disponível', 'Reservado', 'Vendido', 'Arrendado')),
+  featured BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS catalog.contact_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT,
+  message TEXT,
+  property_id UUID REFERENCES catalog.properties(id) ON DELETE CASCADE,
+  status TEXT DEFAULT 'Novo' CHECK (status IN ('Novo', 'Em Contacto', 'Fechado', 'Perdido')),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- DADOS INICIAIS
+INSERT INTO core.roles (name, permissions) VALUES 
+('Administrador', '["*"]'),
+('Gestor RH', '["hr.*", "dashboard.view"]'),
+('Gestor Financeiro', '["finance.*", "dashboard.view"]')
+ON CONFLICT (name) DO NOTHING;

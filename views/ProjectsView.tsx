@@ -6,7 +6,7 @@ import {
   CheckCircle2, AlertTriangle, Building, AlertCircle,
   UserPlus, TrendingUp, TrendingDown
 } from 'lucide-react';
-import { supabase } from '../supabaseClient';
+import { supabase, db } from '../supabaseClient';
 import { Project } from '../types';
 
 const ProjectsView: React.FC = () => {
@@ -36,8 +36,7 @@ const ProjectsView: React.FC = () => {
   async function fetchProjects() {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('projects')
+      const { data, error } = await db.finance('projects')
         .select('*')
         .order('created_at', { ascending: false });
       
@@ -86,8 +85,8 @@ const ProjectsView: React.FC = () => {
 
     try {
       const { error } = editingProject 
-        ? await supabase.from('projects').update(payload).eq('id', editingProject.id)
-        : await supabase.from('projects').insert([payload]);
+        ? await db.finance('projects').update(payload).eq('id', editingProject.id)
+        : await db.finance('projects').insert([payload]);
 
       if (error) throw error;
 
@@ -108,7 +107,7 @@ const ProjectsView: React.FC = () => {
 
   const handleDeleteProject = async (id: string) => {
     if (confirm('Tem certeza que deseja excluir este projeto?')) {
-      const { error } = await supabase.from('projects').delete().eq('id', id);
+      const { error } = await db.finance('projects').delete().eq('id', id);
       if (!error) {
         setMessage({ type: 'success', text: 'Projeto removido com sucesso.' });
         setTimeout(() => setMessage(null), 3000);
