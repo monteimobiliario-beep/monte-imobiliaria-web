@@ -57,20 +57,36 @@ const FleetView: React.FC = () => {
   const handleSaveVehicle = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    try {
-      const payload = { ...formState };
-      if (editingVehicleId) {
-        const { error } = await db.fleet('vehicles').update(payload).eq('id', editingVehicleId);
-        if (error) throw error;
-      } else {
-        const { error } = await db.fleet('vehicles').insert([payload]);
-        if (error) throw error;
+    let attempts = 0;
+    const maxAttempts = 2;
+
+    const executeSave = async (): Promise<void> => {
+      try {
+        const payload = { ...formState };
+        if (editingVehicleId) {
+          const { error } = await db.fleet('vehicles').update(payload).eq('id', editingVehicleId);
+          if (error) throw error;
+        } else {
+          const { error } = await db.fleet('vehicles').insert([payload]);
+          if (error) throw error;
+        }
+        setShowModal(false);
+        fetchVehicles();
+      } catch (err: any) {
+        if (err.message?.includes('Lock broken') && attempts < maxAttempts) {
+          attempts++;
+          await new Promise(r => setTimeout(r, 800));
+          return executeSave();
+        }
+        throw err;
       }
-      setShowModal(false);
-      fetchVehicles();
-    } catch (err) {
+    };
+
+    try {
+      await executeSave();
+    } catch (err: any) {
       console.error("Error saving vehicle:", err);
-      alert("Erro ao salvar: " + (err as any).message);
+      alert("Erro ao salvar: " + err.message);
     } finally {
       setSaving(false);
     }

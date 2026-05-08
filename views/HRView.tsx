@@ -100,32 +100,48 @@ const HRView: React.FC = () => {
   const handleSaveEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    try {
-      const payload = { 
-        name: formState.name,
-        email: formState.email,
-        role: formState.role,
-        department: formState.department,
-        salary: Number(formState.salary),
-        status: formState.status,
-        avatar: formState.avatar || `https://picsum.photos/seed/${formState.name}/100`,
-        phone: formState.phone,
-        join_date: formState.join_date,
-        nuit: formState.nuit,
-        niss: formState.niss,
-        address: formState.address,
-        permissions: formState.permissions || []
-      };
+    let attempts = 0;
+    const maxAttempts = 2;
 
-      if (editingEmpId) {
-        const { error } = await db.hr('employees').update(payload).eq('id', editingEmpId);
-        if (error) throw error;
-      } else {
-        const { error } = await db.hr('employees').insert([payload]);
-        if (error) throw error;
+    const executeSave = async (): Promise<void> => {
+      try {
+        const payload = { 
+          name: formState.name,
+          email: formState.email,
+          role: formState.role,
+          department: formState.department,
+          salary: Number(formState.salary),
+          status: formState.status,
+          avatar: formState.avatar || `https://picsum.photos/seed/${formState.name}/100`,
+          phone: formState.phone,
+          join_date: formState.join_date,
+          nuit: formState.nuit,
+          niss: formState.niss,
+          address: formState.address,
+          permissions: formState.permissions || []
+        };
+
+        if (editingEmpId) {
+          const { error } = await db.hr('employees').update(payload).eq('id', editingEmpId);
+          if (error) throw error;
+        } else {
+          const { error } = await db.hr('employees').insert([payload]);
+          if (error) throw error;
+        }
+        setShowAddModal(false);
+        fetchData();
+      } catch (err: any) {
+        if (err.message?.includes('Lock broken') && attempts < maxAttempts) {
+          attempts++;
+          await new Promise(r => setTimeout(r, 800));
+          return executeSave();
+        }
+        throw err;
       }
-      setShowAddModal(false);
-      fetchData();
+    };
+
+    try {
+      await executeSave();
     } catch (err: any) {
       console.error("Error saving employee:", err);
       alert("Erro ao salvar colaborador: " + err.message);
@@ -157,10 +173,26 @@ const HRView: React.FC = () => {
 
   const handleUpdateAppStatus = async (id: string, status: 'Aprovado' | 'Rejeitado' | 'Pendente') => {
     setSaving(true);
+    let attempts = 0;
+    const maxAttempts = 2;
+
+    const executeUpdate = async (): Promise<void> => {
+      try {
+        const { error } = await db.hr('job_applications').update({ status }).eq('id', id);
+        if (error) throw error;
+        fetchApplications();
+      } catch (err: any) {
+        if (err.message?.includes('Lock broken') && attempts < maxAttempts) {
+          attempts++;
+          await new Promise(r => setTimeout(r, 800));
+          return executeUpdate();
+        }
+        throw err;
+      }
+    };
+
     try {
-      const { error } = await db.hr('job_applications').update({ status }).eq('id', id);
-      if (error) throw error;
-      fetchApplications();
+      await executeUpdate();
     } catch (e: any) {
       console.error("Error updating application:", e);
       alert("Erro ao atualizar status: " + e.message);

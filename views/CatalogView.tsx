@@ -93,29 +93,44 @@ const CatalogView: React.FC = () => {
     e.preventDefault();
     setMessage(null);
     setIsSubmitting(true);
+    let attempts = 0;
+    const maxAttempts = 2;
 
-    const payload = {
-      ...newProp,
-      price: Number(newProp.price),
-      area: Number(newProp.area),
-      bedrooms: Number(newProp.bedrooms),
-      bathrooms: Number(newProp.bathrooms),
-      image: newProp.image?.trim() || defaultPlaceholder,
-      gallery: newProp.gallery || []
+    const executeSave = async (): Promise<void> => {
+      try {
+        const payload = {
+          ...newProp,
+          price: Number(newProp.price),
+          area: Number(newProp.area),
+          bedrooms: Number(newProp.bedrooms),
+          bathrooms: Number(newProp.bathrooms),
+          image: newProp.image?.trim() || defaultPlaceholder,
+          gallery: newProp.gallery || []
+        };
+
+        const { error } = editingItem 
+          ? await db.catalog('properties').update(payload).eq('id', editingItem.id)
+          : await db.catalog('properties').insert([payload]);
+
+        if (error) throw error;
+
+        setMessage({ type: 'success', text: 'Operação concluída com sucesso!' });
+        setShowModal(false);
+        setEditingItem(null);
+        fetchData();
+        setTimeout(() => setMessage(null), 5000);
+      } catch (err: any) {
+        if (err.message?.includes('Lock broken') && attempts < maxAttempts) {
+          attempts++;
+          await new Promise(r => setTimeout(r, 800));
+          return executeSave();
+        }
+        throw err;
+      }
     };
 
     try {
-      const { error } = editingItem 
-        ? await db.catalog('properties').update(payload).eq('id', editingItem.id)
-        : await db.catalog('properties').insert([payload]);
-
-      if (error) throw error;
-
-      setMessage({ type: 'success', text: 'Operação concluída com sucesso!' });
-      setShowModal(false);
-      setEditingItem(null);
-      fetchData();
-      setTimeout(() => setMessage(null), 5000);
+      await executeSave();
     } catch (err: any) {
       setMessage({ type: 'error', text: 'Erro: ' + (err.message || 'Falha na rede') });
     } finally {

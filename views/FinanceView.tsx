@@ -150,14 +150,30 @@ const FinanceView: React.FC = () => {
   const handleLaunch = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    let attempts = 0;
+    const maxAttempts = 2;
+
+    const executeLaunch = async (): Promise<void> => {
+      try {
+        const payload = { ...newLaunch, date: new Date().toISOString() };
+        const { error } = await db.finance('transactions').insert([payload]);
+        if (error) throw error;
+        setShowLaunchModal(false);
+        fetchData();
+      } catch (err: any) {
+        if (err.message?.includes('Lock broken') && attempts < maxAttempts) {
+          attempts++;
+          await new Promise(r => setTimeout(r, 800));
+          return executeLaunch();
+        }
+        throw err;
+      }
+    };
+
     try {
-      const payload = { ...newLaunch, date: new Date().toISOString() };
-      const { error } = await db.finance('transactions').insert([payload]);
-      if (error) throw error;
-      setShowLaunchModal(false);
-      fetchData();
-    } catch (e) {
-      alert("Erro ao lançar transação.");
+      await executeLaunch();
+    } catch (e: any) {
+      alert("Erro ao lançar transação: " + e.message);
     } finally {
       setLoading(false);
     }
