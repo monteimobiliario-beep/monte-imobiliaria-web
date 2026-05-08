@@ -106,17 +106,22 @@ const App: React.FC = () => {
     }
   }, [currentUser, currentPath]);
 
+  const isChecking = React.useRef(false);
+
   async function checkUser() {
+    if (isChecking.current) return;
+    isChecking.current = true;
+
     try {
       console.log("Checking session status...");
       const { data: { session }, error } = await supabase.auth.getSession();
       
       if (error) {
         if (error.message?.includes('Lock broken')) {
-          console.warn("Auth synchronization lock warning (expected in preview), retrying session fetch in 500ms.");
-          await new Promise(r => setTimeout(r, 500));
-          const { data: retryData } = await supabase.auth.getSession();
-          if (retryData.session?.user) await fetchAndSetUser(retryData.session.user);
+          console.warn("Auth synchronization lock info (expected in preview).");
+          // If lock is broken, we should still try to get the user as it might work where getSession failed
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) await fetchAndSetUser(user);
           return;
         }
         console.warn("Session Verification Warning:", error.message);
@@ -139,11 +144,15 @@ const App: React.FC = () => {
         }
       }
     } catch (err: any) {
-      console.error("Critical error in checkUser:", err);
+      if (err.message?.includes('Lock broken')) {
+        console.warn("Caught lock error in checkUser, skipping gracefully.");
+      } else {
+        console.error("Critical error in checkUser:", err);
+      }
     } finally { 
+      isChecking.current = false;
       // Ensure we always stop initialize, but give a small grace for the user fetch
       setTimeout(() => setIsInitializing(false), 500);
-      console.log("App initialization phase complete.");
     }
   }
 

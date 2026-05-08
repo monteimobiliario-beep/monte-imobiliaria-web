@@ -30,7 +30,7 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 flex items-center justify-center p-1.5 bg-white/5 rounded-lg border border-white/5">
-              <img src={systemLogo} alt="Logo" className="w-full h-full object-contain brightness-0 invert" />
+              <img src={systemLogo || undefined} alt="Logo" className="w-full h-full object-contain brightness-0 invert" />
             </div>
             <div className="flex flex-col">
               <span className="font-display font-black text-sm text-white leading-none tracking-tight">{settings.companyName}</span>

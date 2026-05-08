@@ -140,7 +140,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, user, isOpen
                </div>
                <div className="flex items-center gap-2">
                   <div className="relative group/avatar">
-                     <img src={user.avatar} className="w-6 h-6 rounded-lg object-cover ring-2 ring-white/5 transition-transform duration-500 group-hover/avatar:scale-105" alt="User" />
+                     <img src={user.avatar || undefined} className="w-6 h-6 rounded-lg object-cover ring-2 ring-white/5 transition-transform duration-500 group-hover/avatar:scale-105" alt="User" />
                   </div>
                   <div className="min-w-0">
                      <p className="text-[8px] font-black text-white truncate leading-none mb-0.5">{user.name}</p>
