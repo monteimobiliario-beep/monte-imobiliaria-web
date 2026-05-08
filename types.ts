@@ -72,11 +72,11 @@ export interface Property {
   id: string;
   title: string;
   type: string;
-  dealType: 'Venda' | 'Aluguel';
+  deal_type: 'Venda' | 'Aluguel';
   price: number;
   location: string;
-  beds: number;
-  baths: number;
+  bedrooms: number;
+  bathrooms: number;
   area: number;
   image: string;
   gallery: string[];

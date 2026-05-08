@@ -235,7 +235,7 @@ const FleetView: React.FC = () => {
                   <div className="flex items-center gap-4">
                     <div className="relative">
                       <img 
-                        src={formatImageUrl(vehicle.image || initialFormState.image!)} 
+                        src={formatImageUrl(vehicle.image || initialFormState.image!) || undefined} 
                         className="w-20 h-16 object-cover rounded-2xl border-4 border-white shadow-2xl relative z-10 transition-transform duration-700 group-hover:-translate-y-1" 
                         alt="" 
                       />

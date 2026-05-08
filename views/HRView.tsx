@@ -267,7 +267,7 @@ const HRView: React.FC = () => {
                   
                   <div className="relative mb-6">
                     <div className="absolute inset-0 bg-market-blue rounded-[2rem] blur-2xl opacity-0 group-hover:opacity-20 transition-all duration-700 translate-y-4"></div>
-                    <img src={formatImageUrl(emp.avatar)} className="w-24 h-24 rounded-[2rem] object-cover ring-[6px] ring-slate-50 shadow-2xl relative z-10 transition-transform duration-700 group-hover:-translate-y-2" alt="" />
+                    <img src={formatImageUrl(emp.avatar) || undefined} className="w-24 h-24 rounded-[2rem] object-cover ring-[6px] ring-slate-50 shadow-2xl relative z-10 transition-transform duration-700 group-hover:-translate-y-2" alt="" />
                     <div className={`absolute bottom-0 right-0 w-6 h-6 border-[4px] border-white rounded-full z-20 shadow-lg ${emp.status === 'Ativo' ? 'bg-market-accent' : 'bg-amber-500'}`}></div>
                   </div>
                   
@@ -400,7 +400,7 @@ const HRView: React.FC = () => {
               <div className="bg-white rounded-3xl p-0 max-w-4xl w-full shadow-2xl relative overflow-hidden flex flex-col md:flex-row h-[70vh]">
                 <div className="w-full md:w-1/3 bg-slate-50 p-10 flex flex-col items-center text-center border-r border-slate-100">
                    <div className="relative mb-6">
-                      <img src={formatImageUrl(viewingEmp.avatar)} className="w-32 h-32 rounded-3xl object-cover shadow-2xl ring-4 ring-white" alt="" />
+                      <img src={formatImageUrl(viewingEmp.avatar) || undefined} className="w-32 h-32 rounded-3xl object-cover shadow-2xl ring-4 ring-white" alt="" />
                       <div className={`absolute -bottom-2 -right-2 px-3 py-1 rounded-full text-[9px] font-bold uppercase text-white shadow-lg ${viewingEmp.status === 'Ativo' ? 'bg-market-accent' : 'bg-amber-500'}`}>{viewingEmp.status}</div>
                    </div>
                    <h2 className="text-xl font-bold text-market-navy mb-1">{viewingEmp.name}</h2>

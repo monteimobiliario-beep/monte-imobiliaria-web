@@ -37,7 +37,7 @@ const PropertyListView: React.FC<PropertyListViewProps> = ({ onViewProperty }) =
   }
 
   const filteredProperties = properties
-    .filter(p => (dealTypeFilter === 'Todos' || p.dealType === dealTypeFilter))
+    .filter(p => (dealTypeFilter === 'Todos' || p.deal_type === dealTypeFilter))
     .filter(p => (categoryFilter === 'Todas' || p.type === categoryFilter));
 
   return (
@@ -156,10 +156,10 @@ const PropertyListView: React.FC<PropertyListViewProps> = ({ onViewProperty }) =
                     className="group cursor-pointer bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300"
                   >
                     <div className="relative h-48 overflow-hidden">
-                      <img src={property.image} alt={property.title} referrerPolicy="no-referrer" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                      <img src={property.image || undefined} alt={property.title} referrerPolicy="no-referrer" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                       <div className="absolute top-3 left-3 flex flex-col gap-2">
                         <span className="bg-market-navy/90 backdrop-blur-sm text-white text-[8px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md">
-                          {property.dealType}
+                          {property.deal_type}
                         </span>
                       </div>
                     </div>
@@ -180,7 +180,7 @@ const PropertyListView: React.FC<PropertyListViewProps> = ({ onViewProperty }) =
                           {property.price.toLocaleString('pt-MZ')} <span className="text-[9px] font-medium opacity-50">MT</span>
                         </div>
                         <div className="flex items-center gap-3 text-slate-400">
-                           <div className="flex items-center gap-1 text-[10px] font-bold"><BedDouble size={12} /> {property.beds}</div>
+                           <div className="flex items-center gap-1 text-[10px] font-bold"><BedDouble size={12} /> {property.bedrooms}</div>
                            <div className="flex items-center gap-1 text-[10px] font-bold"><Maximize2 size={12} /> {property.area}</div>
                         </div>
                       </div>

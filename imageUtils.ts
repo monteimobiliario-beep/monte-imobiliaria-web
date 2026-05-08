@@ -23,10 +23,10 @@ export function formatImageUrl(url: string): string {
  */
 export async function uploadImage(file: File, bucket: string = 'monte-assets'): Promise<string> {
   const fileExt = file.name.split('.').pop()?.toLowerCase();
-  const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+  const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'ico', 'svg'];
   
   if (fileExt && !allowedExtensions.includes(fileExt)) {
-    throw new Error('Formato de arquivo não suportado. Use JPG, PNG, WEBP ou GIF.');
+    throw new Error('Formato de arquivo não suportado. Use JPG, PNG, WEBP, GIF, ICO ou SVG.');
   }
 
   const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
@@ -53,8 +53,19 @@ export async function uploadImage(file: File, bucket: string = 'monte-assets'): 
             await new Promise(r => setTimeout(r, 500));
             continue;
           }
-          if (error.message.includes('bucket not found') || error.message.includes('Bucket not found')) {
-            throw new Error(`O bucket "${bucket}" não foi encontrado. Por favor, crie este bucket no dashboard do Supabase em "Storage" com acesso público.`);
+          
+          // Fallback simple: se o bucket específico falhar e for o padrão, tenta 'public'
+          if ((error.message.toLowerCase().includes('not found')) && bucket === 'monte-assets') {
+             console.warn("Bucket 'monte-assets' not found. Trying fallback 'public' bucket...");
+             const { data: fallbackData, error: fallbackError } = await supabase.storage
+               .from('public')
+               .upload(filePath, file, { cacheControl: '3600', upsert: false });
+             
+             if (!fallbackError) {
+                const { data: { publicUrl } } = supabase.storage.from('public').getPublicUrl(filePath);
+                return publicUrl;
+             }
+             throw new Error(`O bucket de armazenamento não foi encontrado. Por favor, crie um bucket chamado "monte-assets" ou "public" no dashboard do Supabase (Storage) e marque-o como "Public".`);
           }
           throw error;
         }

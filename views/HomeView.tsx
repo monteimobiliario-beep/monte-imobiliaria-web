@@ -22,9 +22,9 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onViewProperty }) => {
   const [featuredProperties, setFeaturedProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Convert settings to compatible hero content
+      // Convert settings to compatible hero content
   const HERO_CONTENT = [
-    { type: 'image', url: settings.heroBgUrl },
+    { type: 'image', url: settings.heroBgUrl || 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=1600' },
     { type: 'image', url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=1600' },
     { type: 'image', url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=1600' }
   ];
@@ -65,7 +65,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onViewProperty }) => {
               transition={{ duration: 2 }}
               className="absolute inset-0"
             >
-              <img src={slide.url} referrerPolicy="no-referrer" className="w-full h-full object-cover" alt="Real Estate Market" />
+              <img src={slide.url || undefined} referrerPolicy="no-referrer" className="w-full h-full object-cover" alt="Real Estate Market" />
             </motion.div>
           ))}
           <div className="absolute inset-0 bg-gradient-to-b from-market-navy/80 via-market-navy/40 to-market-navy/95"></div>
@@ -152,10 +152,10 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onViewProperty }) => {
                 className="group cursor-pointer bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500"
               >
                 <div className="relative h-44 overflow-hidden">
-                  <img src={property.image} referrerPolicy="no-referrer" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={property.title} />
+                  <img src={property.image || undefined} referrerPolicy="no-referrer" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={property.title} />
                   <div className="absolute top-3 left-3 flex flex-col gap-2">
                     <span className="bg-market-navy/90 backdrop-blur-sm text-white px-3 py-1 rounded-md text-[8px] font-bold uppercase tracking-wider">
-                      {property.dealType}
+                      {property.deal_type}
                     </span>
                   </div>
                 </div>
@@ -169,7 +169,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onViewProperty }) => {
                   <div className="flex items-center justify-between pt-3 border-t border-slate-50">
                     <p className="text-sm font-black text-market-navy">{property.price.toLocaleString()} <span className="text-[8px] opacity-40">MT</span></p>
                     <div className="flex items-center gap-3 text-[10px] font-bold text-slate-400">
-                      <div className="flex items-center gap-1"><BedDouble size={12} /> {property.beds}</div>
+                      <div className="flex items-center gap-1"><BedDouble size={12} /> {property.bedrooms}</div>
                       <div className="flex items-center gap-1"><Maximize2 size={12} /> {property.area}</div>
                     </div>
                   </div>

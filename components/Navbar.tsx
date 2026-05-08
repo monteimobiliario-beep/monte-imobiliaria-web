@@ -47,7 +47,14 @@ const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, isLoggedIn }) 
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <button onClick={() => onNavigate('home')} className="flex items-center gap-3 group text-left">
             <div className="w-10 h-10 bg-market-blue rounded-xl flex items-center justify-center p-2 shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-all overflow-hidden">
-              <img src={systemLogo} alt="Monte Logo" className="w-full h-full object-contain brightness-0 invert" />
+              <img 
+                src={systemLogo || undefined} 
+                alt="Monte Logo" 
+                className="w-full h-full object-contain brightness-0 invert" 
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/building-2.svg';
+                }}
+              />
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-xl leading-none tracking-tight text-market-navy">{settings.companyName.split(' ')[0]}</span>

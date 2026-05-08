@@ -23,11 +23,11 @@ const CatalogView: React.FC = () => {
   const [newProp, setNewProp] = useState<Partial<Property>>({
     title: '', 
     type: 'Casa', 
-    dealType: 'Venda', 
+    deal_type: 'Venda', 
     price: 0, 
     location: '', 
-    beds: 1, 
-    baths: 1, 
+    bedrooms: 1, 
+    bathrooms: 1, 
     area: 0, 
     description: '', 
     image: '',
@@ -98,8 +98,8 @@ const CatalogView: React.FC = () => {
       ...newProp,
       price: Number(newProp.price),
       area: Number(newProp.area),
-      beds: Number(newProp.beds),
-      baths: Number(newProp.baths),
+      bedrooms: Number(newProp.bedrooms),
+      bathrooms: Number(newProp.bathrooms),
       image: newProp.image?.trim() || defaultPlaceholder,
       gallery: newProp.gallery || []
     };
@@ -148,7 +148,7 @@ const CatalogView: React.FC = () => {
           onClick={() => { 
             setShowModal(true); 
             setEditingItem(null); 
-            setNewProp({title:'', type:'Casa', dealType:'Venda', price:0, location:'', beds:1, baths:1, area:0, description:'', image:'', gallery: [], featured: false, status: 'Disponível'}); 
+            setNewProp({title:'', type:'Casa', deal_type:'Venda', price:0, location:'', bedrooms:1, bathrooms:1, area:0, description:'', image:'', gallery: [], featured: false, status: 'Disponível'}); 
           }} 
           className="market-button market-button-primary px-6 py-3 text-[10px] uppercase tracking-widest flex items-center gap-2"
         >
@@ -166,10 +166,18 @@ const CatalogView: React.FC = () => {
           {properties.map(prop => (
             <div key={prop.id} className="group market-card overflow-hidden transition-all hover:shadow-xl relative border-slate-100 bg-white">
               <div className="h-40 relative overflow-hidden">
-                <img src={formatImageUrl(prop.image || defaultPlaceholder)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={prop.title} referrerPolicy="no-referrer" />
+                <img 
+                  src={formatImageUrl(prop.image || defaultPlaceholder)} 
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                  alt={prop.title} 
+                  referrerPolicy="no-referrer" 
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = defaultPlaceholder;
+                  }}
+                />
                 <div className="absolute top-3 left-3 flex flex-col gap-1.5">
                   <div className="bg-market-navy/90 backdrop-blur-md px-2.5 py-1 rounded text-[8px] font-bold uppercase text-white shadow-sm">
-                    {prop.dealType}
+                    {prop.deal_type}
                   </div>
                   {prop.featured && (
                     <div className="bg-market-gold/90 backdrop-blur-md px-2.5 py-1 rounded text-[8px] font-bold uppercase text-white shadow-sm flex items-center gap-1">
@@ -191,7 +199,7 @@ const CatalogView: React.FC = () => {
 
                 <div className="flex items-center justify-between pt-3 border-t border-slate-50">
                    <div className="flex items-center gap-2 text-[9px] font-bold text-slate-400">
-                     <span>{prop.beds} Q</span>
+                     <span>{prop.bedrooms} Q</span>
                      <span>{prop.area}m²</span>
                    </div>
                    <div className="flex items-center gap-1.5">
@@ -231,7 +239,7 @@ const CatalogView: React.FC = () => {
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Finalidade</label>
-                  <select value={newProp.dealType} onChange={e => setNewProp({...newProp, dealType: e.target.value as any})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium text-sm outline-none focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all">
+                  <select value={newProp.deal_type} onChange={e => setNewProp({...newProp, deal_type: e.target.value as any})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium text-sm outline-none focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all">
                     <option value="Venda">Venda</option>
                     <option value="Aluguel">Aluguel</option>
                   </select>
@@ -250,11 +258,11 @@ const CatalogView: React.FC = () => {
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Quartos</label>
-                  <input type="number" value={newProp.beds} onChange={e => setNewProp({...newProp, beds: Number(e.target.value)})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium text-sm outline-none focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" />
+                  <input type="number" value={newProp.bedrooms} onChange={e => setNewProp({...newProp, bedrooms: Number(e.target.value)})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium text-sm outline-none focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Banheiros</label>
-                  <input type="number" value={newProp.baths} onChange={e => setNewProp({...newProp, baths: Number(e.target.value)})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium text-sm outline-none focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" />
+                  <input type="number" value={newProp.bathrooms} onChange={e => setNewProp({...newProp, bathrooms: Number(e.target.value)})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium text-sm outline-none focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" />
                 </div>
 
                 <div className="md:col-span-3">
@@ -292,7 +300,7 @@ const CatalogView: React.FC = () => {
                     <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
                       {newProp.gallery?.map((url, i) => (
                         <div key={i} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
-                          <img src={formatImageUrl(url)} className="w-full h-full object-cover" alt="" referrerPolicy="no-referrer" />
+                          <img src={formatImageUrl(url) || undefined} className="w-full h-full object-cover" alt="" referrerPolicy="no-referrer" />
                           <button 
                             type="button" 
                             onClick={() => handleRemoveGalleryImage(i)}

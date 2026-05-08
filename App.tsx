@@ -130,7 +130,13 @@ const App: React.FC = () => {
         console.log("Found session for:", session.user.email);
         await fetchAndSetUser(session.user);
       } else {
-        console.log("No active session detected.");
+        // Safe check with getUser to verify if session exists but somehow didn't return in getSession due to lock
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await fetchAndSetUser(user);
+        } else {
+          console.log("No active session detected.");
+        }
       }
     } catch (err: any) {
       console.error("Critical error in checkUser:", err);

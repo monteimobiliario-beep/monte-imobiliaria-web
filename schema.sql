@@ -160,6 +160,11 @@ CREATE TABLE IF NOT EXISTS catalog.properties (
   deal_type TEXT CHECK (deal_type IN ('Venda', 'Aluguel')),
   status TEXT DEFAULT 'Disponível' CHECK (status IN ('Disponível', 'Reservado', 'Vendido', 'Arrendado')),
   featured BOOLEAN DEFAULT false,
+  gallery JSONB DEFAULT '[]'::jsonb,
+  amenities JSONB DEFAULT '[]'::jsonb,
+  nearby JSONB DEFAULT '[]'::jsonb,
+  video_url TEXT,
+  map_coords JSONB,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 

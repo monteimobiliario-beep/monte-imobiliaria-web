@@ -324,7 +324,7 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
                               <td className="px-10 py-10">
                                  <div className="flex items-center gap-6">
                                     <div className="relative">
-                                       <img src={user.avatar} className="w-16 h-16 rounded-2xl object-cover ring-4 ring-slate-100 transition-transform group-hover:scale-110 shadow-sm" alt="" />
+                                       <img src={user.avatar || undefined} className="w-16 h-16 rounded-2xl object-cover ring-4 ring-slate-100 transition-transform group-hover:scale-110 shadow-sm" alt="" />
                                        <div className={`absolute -bottom-1 -right-1 w-5 h-5 bg-market-accent rounded-full border-4 border-white shadow-sm`}></div>
                                     </div>
                                     <div>
@@ -535,7 +535,7 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
                         <div className="bg-slate-50 rounded-[2.5rem] p-10 border border-slate-200 shadow-inner flex flex-col items-center">
                            <h5 className="text-[9px] font-bold text-market-slate uppercase tracking-widest mb-8">Preview de Logotipo</h5>
                            <div className="w-full h-48 bg-white rounded-3xl border border-slate-100 flex items-center justify-center p-8 group overflow-hidden">
-                              <img src={tempSettings.logoUrl} alt="Logo Preview" className="max-w-full max-h-full object-contain transition-transform group-hover:scale-110" />
+                              <img src={tempSettings.logoUrl || undefined} alt="Logo Preview" className="max-w-full max-h-full object-contain transition-transform group-hover:scale-110" />
                            </div>
                            
                            <h5 className="text-[9px] font-bold text-market-slate uppercase tracking-widest mt-12 mb-8">Cores Corporativas</h5>
@@ -553,7 +553,7 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
 
                         {/* Preview do Hero */}
                         <div className="relative rounded-[2.5rem] overflow-hidden aspect-video shadow-2xl border-4 border-white group">
-                           <img src={tempSettings.heroBgUrl} className="w-full h-full object-cover opacity-80" />
+                           <img src={tempSettings.heroBgUrl || undefined} className="w-full h-full object-cover opacity-80" />
                            <div className="absolute inset-0 bg-market-navy/60 p-8 flex flex-col justify-end">
                               <div className="bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10 max-w-[80%]">
                                  <p className="text-[8px] text-market-blue font-bold uppercase tracking-[0.3em] mb-2">{tempSettings.legacyTitle}</p>
@@ -583,7 +583,7 @@ const AdminView: React.FC<AdminViewProps> = ({ currentUser }) => {
                
                <div className="p-16 border-b border-slate-100 flex flex-col md:flex-row md:items-center gap-10">
                   <div className="w-24 h-24 bg-market-navy rounded-[2.5rem] flex items-center justify-center text-market-blue shadow-2xl border border-white/10 overflow-hidden">
-                     {editingUser ? <img src={editingUser.avatar} className="w-full h-full object-cover" /> : <Award size={48} />}
+                     {editingUser ? <img src={editingUser.avatar || undefined} className="w-full h-full object-cover" /> : <Award size={48} />}
                   </div>
                   <div className="flex-1">
                      <h3 className="text-4xl md:text-5xl font-bold tracking-tight leading-none mb-3 text-market-navy">

@@ -105,7 +105,7 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
         {value && (
           <div className="mt-3 relative w-full h-32 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 group/preview shadow-inner">
             <img 
-              src={formatImageUrl(value)} 
+              src={formatImageUrl(value) || undefined} 
               alt="Preview" 
               className="w-full h-full object-cover"
               onError={(e) => {
@@ -128,9 +128,16 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
         )}
 
         {error && (
-          <p className="mt-1 text-[9px] font-bold text-rose-500 uppercase tracking-widest bg-rose-50 p-2 rounded-lg border border-rose-100">
-            {error}
-          </p>
+          <div className="mt-1 space-y-1">
+            <p className="text-[9px] font-bold text-rose-500 uppercase tracking-widest bg-rose-50 p-2 rounded-lg border border-rose-100">
+              {error}
+            </p>
+            {error.toLowerCase().includes('not found') && (
+              <p className="text-[8px] text-slate-400 italic">
+                Dica: Certifique-se que o bucket está marcado como "Public" no Supabase.
+              </p>
+            )}
+          </div>
         )}
       </div>
     </div>

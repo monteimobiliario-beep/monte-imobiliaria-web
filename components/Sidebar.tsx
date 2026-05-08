@@ -73,7 +73,14 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, user, isOpen
           <div className="p-2 border-b border-white/5 flex items-center justify-between relative z-10">
             <div className="flex items-center group/logo cursor-pointer" onClick={() => onNavigate('dashboard')}>
               <div className="w-9 h-9 bg-white/5 rounded-xl flex items-center justify-center p-1 shadow-2xl group-hover/logo:scale-110 group-hover/logo:rotate-3 transition-all duration-500 overflow-hidden">
-                <img src={systemLogo} className="w-full h-full object-contain" alt="Logo" />
+                <img 
+                  src={systemLogo || undefined} 
+                  className="w-full h-full object-contain" 
+                  alt="Logo" 
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/building-2.svg';
+                  }}
+                />
               </div>
             </div>
             <button onClick={toggleSidebar} className="md:hidden text-slate-500 hover:text-white transition-colors p-1.5"><X size={16} /></button>

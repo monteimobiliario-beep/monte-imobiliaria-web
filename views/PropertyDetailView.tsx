@@ -232,7 +232,7 @@ const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ propertyId, onB
           <div className="flex-1 relative flex items-center justify-center overflow-hidden">
             <div className="relative group max-w-6xl w-full h-full flex items-center justify-center">
                <img 
-                 src={images[currentIndex]} 
+                 src={images[currentIndex] || undefined} 
                  className="max-h-[75vh] w-auto object-contain rounded-[2rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] transition-all duration-1000 transform scale-100 group-hover:scale-[1.02]" 
                  alt="" 
                />
@@ -252,7 +252,7 @@ const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ propertyId, onB
                   currentIndex === i ? 'ring-4 ring-market-blue ring-offset-4 ring-offset-market-navy scale-110' : 'opacity-30 grayscale hover:grayscale-0 hover:opacity-100'
                 }`}
               >
-                <img src={img} className="w-full h-full object-cover" alt="" />
+                <img src={img || undefined} className="w-full h-full object-cover" alt="" />
               </button>
             ))}
           </div>
@@ -290,7 +290,7 @@ const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ propertyId, onB
               <div className="space-y-10 group/gallery">
                 <div className="relative h-[500px] md:h-[800px] rounded-[4.5rem] overflow-hidden shadow-[0_40px_100px_rgba(15,23,42,0.15)] bg-slate-50">
                   <img 
-                    src={images[currentIndex]} 
+                    src={images[currentIndex] || undefined} 
                     alt={`${property.title}`} 
                     referrerPolicy="no-referrer"
                     className={`w-full h-full object-cover transition-all duration-[1200ms] cubic-bezier(0.4, 0, 0.2, 1) transform ${isTransitioning ? 'scale-105 opacity-80 blur-sm' : 'scale-100 opacity-100'}`}
@@ -308,7 +308,7 @@ const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ propertyId, onB
                           </span>
                         )}
                         <span className="bg-white/10 backdrop-blur-md text-white px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/20">
-                          {property.dealType}
+                          {property.deal_type}
                         </span>
                      </div>
                      <h1 className="text-5xl md:text-8xl font-display font-black text-white tracking-tighter leading-[0.9] mb-8 animate-in slide-in-from-bottom-5 duration-700">
@@ -355,7 +355,7 @@ const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ propertyId, onB
                      : 'border-transparent opacity-40 hover:opacity-100 hover:-translate-y-1'
                    }`}
                  >
-                   <img src={img} referrerPolicy="no-referrer" className="w-full h-full object-cover" alt="" />
+                   <img src={img || undefined} referrerPolicy="no-referrer" className="w-full h-full object-cover" alt="" />
                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                  </button>
                   ))}
@@ -377,8 +377,8 @@ const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ propertyId, onB
 
                    <div className="grid grid-cols-3 gap-8 pt-12 border-t border-slate-100">
                       {[
-                        { icon: <BedDouble size={24} />, label: 'Suítes Privativas', value: property.beds },
-                        { icon: <Bath size={24} />, label: 'Banheiros', value: property.baths },
+                        { icon: <BedDouble size={24} />, label: 'Suítes Privativas', value: property.bedrooms },
+                        { icon: <Bath size={24} />, label: 'Banheiros', value: property.bathrooms },
                         { icon: <Ruler size={24} />, label: 'Área do Terreno', value: `${property.area} m²` },
                       ].map((stat, i) => (
                         <div key={i} className="text-center group cursor-default">
@@ -516,9 +516,9 @@ const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ propertyId, onB
                         onClick={() => { onBack(); window.scrollTo(0,0); }}
                       >
                          <div className="relative h-64 overflow-hidden">
-                            <img src={p.image} className="w-full h-full object-cover transition-all duration-[1500ms] group-hover:scale-110" alt="" />
+                            <img src={p.image || undefined} className="w-full h-full object-cover transition-all duration-[1500ms] group-hover:scale-110" alt="" />
                             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-all"></div>
-                            <div className="absolute top-6 right-6 px-4 py-2 bg-white rounded-full text-[9px] font-bold uppercase tracking-widest text-market-navy shadow-2xl">{p.dealType}</div>
+                            <div className="absolute top-6 right-6 px-4 py-2 bg-white rounded-full text-[9px] font-bold uppercase tracking-widest text-market-navy shadow-2xl">{p.deal_type}</div>
                          </div>
                          <div className="p-10 space-y-6">
                             <div className="space-y-2">
@@ -528,7 +528,7 @@ const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ propertyId, onB
                             <div className="flex items-center justify-between pt-6 border-t border-slate-50">
                                <p className="text-lg font-display font-bold text-market-navy">{p.price.toLocaleString('pt-MZ')} MT</p>
                                <div className="flex items-center gap-4 text-market-slate">
-                                  <div className="flex items-center gap-1.5 font-bold text-[10px] uppercase"><BedDouble size={14} /> {p.beds}</div>
+                                  <div className="flex items-center gap-1.5 font-bold text-[10px] uppercase"><BedDouble size={14} /> {p.bedrooms}</div>
                                   <div className="h-4 w-px bg-slate-200"></div>
                                   <div className="flex items-center gap-1.5 font-bold text-[10px] uppercase"><Maximize2 size={14} /> {p.area}m²</div>
                                </div>

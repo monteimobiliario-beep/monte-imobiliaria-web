@@ -150,7 +150,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onOpenSidebar, onViewPr
                       className="w-full flex items-center gap-3 p-2.5 transition-colors text-left border-b last:border-0 group hover:bg-slate-50 border-slate-50"
                     >
                       <img 
-                        src={prop.image} 
+                        src={prop.image || undefined} 
                         alt="" 
                         className="w-7 h-7 rounded-md object-cover shadow-sm"
                       />
@@ -185,7 +185,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onOpenSidebar, onViewPr
             <p className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">{user.role}</p>
           </div>
           <div className="relative shrink-0">
-             <img src={user.avatar} alt={user.name} className="w-7 h-7 rounded-lg object-cover ring-2 ring-slate-100" />
+             <img src={user.avatar || undefined} alt={user.name} className="w-7 h-7 rounded-lg object-cover ring-2 ring-slate-100" />
           </div>
           <button 
             onClick={onLogout}
