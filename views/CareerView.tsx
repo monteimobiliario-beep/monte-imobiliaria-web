@@ -14,7 +14,7 @@ const CareerView: React.FC = () => {
   const [isApplying, setIsApplying] = useState(false);
   const [applyStatus, setApplyStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [hasConsent, setHasConsent] = useState(false);
-  const [applyForm, setApplyForm] = useState({ name: '', email: '', phone: '', linkedin: '', message: '' });
+  const [applyForm, setApplyForm] = useState({ name: '', email: '', phone: '+258 ', linkedin: '', cv_url: '', cover_letter_url: '', message: '' });
 
   useEffect(() => {
     fetchVacancies();
@@ -39,7 +39,7 @@ const CareerView: React.FC = () => {
     setSelectedJob(job);
     setApplyStatus('idle');
     setHasConsent(false);
-    setApplyForm({ name: '', email: '', phone: '', linkedin: '', message: '' });
+    setApplyForm({ name: '', email: '', phone: '+258 ', linkedin: '', cv_url: '', cover_letter_url: '', message: '' });
     setShowApplyModal(true);
   };
 
@@ -51,21 +51,34 @@ const CareerView: React.FC = () => {
 
     try {
       const now = new Date().toISOString();
-      const { error } = await db.hr('job_applications').insert([{
-        vacancy_id: selectedJob?.id, 
-        name: applyForm.name.trim(),
-        email: applyForm.email.trim(), 
-        phone: applyForm.phone.trim(), 
-        resume_url: applyForm.linkedin.trim(), // Reutilizando campo para LINK / CV
+      const payload = {
+        job_id: selectedJob?.id, 
+        job_title: selectedJob?.title,
+        applicant_name: applyForm.name.trim(),
+        applicant_email: applyForm.email.trim(), 
+        applicant_phone: applyForm.phone.trim(), 
+        applicant_linkedin: applyForm.linkedin.trim(), 
+        cv_url: applyForm.cv_url.trim(),
+        cover_letter_url: applyForm.cover_letter_url.trim(),
         message: applyForm.message.trim(), 
-        status: 'Pendente', 
+        status: 'Pendente',
         created_at: now
-      }]);
-      if (error) throw error;
+      };
+
+      console.log("Submitting job application:", payload);
+      
+      const { error } = await db.hr('job_applications').insert([payload]);
+      
+      if (error) {
+        console.error("Supabase insert error:", error);
+        throw error;
+      }
+      
       setApplyStatus('success');
-    } catch (err) {
+    } catch (err: any) {
       console.error("Erro na candidatura:", err);
       setApplyStatus('error');
+      alert("Erro ao submeter candidatura: " + (err.message || "Por favor, tente novamente."));
     } finally {
       setIsApplying(false);
     }
@@ -128,9 +141,10 @@ const CareerView: React.FC = () => {
                 </div>
                 {expandedId === job.id && (
                   <div className="px-8 pb-8 pt-2 border-t border-slate-100 animate-in slide-in-from-top-2 duration-300">
-                     <div className="prose prose-slate max-w-none text-market-slate font-medium whitespace-pre-line leading-relaxed text-sm bg-slate-50 p-8 rounded-2xl border border-slate-100">
-                        {job.description || "Dossiê em atualização."}
-                     </div>
+                     <div 
+                       className="prose prose-slate max-w-none text-market-slate font-medium leading-relaxed text-sm bg-slate-50 p-8 rounded-2xl border border-slate-100 quill-content"
+                       dangerouslySetInnerHTML={{ __html: job.description || "Dossiê em atualização." }}
+                     />
                   </div>
                 )}
               </div>
@@ -145,11 +159,34 @@ const CareerView: React.FC = () => {
             <button onClick={() => !isApplying && setShowApplyModal(false)} className="absolute top-8 right-8 p-2 text-slate-400 hover:text-market-navy bg-slate-50 rounded-xl transition-all border border-slate-100"><X size={24} /></button>
             
             {applyStatus === 'success' ? (
-              <div className="py-12 text-center">
-                <div className="w-20 h-20 bg-emerald-50 text-market-accent rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-inner border border-emerald-100"><CheckCircle2 size={40} /></div>
-                <h2 className="text-2xl font-bold text-market-navy mb-3">Candidatura Enviada!</h2>
-                <p className="text-market-slate font-medium mb-10">Agradecemos o seu interesse. A nossa equipa de RH irá analisar o seu perfil.</p>
-                <button onClick={() => setShowApplyModal(false)} className="market-button market-button-primary px-12 py-4 text-xs uppercase tracking-widest">Fechar</button>
+              <div className="py-8 text-center space-y-8 animate-in zoom-in-95 duration-500">
+                <div className="w-20 h-20 bg-emerald-50 text-market-accent rounded-2xl flex items-center justify-center mx-auto shadow-inner border border-emerald-100"><CheckCircle2 size={40} /></div>
+                
+                <div>
+                   <h2 className="text-2xl font-bold text-market-navy mb-2">Candidatura Registada!</h2>
+                   <p className="text-market-slate font-medium text-sm">O seu perfil foi guardado na nossa base de talentos. Para uma resposta mais rápida, envie o seu dossiê diretamente ao RH:</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                   <a 
+                     href={`https://wa.me/258875018283?text=Olá, sou ${applyForm.name}. Candidatei-me à vaga de ${selectedJob?.title}.%0A%0ACV: ${applyForm.cv_url}%0ACarta: ${applyForm.cover_letter_url}%0ALinkedIn: ${applyForm.linkedin}`}
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     className="p-5 bg-[#25D366] text-white rounded-2xl flex flex-col items-center gap-3 transition-all hover:scale-[1.02] shadow-lg active:scale-95"
+                   >
+                      <Phone size={24} />
+                      <span className="text-[10px] font-black uppercase tracking-widest">Enviar via WhatsApp</span>
+                   </a>
+                   <a 
+                     href={`mailto:monteimobiliario@gmail.com?subject=Candidatura: ${selectedJob?.title} - ${applyForm.name}&body=Olá Equipa de RH,%0A%0AEfetuou a candidatura para a vaga de ${selectedJob?.title}.%0A%0ADados do Candidato:%0ANome: ${applyForm.name}%0AEmail: ${applyForm.email}%0A%0ADocumentação:%0ACV: ${applyForm.cv_url}%0ACarta de Manifestação: ${applyForm.cover_letter_url}%0ALinkedIn: ${applyForm.linkedin || 'N/D'}%0A%0AMensagem: ${applyForm.message}`}
+                     className="p-5 bg-market-blue text-white rounded-2xl flex flex-col items-center gap-3 transition-all hover:scale-[1.02] shadow-lg active:scale-95"
+                   >
+                      <Mail size={24} />
+                      <span className="text-[10px] font-black uppercase tracking-widest">Enviar via Email</span>
+                   </a>
+                </div>
+
+                <button onClick={() => setShowApplyModal(false)} className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] hover:text-market-navy transition-colors">Voltar ao Portal</button>
               </div>
             ) : (
               <>
@@ -160,13 +197,17 @@ const CareerView: React.FC = () => {
 
                 <form onSubmit={handleApplySubmit} className="space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div className="space-y-1.5">
+                    <div className="md:col-span-2 space-y-1.5">
                       <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Nome Completo</label>
                       <input required disabled={isApplying} value={applyForm.name} onChange={e => setApplyForm({...applyForm, name: e.target.value})} className="w-full bg-slate-50 rounded-xl p-4 font-medium text-sm outline-none border border-slate-200 focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" placeholder="Seu Nome" />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Email Profissional</label>
                       <input required disabled={isApplying} type="email" value={applyForm.email} onChange={e => setApplyForm({...applyForm, email: e.target.value})} className="w-full bg-slate-50 rounded-xl p-4 font-medium text-sm outline-none border border-slate-200 focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" placeholder="exemplo@email.com" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Telefone / WhatsApp</label>
+                      <input required disabled={isApplying} value={applyForm.phone} onChange={e => setApplyForm({...applyForm, phone: e.target.value})} className="w-full bg-slate-50 rounded-xl p-4 font-medium text-sm outline-none border border-slate-200 focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" placeholder="+258..." />
                     </div>
                   </div>
 
@@ -178,9 +219,26 @@ const CareerView: React.FC = () => {
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Link do CV (Google Drive/PDF)</label>
+                      <div className="relative">
+                        <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-market-blue" size={16} />
+                        <input required disabled={isApplying} value={applyForm.cv_url} onChange={e => setApplyForm({...applyForm, cv_url: e.target.value})} className="w-full bg-slate-50 rounded-xl p-4 pl-12 font-medium text-sm outline-none border border-slate-200 focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" placeholder="Link do seu currículo" />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Link da Carta de Manifestação</label>
+                      <div className="relative">
+                        <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-market-blue" size={16} />
+                        <input required disabled={isApplying} value={applyForm.cover_letter_url} onChange={e => setApplyForm({...applyForm, cover_letter_url: e.target.value})} className="w-full bg-slate-50 rounded-xl p-4 pl-12 font-medium text-sm outline-none border border-slate-200 focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" placeholder="Link da sua carta" />
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Apresentação</label>
-                    <textarea required disabled={isApplying} value={applyForm.message} onChange={e => setApplyForm({...applyForm, message: e.target.value})} rows={4} className="w-full bg-slate-50 rounded-2xl p-6 text-sm font-medium outline-none border border-slate-200 focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all resize-none" placeholder="Conte-nos brevemente sobre a sua experiência..." />
+                    <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Apresentação / Comentário</label>
+                    <textarea required disabled={isApplying} value={applyForm.message} onChange={e => setApplyForm({...applyForm, message: e.target.value})} rows={4} className="w-full bg-slate-50 rounded-2xl p-6 text-sm font-medium outline-none border border-slate-200 focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all resize-none" placeholder="Conte-nos brevemente sobre a sua experiência e motivação..." />
                   </div>
 
                   <div className="flex items-start gap-3 p-5 bg-slate-50 rounded-xl border border-slate-200">

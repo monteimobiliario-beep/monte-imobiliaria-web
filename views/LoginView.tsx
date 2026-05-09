@@ -37,40 +37,8 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
       });
       if (authError) throw authError;
 
-      const authData = authResult;
-      
-      // Tentativa de buscar dados detalhados do colaborador, mas não bloqueia se não encontrar
-      let empData = null;
-      let empError: any = null;
-      
-      try {
-        const res = await db.hr('employees')
-          .select('*')
-          .eq('email', email)
-          .maybeSingle();
-        empData = res.data;
-        empError = res.error;
-      } catch (e: any) {
-        console.error("Erro crítico ao acessar esquema HR:", e);
-        empError = { message: "Esquema 'hr' não disponível ou não exposto na API do Supabase." };
-      }
-
-      if (empError) {
-        if (empError.message?.includes('PGRST106') || empError.message?.includes('schema')) {
-          console.warn("DICA: Certifique-se de expor os esquemas (hr, finance, etc) em Project Settings > API > Exposed schemas no console do Supabase.");
-        }
-        console.warn("Aviso na busca de colaborador:", empError.message);
-      }
-
-      const userData = {
-        id: authData.user?.id,
-        name: empData?.name || authData.user?.email?.split('@')[0] || 'Utilizador Monte',
-        email: authData.user?.email,
-        role: empData?.role || UserRole.EMPLOYEE,
-        avatar: empData?.avatar || `https://picsum.photos/seed/${authData.user?.id}/100`,
-      };
-
-      onLoginSuccess(userData);
+      // REMOVED redundant employee fetch here as App.tsx handles it via onAuthStateChange
+      onLoginSuccess(null); 
     } catch (err: any) {
       console.error("Erro de Autenticação:", err);
       if (err.message?.includes('Failed to fetch')) {
@@ -96,9 +64,8 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
         <div className="relative pointer-events-auto z-10 p-10 md:p-14 rounded-[3rem] border border-slate-100 shadow-2xl bg-white shadow-slate-200/50">
           
           <div className="text-center mb-12">
-            <div className="w-32 h-32 rounded-[3rem] flex items-center justify-center mx-auto mb-8 shadow-2xl p-6 group transition-transform hover:scale-110 duration-500 bg-white border border-slate-50 overflow-hidden">
+            <div className="w-32 h-32 flex items-center justify-center mx-auto mb-8 transition-transform hover:scale-105 duration-500">
               <img src={systemLogo} alt="Monte Logo" className="w-full h-full object-contain" />
-              <div className="absolute -inset-2 bg-market-blue/5 rounded-[3rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </div>
           </div>
 

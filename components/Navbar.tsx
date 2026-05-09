@@ -13,6 +13,15 @@ import { useBranding } from '../BrandingContext';
 const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, isLoggedIn }) => {
   const { settings } = useBranding();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   
   const systemLogo = settings.logoUrl;
 
@@ -26,39 +35,47 @@ const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, isLoggedIn }) 
   ];
 
   return (
-    <div className="w-full sticky top-0 z-50">
+    <div className={`w-full sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'translate-y-0' : ''}`}>
       {/* Top Info Bar - Professional */}
-      <div className="hidden lg:flex bg-market-navy text-white/70 py-2.5 px-8 justify-between text-[11px] font-semibold tracking-wider">
-        <div className="flex gap-8">
-          <a href="https://wa.me/258875018283" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-market-blue transition-colors">
-            <Phone size={12} className="text-market-blue" /> +258 87 501 8283
-          </a>
-          <a href="mailto:monteimobiliario@gmail.com" className="flex items-center gap-2 hover:text-market-blue transition-colors">
-            <Mail size={12} className="text-market-blue" /> monteimobiliario@gmail.com
-          </a>
+      {!scrolled && (
+        <div className="hidden lg:flex bg-market-navy text-white/70 py-2.5 px-8 justify-between text-[11px] font-semibold tracking-wider animate-in fade-in slide-in-from-top-2 duration-500">
+          <div className="flex gap-8">
+            <a href="https://wa.me/258875018283" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-market-blue transition-colors">
+              <Phone size={12} className="text-market-blue" /> +258 87 501 8283
+            </a>
+            <a href="mailto:monteimobiliario@gmail.com" className="flex items-center gap-2 hover:text-market-blue transition-colors">
+              <Mail size={12} className="text-market-blue" /> monteimobiliario@gmail.com
+            </a>
+          </div>
+          <div className="flex items-center gap-2">
+            <MapPin size={12} className="text-market-blue" /> Alto da Manga, Beira, Moçambique
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <MapPin size={12} className="text-market-blue" /> Alto da Manga, Beira, Moçambique
-        </div>
-      </div>
+      )}
 
       {/* Main Navbar - Modern Portal */}
-      <nav className="bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 lg:px-12 py-3 shadow-sm">
+      <nav className={`transition-all duration-500 border-b ${
+        scrolled 
+          ? 'bg-white/95 backdrop-blur-md border-slate-200 py-2 shadow-lg scale-[0.98] mt-2 mx-4 rounded-2xl' 
+          : 'bg-white border-slate-100 py-4 shadow-sm'
+      } px-4 lg:px-12`}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <button onClick={() => onNavigate('home')} className="flex items-center gap-3 group text-left">
-            <div className="w-10 h-10 bg-market-blue rounded-xl flex items-center justify-center p-2 shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-all overflow-hidden">
+            <div className={`transition-all duration-500 flex items-center justify-center ${scrolled ? 'w-12 h-12' : 'w-16 h-16'}`}>
               <img 
-                src={systemLogo || undefined} 
+                src={systemLogo || null} 
                 alt="Monte Logo" 
-                className="w-full h-full object-contain brightness-0 invert" 
+                className="w-full h-full object-contain" 
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/building-2.svg';
                 }}
               />
             </div>
-            <div className="flex flex-col">
-              <span className="font-bold text-xl leading-none tracking-tight text-market-navy">{settings.companyName.split(' ')[0]}</span>
-              <span className="text-[10px] uppercase tracking-widest text-market-blue font-black">{settings.companyName.split(' ').slice(1).join(' ') || settings.tagline}</span>
+            <div className={`flex flex-col transition-all duration-500 origin-left ${scrolled ? 'scale-90 -ml-1' : ''}`}>
+              <span className="font-bold text-lg lg:text-xl leading-none tracking-tight text-market-navy whitespace-nowrap">Monte <span className="text-market-blue">Imobiliária</span></span>
+              {!scrolled && (
+                <span className="text-[10px] uppercase tracking-widest text-market-blue font-black mt-1">Gestão de Propriedades</span>
+              )}
             </div>
           </button>
 

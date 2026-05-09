@@ -77,15 +77,32 @@ CREATE TABLE IF NOT EXISTS hr.job_vacancies (
 
 CREATE TABLE IF NOT EXISTS hr.job_applications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  vacancy_id UUID REFERENCES hr.job_vacancies(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  email TEXT NOT NULL,
-  phone TEXT,
-  status TEXT DEFAULT 'Pendente' CHECK (status IN ('Pendente', 'Aprovado', 'Rejeitado')),
-  resume_url TEXT,
+  job_id UUID REFERENCES hr.job_vacancies(id) ON DELETE CASCADE,
+  job_title TEXT,
+  applicant_name TEXT NOT NULL,
+  applicant_email TEXT NOT NULL,
+  applicant_phone TEXT,
+  applicant_linkedin TEXT,
+  cv_url TEXT,
+  cover_letter_url TEXT,
   message TEXT,
+  status TEXT DEFAULT 'Pendente' CHECK (status IN ('Pendente', 'Aprovado', 'Rejeitado')),
   created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- RLS PARA HR (MUITO IMPORTANTE PARA FUNCIONAMENTO PÚBLICO)
+ALTER TABLE hr.job_applications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE hr.job_vacancies ENABLE ROW LEVEL SECURITY;
+
+-- Candidaturas: Qualquer pessoa pode submeter (Public Insert)
+CREATE POLICY "Public insert applications" ON hr.job_applications FOR INSERT WITH CHECK (true);
+CREATE POLICY "Authenticated select applications" ON hr.job_applications FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Authenticated update applications" ON hr.job_applications FOR UPDATE TO authenticated USING (true);
+CREATE POLICY "Authenticated delete applications" ON hr.job_applications FOR DELETE TO authenticated USING (true);
+
+-- Vagas: Qualquer pessoa pode ver (Public Read)
+CREATE POLICY "Public read vacancies" ON hr.job_vacancies FOR SELECT USING (true);
+CREATE POLICY "Authenticated all vacancies" ON hr.job_vacancies FOR ALL TO authenticated USING (true);
 
 -- 4. ESQUEMA: FINANCE
 CREATE TABLE IF NOT EXISTS finance.beneficiaries (
@@ -167,6 +184,14 @@ CREATE TABLE IF NOT EXISTS catalog.properties (
   map_coords JSONB,
   created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- REPARAÇÃO: Caso a tabela já exista mas colunas específicas faltem
+ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS gallery JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS amenities JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS nearby JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS video_url TEXT;
+ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS map_coords JSONB;
+ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS featured BOOLEAN DEFAULT false;
 
 CREATE TABLE IF NOT EXISTS catalog.contact_requests (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

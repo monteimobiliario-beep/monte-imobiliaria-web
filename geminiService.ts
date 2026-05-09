@@ -10,7 +10,7 @@ async function executeWithRetry(model: string, prompt: string, systemInstruction
   for (let i = 0; i < maxRetries; i++) {
     try {
       // Fix: Create a new GoogleGenAI instance right before making an API call for consistency
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       
       const response: GenerateContentResponse = await ai.models.generateContent({
         model: model,
@@ -60,7 +60,17 @@ export const chatWithMonteAI = async (userMessage: string, businessData: any) =>
 };
 
 export const generateJobDescription = async (jobTitle: string, area: string, location: string) => {
-  const prompt = `Gere uma descrição de vaga PROFISSIONAL para "${jobTitle}" em "${area}", na Monte Imobiliária (${location}). Comece direto no título.`;
+  const prompt = `Gere uma descrição de vaga PROFISSIONAL para "${jobTitle}" na área de "${area}", para a Monte Imobiliária em "${location}".
+  
+  FORMATAÇÃO OBRIGATÓRIA (HTML):
+  - Use <h1> para o título principal.
+  - Use <h2> para secções como "Responsabilidades", "Qualificações" e "Oferta".
+  - Use <ul> e <li> para listas de requisitos e benefícios.
+  - Use <b> para destacar palavras-chave.
+  - NÃO use caracteres markdown como # ou **. Use APENAS TAGS HTML puras.
+  - Comece a resposta diretamente com o conteúdo da descrição em HTML.
+  
+  Seja persuasivo, profissional e use Português de Moçambique.`;
   return await executeWithRetry('gemini-3-flash-preview', prompt);
 };
 

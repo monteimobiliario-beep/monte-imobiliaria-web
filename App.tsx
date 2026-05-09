@@ -64,14 +64,16 @@ const App: React.FC = () => {
   useEffect(() => {
     checkUser();
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth Event:", event);
       if (session) {
-        await fetchAndSetUser(session.user);
+        // Only fetch if identity is different or null
+        if (lastFetchedEmail.current !== session.user.email) {
+          fetchAndSetUser(session.user);
+        }
       } else {
         setCurrentUser(null);
         lastFetchedEmail.current = null;
-        // We handle navigation in a separate effect that watches currentUser
       }
     });
 
@@ -113,18 +115,14 @@ const App: React.FC = () => {
     isChecking.current = true;
 
     try {
-      console.log("Checking session status...");
       const { data: { session }, error } = await supabase.auth.getSession();
       
       if (error) {
         if (error.message?.includes('Lock broken')) {
-          console.warn("Auth synchronization lock info (expected in preview).");
-          // If lock is broken, we should still try to get the user as it might work where getSession failed
           const { data: { user } } = await supabase.auth.getUser();
           if (user) await fetchAndSetUser(user);
           return;
         }
-        console.warn("Session Verification Warning:", error.message);
         if (error.message.includes('Refresh Token Not Found') || error.message.includes('invalid') || error.message.includes('not found')) {
           await supabase.auth.signOut();
         }
@@ -132,27 +130,16 @@ const App: React.FC = () => {
       }
       
       if (session?.user) {
-        console.log("Found session for:", session.user.email);
         await fetchAndSetUser(session.user);
       } else {
-        // Safe check with getUser to verify if session exists but somehow didn't return in getSession due to lock
         const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await fetchAndSetUser(user);
-        } else {
-          console.log("No active session detected.");
-        }
+        if (user) await fetchAndSetUser(user);
       }
     } catch (err: any) {
-      if (err.message?.includes('Lock broken')) {
-        console.warn("Caught lock error in checkUser, skipping gracefully.");
-      } else {
-        console.error("Critical error in checkUser:", err);
-      }
+      console.warn("Soft error in checkUser:", err.message);
     } finally { 
       isChecking.current = false;
-      // Ensure we always stop initialize, but give a small grace for the user fetch
-      setTimeout(() => setIsInitializing(false), 500);
+      setIsInitializing(false);
     }
   }
 
@@ -228,6 +215,34 @@ const App: React.FC = () => {
       default: return <HomeView onNavigate={setCurrentPath} onViewProperty={handleViewProperty} />;
     }
   };
+
+  if (isInitializing) {
+    return (
+      <div className="fixed inset-0 bg-white flex flex-col items-center justify-center z-[9999]">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, repeat: Infinity, repeatType: "reverse" }}
+          className="w-32 h-32 flex items-center justify-center p-4"
+        >
+          <img src={settings.logoUrl || undefined} alt="Carregando..." className="w-full h-full object-contain" />
+        </motion.div>
+        <div className="mt-8 flex flex-col items-center">
+          <div className="w-48 h-1 bg-slate-100 rounded-full overflow-hidden">
+            <motion.div 
+              className="h-full bg-market-blue"
+              initial={{ width: "0%" }}
+              animate={{ width: "100%" }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+          </div>
+          <span className="mt-3 text-[10px] font-black uppercase tracking-[0.2em] text-market-navy animate-pulse">
+            Monte Imobiliária <span className="text-market-blue">Hub</span>
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   if (isERPRoute && currentUser) {
     return (

@@ -223,10 +223,10 @@ export interface JobApplication {
   applicant_email: string;
   applicant_phone: string;
   applicant_linkedin?: string;
+  cv_url?: string;
+  cover_letter_url?: string;
   message: string;
   status: 'Pendente' | 'Aprovado' | 'Rejeitado';
-  consent_given: boolean;
-  consent_timestamp: string;
   created_at: string;
 }
 

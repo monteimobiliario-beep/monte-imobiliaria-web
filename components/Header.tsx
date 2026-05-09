@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { User, Property, UserRole } from '../types';
 import { Bell, Search, LogOut, Menu, Loader2, MapPin, X } from 'lucide-react';
 import { supabase } from '../supabaseClient';
+import { useBranding } from '../BrandingContext';
 
 interface HeaderProps {
   user: User;
@@ -111,12 +112,24 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onOpenSidebar, onViewPr
     setShowResults(false);
   };
 
+  const { settings } = useBranding();
+  const systemLogo = settings.logoUrl;
+
   return (
     <header className="h-12 border-b flex items-center justify-between px-4 md:px-6 shrink-0 relative z-[60] bg-white border-slate-200">
       <div className="flex items-center gap-3 flex-1">
         <button onClick={onOpenSidebar} className="md:hidden text-slate-500 p-1 hover:bg-slate-100 rounded-lg">
           <Menu size={18} />
         </button>
+        
+        <div className="flex items-center gap-2 group cursor-pointer" onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'dashboard' }))}>
+           <div className="w-12 h-12 flex items-center justify-center transition-all">
+             <img src={systemLogo || undefined} alt="Logo" className="w-full h-full object-contain" onError={(e) => (e.target as HTMLImageElement).src = 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/building-2.svg'} />
+           </div>
+           <span className="hidden lg:block text-[10px] font-black uppercase tracking-widest text-market-navy">Monte <span className="text-market-blue">Hub</span></span>
+        </div>
+
+        <div className="h-4 w-px bg-slate-100 mx-2 hidden sm:block"></div>
         
         <div ref={searchRef} className="hidden sm:flex relative max-w-xs w-full">
           <span className="absolute inset-y-0 left-2.5 flex items-center text-slate-400">
@@ -150,7 +163,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onOpenSidebar, onViewPr
                       className="w-full flex items-center gap-3 p-2.5 transition-colors text-left border-b last:border-0 group hover:bg-slate-50 border-slate-50"
                     >
                       <img 
-                        src={prop.image || undefined} 
+                        src={prop.image || null} 
                         alt="" 
                         className="w-7 h-7 rounded-md object-cover shadow-sm"
                       />
@@ -185,7 +198,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onOpenSidebar, onViewPr
             <p className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">{user.role}</p>
           </div>
           <div className="relative shrink-0">
-             <img src={user.avatar || undefined} alt={user.name} className="w-7 h-7 rounded-lg object-cover ring-2 ring-slate-100" />
+             <img src={user.avatar || null} alt={user.name} className="w-7 h-7 rounded-lg object-cover ring-2 ring-slate-100" />
           </div>
           <button 
             onClick={onLogout}
