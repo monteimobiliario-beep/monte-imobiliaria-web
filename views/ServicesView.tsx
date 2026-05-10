@@ -4,6 +4,7 @@ import { MOCK_PARTNERS, MOCK_PROJECTS } from '../constants';
 import * as LucideIcons from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { RealEstateService } from '../types';
+import { useTranslation } from '../src/i18nContext';
 
 interface ServiceDetail extends RealEstateService {
   longDescription?: string;
@@ -11,6 +12,7 @@ interface ServiceDetail extends RealEstateService {
 }
 
 const ServicesView: React.FC = () => {
+  const { t } = useTranslation();
   const [services, setServices] = useState<ServiceDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedService, setSelectedService] = useState<ServiceDetail | null>(null);
@@ -105,13 +107,13 @@ const ServicesView: React.FC = () => {
 
         <div className="relative z-10 w-full max-w-7xl px-6 text-center">
           <div className="inline-flex items-center gap-2 bg-market-blue/10 backdrop-blur-md border border-white/5 px-4 py-1.5 rounded-full text-market-blue text-[9px] font-bold uppercase tracking-[0.4em] mb-4">
-            <LucideIcons.Settings size={12} /> Soluções Profissionais
+            <LucideIcons.Settings size={12} /> {t('services.hero.tag')}
           </div>
           <h1 className="text-2xl md:text-4xl font-display font-black text-white tracking-tight">
-            Serviços <span className="text-market-blue">Premium</span>
+            {t('services.hero.title')}
           </h1>
           <p className="text-white/30 text-xs md:text-sm max-w-lg mx-auto mt-4 font-medium italic">
-            Gestão técnica, consultoria e manutenção com alto padrão de qualidade.
+            {t('services.hero.subtitle')}
           </p>
         </div>
       </section>
@@ -121,7 +123,7 @@ const ServicesView: React.FC = () => {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4 bg-white rounded-3xl shadow-xl border border-slate-200">
             <LucideIcons.Loader2 className="animate-spin text-market-blue" size={40} />
-            <p className="text-slate-400 font-bold uppercase tracking-widest text-[11px]">A carregar serviços...</p>
+            <p className="text-slate-400 font-bold uppercase tracking-widest text-[11px]">{t('services.loading')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -141,7 +143,7 @@ const ServicesView: React.FC = () => {
                     onClick={() => setSelectedService(service)}
                     className="market-button market-button-primary w-full flex items-center justify-center gap-2 text-xs uppercase tracking-widest"
                   >
-                    Detalhes do Serviço <LucideIcons.ArrowRight size={16} />
+                    {t('services.details')} <LucideIcons.ArrowRight size={16} />
                   </button>
                 </div>
               );
@@ -155,9 +157,9 @@ const ServicesView: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6">
            <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-16">
               <div>
-                <p className="text-market-blue font-bold text-xs uppercase tracking-widest mb-4">Portfólio de Obras</p>
-                <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Projetos Concluídos</h2>
-                <p className="text-white/50 text-lg mt-4">Resultados reais da nossa equipa técnica em Moçambique.</p>
+                <p className="text-market-blue font-bold text-xs uppercase tracking-widest mb-4">{t('services.portfolio.tag')}</p>
+                <h2 className="text-4xl md:text-5xl font-bold tracking-tight">{t('services.portfolio.title')}</h2>
+                <p className="text-white/50 text-lg mt-4">{t('services.portfolio.desc')}</p>
               </div>
               <div className="flex gap-4">
                  <button className="p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-all"><LucideIcons.ChevronLeft size={24} /></button>
@@ -180,7 +182,7 @@ const ServicesView: React.FC = () => {
                        <div className="flex-1 bg-white/5 h-2 rounded-full overflow-hidden">
                           <div className="h-full bg-market-blue rounded-full w-[75%] shadow-[0_0_15px_rgba(0,82,255,0.4)]"></div>
                        </div>
-                       <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest shrink-0">Entrega: {proj.deadline}</p>
+                       <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest shrink-0">{t('services.portfolio.delivery')}: {proj.deadline}</p>
                     </div>
                   </div>
                 </div>
@@ -193,8 +195,8 @@ const ServicesView: React.FC = () => {
       <section className="py-24 px-6 bg-slate-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold text-market-navy tracking-tight mb-4">Parceiros Estratégicos</h2>
-            <p className="text-market-slate text-lg">Trabalhamos com os melhores para entregar o melhor.</p>
+            <h2 className="text-3xl md:text-5xl font-bold text-market-navy tracking-tight mb-4">{t('services.partners.title')}</h2>
+            <p className="text-market-slate text-lg">{t('services.partners.subtitle')}</p>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
@@ -214,14 +216,14 @@ const ServicesView: React.FC = () => {
       {/* CTA Section - Professional Blue */}
       <section className="py-24 px-6 bg-market-blue text-white relative overflow-hidden">
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <h2 className="text-4xl md:text-6xl font-bold mb-8 tracking-tight">Pronto para elevar o nível do seu imóvel?</h2>
-          <p className="text-white/80 text-lg md:text-xl mb-12 max-w-2xl mx-auto leading-relaxed">Fale com um dos nossos especialistas técnicos e descubra como podemos valorizar o seu património.</p>
+          <h2 className="text-4xl md:text-6xl font-bold mb-8 tracking-tight">{t('services.cta.title')}</h2>
+          <p className="text-white/80 text-lg md:text-xl mb-12 max-w-2xl mx-auto leading-relaxed">{t('services.cta.desc')}</p>
           <div className="flex flex-col sm:flex-row justify-center gap-6">
             <a href="tel:+258875018283" className="bg-market-navy text-white px-10 py-4 rounded-xl font-bold text-sm uppercase tracking-widest shadow-xl hover:bg-white hover:text-market-navy transition-all flex items-center justify-center gap-3 active:scale-95">
-              <LucideIcons.Phone size={20} /> Ligar Agora
+              <LucideIcons.Phone size={20} /> {t('services.cta.call')}
             </a>
             <a href="https://wa.me/258875018283" target="_blank" rel="noopener noreferrer" className="bg-white text-market-blue px-10 py-4 rounded-xl font-bold text-sm uppercase tracking-widest shadow-xl hover:bg-market-navy hover:text-white transition-all flex items-center justify-center gap-3 active:scale-95">
-              <LucideIcons.MessageCircle size={20} /> WhatsApp
+              <LucideIcons.MessageCircle size={20} /> {t('services.cta.whatsapp')}
             </a>
           </div>
         </div>
@@ -244,7 +246,7 @@ const ServicesView: React.FC = () => {
                       {(LucideIcons as any)[selectedService.icon] ? React.createElement((LucideIcons as any)[selectedService.icon], { size: 32 }) : <LucideIcons.HelpCircle size={32} />}
                    </div>
                    <div>
-                      <p className="text-[11px] font-bold text-market-blue uppercase tracking-widest mb-1">Ficha de Serviço</p>
+                      <p className="text-[11px] font-bold text-market-blue uppercase tracking-widest mb-1">{t('services.modal.tag')}</p>
                       <h2 className="text-2xl font-bold text-market-navy tracking-tight">{selectedService.title}</h2>
                    </div>
                 </div>
@@ -252,7 +254,7 @@ const ServicesView: React.FC = () => {
                 <div className="space-y-10">
                    <div className="bg-slate-50 rounded-2xl p-8 border border-slate-100">
                       <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                         <LucideIcons.Info size={16} className="text-market-blue" /> Descrição Detalhada
+                         <LucideIcons.Info size={16} className="text-market-blue" /> {t('services.modal.desc_title')}
                       </h3>
                       <p className="text-market-navy leading-relaxed">
                         {selectedService.longDescription || selectedService.description}
@@ -280,13 +282,13 @@ const ServicesView: React.FC = () => {
                            rel="noopener noreferrer"
                            className="flex-1 py-4 bg-market-blue text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-3 active:scale-95"
                          >
-                           <LucideIcons.MessageCircle size={18} /> Solicitar Orçamento
+                           <LucideIcons.MessageCircle size={18} /> {t('services.modal.quote')}
                          </a>
                          <button 
                            onClick={() => setSelectedService(null)}
                            className="px-8 py-4 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-200 transition-all"
                          >
-                           Fechar
+                           {t('services.modal.close')}
                          </button>
                       </div>
                    </div>

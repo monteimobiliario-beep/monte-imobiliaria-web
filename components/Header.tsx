@@ -1,20 +1,22 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { User, Property, UserRole } from '../types';
-import { Bell, Search, LogOut, Menu, Loader2, MapPin, X } from 'lucide-react';
+import { Bell, Search, LogOut, Menu, Loader2, MapPin, X, Globe } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useBranding } from '../BrandingContext';
+import { useTranslation } from '../src/i18nContext';
+
+import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   user: User;
   onLogout: () => void;
   onOpenSidebar: () => void;
-  onViewProperty: (id: string) => void;
 }
 
 const NOTIFICATION_SOUND = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3';
 
-const Header: React.FC<HeaderProps> = ({ user, onLogout, onOpenSidebar, onViewProperty }) => {
+const Header: React.FC<HeaderProps> = ({ user, onLogout, onOpenSidebar }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Property[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -25,6 +27,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onOpenSidebar, onViewPr
   const [lastAddedProperty, setLastAddedProperty] = useState<Property | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     audioRef.current = new Audio(NOTIFICATION_SOUND);
@@ -107,13 +110,18 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onOpenSidebar, onViewPr
   }, [query]);
 
   const handleSelectResult = (id: string) => {
-    onViewProperty(id);
+    navigate(`/imovel/${id}`);
     setQuery('');
     setShowResults(false);
   };
 
   const { settings } = useBranding();
+  const { language, setLanguage, t } = useTranslation();
   const systemLogo = settings.logoUrl;
+
+  const toggleLanguage = () => {
+    setLanguage(language === 'pt' ? 'en' : 'pt');
+  };
 
   return (
     <header className="h-12 border-b flex items-center justify-between px-4 md:px-6 shrink-0 relative z-[60] bg-white border-slate-200">
@@ -122,7 +130,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onOpenSidebar, onViewPr
           <Menu size={18} />
         </button>
         
-        <div className="flex items-center gap-2 group cursor-pointer" onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'dashboard' }))}>
+        <div className="flex items-center gap-2 group cursor-pointer" onClick={() => navigate('/dashboard')}>
            <div className="w-12 h-12 flex items-center justify-center transition-all">
              <img src={systemLogo || undefined} alt="Logo" className="w-full h-full object-contain" onError={(e) => (e.target as HTMLImageElement).src = 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/building-2.svg'} />
            </div>
@@ -140,7 +148,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onOpenSidebar, onViewPr
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => query.length >= 2 && setShowResults(true)}
-            placeholder="Pesquisar imóvel ou local..."
+            placeholder={t('header.search')}
             className="w-full pl-8 pr-8 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/10 border transition-all text-[11px] font-bold bg-slate-50 border-slate-200 text-slate-900"
           />
           {query && (
@@ -174,7 +182,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onOpenSidebar, onViewPr
                     </button>
                   ))
                 ) : (
-                  <div className="p-4 text-center text-slate-400 text-[10px] italic font-bold">Sem resultados</div>
+                  <div className="p-4 text-center text-slate-400 text-[10px] italic font-bold">{t('header.no_results')}</div>
                 )}
               </div>
             </div>
@@ -183,6 +191,14 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onOpenSidebar, onViewPr
       </div>
 
       <div className="flex items-center gap-3">
+        <button 
+          onClick={toggleLanguage}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors text-[10px] font-black text-slate-500 uppercase tracking-widest border border-slate-100"
+        >
+          <Globe size={12} className="text-market-blue" />
+          {language.toUpperCase()}
+        </button>
+
         <button className="relative p-1.5 rounded-lg transition-all text-slate-400 hover:text-blue-600 hover:bg-slate-50">
           <Bell size={16} className={unreadApplications > 0 ? "text-indigo-500 animate-pulse" : ""} />
           {unreadApplications > 0 && (
@@ -195,13 +211,14 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onOpenSidebar, onViewPr
         <div className="flex items-center gap-2 pl-1">
           <div className="text-right hidden sm:block">
             <p className="text-[11px] font-black leading-none text-slate-900">{user.name}</p>
-            <p className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">{user.role}</p>
+            <p className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">{tRole(user.role)}</p>
           </div>
           <div className="relative shrink-0">
              <img src={user.avatar || null} alt={user.name} className="w-7 h-7 rounded-lg object-cover ring-2 ring-slate-100" />
           </div>
           <button 
             onClick={onLogout}
+            title={t('erp.logout')}
             className="p-1.5 text-slate-300 hover:text-red-500 rounded-lg transition-colors"
           >
             <LogOut size={16} />

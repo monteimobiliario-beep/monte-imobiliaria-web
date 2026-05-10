@@ -2,8 +2,10 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, MessageSquare, Loader2, CheckCircle2, AlertCircle, Clock, Globe, Sparkles, ShieldCheck, Headphones } from 'lucide-react';
 import { supabase } from '../supabaseClient';
+import { useTranslation } from '../src/i18nContext';
 
 const ContactView: React.FC = () => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -64,13 +66,13 @@ const ContactView: React.FC = () => {
 
         <div className="relative z-10 w-full max-w-7xl px-6 text-center">
           <div className="inline-flex items-center gap-2 bg-market-blue/10 backdrop-blur-md border border-white/5 px-4 py-1.5 rounded-full text-market-blue text-[9px] font-bold uppercase tracking-[0.4em] mb-4">
-            <Globe size={12} /> Suporte Especializado
+            <Globe size={12} /> {t('contact.hero.tag')}
           </div>
           <h1 className="text-2xl md:text-4xl font-display font-black text-white tracking-tight">
-            Fale com a <span className="text-market-blue">Nossa Equipa</span>
+            {t('contact.hero.title')} <span className="text-market-blue">{t('contact.hero.subtitle')}</span>
           </h1>
           <p className="text-white/30 text-xs md:text-sm max-w-lg mx-auto mt-4 font-medium italic">
-            Estamos prontos para atender as suas necessidades imobiliárias com agilidade.
+            {t('contact.hero.desc')}
           </p>
         </div>
       </section>
@@ -82,7 +84,7 @@ const ContactView: React.FC = () => {
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white p-10 rounded-3xl border border-slate-200 shadow-xl">
               <h3 className="text-xl font-bold text-market-navy mb-10 tracking-tight flex items-center gap-3">
-                <Headphones size={24} className="text-market-blue" /> Canais Diretos
+                <Headphones size={24} className="text-market-blue" /> {t('contact.channels.title')}
               </h3>
               
               <div className="space-y-8">
@@ -91,7 +93,7 @@ const ContactView: React.FC = () => {
                     <Phone size={24} />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">WhatsApp Business</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t('contact.channels.whatsapp')}</p>
                     <p className="text-base font-bold text-market-navy">+258 87 501 8283</p>
                   </div>
                 </a>
@@ -101,7 +103,7 @@ const ContactView: React.FC = () => {
                     <Mail size={24} />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Email Oficial</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t('contact.channels.email')}</p>
                     <p className="text-base font-bold text-market-navy break-all">monteimobiliario@gmail.com</p>
                   </div>
                 </div>
@@ -111,7 +113,7 @@ const ContactView: React.FC = () => {
                     <MapPin size={24} />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Localização</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t('contact.channels.location')}</p>
                     <p className="text-base font-bold text-market-navy leading-relaxed">
                       Bairro Alto da Manga, Unidade 3,<br />Beira, Moçambique
                     </p>
@@ -122,7 +124,7 @@ const ContactView: React.FC = () => {
               <div className="mt-10 pt-8 border-t border-slate-100">
                  <div className="flex items-center gap-3 text-slate-400">
                     <Clock size={18} />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Seg - Sex: 08:00 - 17:00</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest">{t('contact.channels.hours')}</span>
                  </div>
               </div>
             </div>
@@ -131,9 +133,9 @@ const ContactView: React.FC = () => {
             <div className="bg-market-navy p-10 rounded-3xl text-white shadow-xl relative overflow-hidden group">
                <div className="absolute top-0 right-0 w-32 h-32 bg-market-blue/10 rounded-full blur-2xl"></div>
                <ShieldCheck size={32} className="text-market-blue mb-4" />
-               <h4 className="text-xl font-bold mb-2 tracking-tight">Atendimento Seguro</h4>
+               <h4 className="text-xl font-bold mb-2 tracking-tight">{t('contact.secure.title')}</h4>
                <p className="text-white/50 text-sm leading-relaxed">
-                 Os seus dados são protegidos pela nossa infraestrutura cloud privada.
+                 {t('contact.secure.desc')}
                </p>
             </div>
           </div>
@@ -146,15 +148,15 @@ const ContactView: React.FC = () => {
                   <div className="w-24 h-24 bg-market-accent/10 text-market-accent rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner">
                     <CheckCircle2 size={48} />
                   </div>
-                  <h2 className="text-3xl font-bold text-market-navy mb-4 tracking-tight">Mensagem Enviada!</h2>
+                  <h2 className="text-3xl font-bold text-market-navy mb-4 tracking-tight">{t('contact.success.title')}</h2>
                   <p className="text-slate-500 text-lg max-w-sm mx-auto">
-                    Obrigado por contactar a Monte Imobiliária. Responderemos em breve.
+                    {t('contact.success.desc')}
                   </p>
                   <button 
                     onClick={() => setStatus('idle')} 
                     className="mt-10 market-button market-button-primary px-12 py-4 text-xs uppercase tracking-widest"
                   >
-                    Enviar Outra Mensagem
+                    {t('contact.success.button')}
                   </button>
                 </div>
               ) : (
@@ -162,8 +164,8 @@ const ContactView: React.FC = () => {
                   <div className="flex items-center gap-6 mb-12">
                      <div className="w-14 h-14 bg-slate-50 text-market-blue rounded-2xl flex items-center justify-center shadow-inner"><MessageSquare size={28} /></div>
                      <div>
-                        <h2 className="text-2xl font-bold text-market-navy tracking-tight">Envie-nos um Pedido</h2>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Consultoria Técnica e Imobiliária</p>
+                        <h2 className="text-2xl font-bold text-market-navy tracking-tight">{t('contact.form.title')}</h2>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{t('contact.form.subtitle')}</p>
                      </div>
                   </div>
 
@@ -176,7 +178,7 @@ const ContactView: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nome Completo</label>
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('contact.form.name')}</label>
                         <input 
                           required 
                           type="text" 
@@ -187,7 +189,7 @@ const ContactView: React.FC = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">E-mail para Resposta</label>
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('contact.form.email')}</label>
                         <input 
                           required 
                           type="email" 
@@ -200,7 +202,7 @@ const ContactView: React.FC = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Assunto</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('contact.form.subject')}</label>
                       <select 
                         value={formData.subject} 
                         onChange={(e) => setFormData({...formData, subject: e.target.value})} 
@@ -215,14 +217,14 @@ const ContactView: React.FC = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Mensagem ou Descrição do Caso</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('contact.form.message')}</label>
                       <textarea 
                         required 
                         rows={5} 
                         value={formData.message} 
                         onChange={(e) => setFormData({...formData, message: e.target.value})} 
                         className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-6 font-medium text-market-navy focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue outline-none transition-all resize-none" 
-                        placeholder="Em que podemos ajudar hoje?"
+                        placeholder={t('contact.form.placeholder')}
                       ></textarea>
                     </div>
 
@@ -235,13 +237,13 @@ const ContactView: React.FC = () => {
                         <Loader2 className="animate-spin" size={20} />
                       ) : (
                         <>
-                          <Send size={20} /> Enviar Mensagem
+                          <Send size={20} /> {t('contact.form.submit')}
                         </>
                       )}
                     </button>
                     
                     <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                       A nossa equipa técnica responderá em até 24 horas úteis.
+                       {t('contact.form.footer')}
                     </p>
                   </form>
                 </>

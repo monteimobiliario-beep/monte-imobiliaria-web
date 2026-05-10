@@ -14,11 +14,14 @@ import { Vehicle } from '../types';
 import { ImageUploadField } from '../components/ImageUploadField';
 import { formatImageUrl } from '../imageUtils';
 
+import { useTranslation } from '../src/i18nContext';
+
 const FleetView: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('Todos');
+  const [statusFilter, setStatusFilter] = useState(t('fin.all'));
   const [showModal, setShowModal] = useState(false);
   const [viewingVehicle, setViewingVehicle] = useState<Vehicle | null>(null);
   const [editingVehicleId, setEditingVehicleId] = useState<string | null>(null);
@@ -28,7 +31,7 @@ const FleetView: React.FC = () => {
     plate: '',
     model: '',
     current_driver: '',
-    status: 'Disponível',
+    status: t('fleet.available'),
     fuel_level: 100,
     last_maintenance: new Date().toISOString().split('T')[0],
     odometer: 0,
@@ -107,9 +110,9 @@ const FleetView: React.FC = () => {
 
   const stats = useMemo(() => ({
     total: vehicles.length,
-    active: vehicles.filter(v => v.status === 'Em Serviço').length,
-    maintenance: vehicles.filter(v => v.status === 'Manutenção').length,
-    available: vehicles.filter(v => v.status === 'Disponível').length,
+    active: vehicles.filter(v => v.status === t('fleet.in_service')).length,
+    maintenance: vehicles.filter(v => v.status === t('fleet.maintenance')).length,
+    available: vehicles.filter(v => v.status === t('fleet.available')).length,
   }), [vehicles]);
 
   const filteredVehicles = useMemo(() => {
@@ -117,7 +120,7 @@ const FleetView: React.FC = () => {
       const matchesSearch = v.plate.toLowerCase().includes(searchTerm.toLowerCase()) || 
         (v.current_driver?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
         v.model.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'Todos' || v.status === statusFilter;
+      const matchesStatus = statusFilter === t('fin.all') || v.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
   }, [vehicles, searchTerm, statusFilter]);
@@ -129,12 +132,12 @@ const FleetView: React.FC = () => {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (fuel < 25 || diffDays > 180) {
-      return { label: 'Crítico', color: 'text-rose-600 bg-rose-50', icon: <ShieldAlert size={14} />, border: 'border-rose-100' };
+      return { label: t('fleet.critical'), color: 'text-rose-600 bg-rose-50', icon: <ShieldAlert size={14} />, border: 'border-rose-100' };
     }
     if (fuel < 45 || diffDays > 90) {
-      return { label: 'Atenção', color: 'text-amber-600 bg-amber-50', icon: <Shield size={14} />, border: 'border-amber-100' };
+      return { label: t('fleet.attention'), color: 'text-amber-600 bg-amber-50', icon: <Shield size={14} />, border: 'border-amber-100' };
     }
-    return { label: 'Seguro', color: 'text-emerald-600 bg-emerald-50', icon: <ShieldCheck size={14} />, border: 'border-emerald-100' };
+    return { label: t('fleet.safe'), color: 'text-emerald-600 bg-emerald-50', icon: <ShieldCheck size={14} />, border: 'border-emerald-100' };
   };
 
   if (loading) return (
@@ -155,7 +158,7 @@ const FleetView: React.FC = () => {
         <div className="space-y-3">
           <div className="flex items-center gap-3">
             <div className="w-1.5 h-6 bg-market-blue rounded-full shadow-[0_0_10px_rgba(0,82,255,0.4)]"></div>
-            <p className="text-[10px] text-market-blue font-black uppercase tracking-[0.4em]">Logística Operacional</p>
+            <p className="text-[10px] text-market-blue font-black uppercase tracking-[0.4em]">{t('fleet.title')}</p>
           </div>
           <h1 className="text-3xl md:text-4xl font-black text-market-navy tracking-tight leading-none">Monte <span className="italic font-display font-light text-market-blue">Fleet</span> Core</h1>
         </div>
@@ -171,7 +174,7 @@ const FleetView: React.FC = () => {
               onClick={() => { setEditingVehicleId(null); setFormState(initialFormState); setShowModal(true); }} 
               className="market-button market-button-primary px-8 py-4 text-[10px] uppercase tracking-[0.2em] shadow-2xl flex items-center gap-2"
             >
-              <Plus size={18} /> Incorporar Veículo
+              <Plus size={18} /> {t('fleet.incorporate')}
            </button>
         </div>
       </div>
@@ -179,10 +182,10 @@ const FleetView: React.FC = () => {
       {/* KPI Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Unidades Totais', value: stats.total, icon: <Truck size={18} />, color: 'text-slate-600', bg: 'bg-slate-50' },
-          { label: 'Fluxo Activo', value: stats.active, icon: <Activity size={18} />, color: 'text-market-blue', bg: 'bg-market-blue/10' },
-          { label: 'Disponibilidade', value: stats.available, icon: <Zap size={18} />, color: 'text-market-accent', bg: 'bg-market-accent/10' },
-          { label: 'Ponto de Alerta', value: stats.maintenance, icon: <AlertTriangle size={18} />, color: 'text-amber-500', bg: 'bg-amber-100/50' },
+          { label: t('fleet.total_units'), value: stats.total, icon: <Truck size={18} />, color: 'text-slate-600', bg: 'bg-slate-50' },
+          { label: t('fleet.active_flow'), value: stats.active, icon: <Activity size={18} />, color: 'text-market-blue', bg: 'bg-market-blue/10' },
+          { label: t('fleet.availability'), value: stats.available, icon: <Zap size={18} />, color: 'text-market-accent', bg: 'bg-market-accent/10' },
+          { label: t('fleet.alert_point'), value: stats.maintenance, icon: <AlertTriangle size={18} />, color: 'text-amber-500', bg: 'bg-amber-100/50' },
         ].map((kpi, idx) => (
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
@@ -209,18 +212,18 @@ const FleetView: React.FC = () => {
            <input 
              value={searchTerm} 
              onChange={e => setSearchTerm(e.target.value)} 
-             placeholder="Localizar por matrícula ou motorista..." 
+             placeholder={t('fleet.search_placeholder')} 
              className="w-full pl-14 pr-6 py-4 bg-slate-50/50 rounded-2xl border border-slate-100 outline-none font-bold text-xs focus:ring-8 focus:ring-market-blue/5 focus:border-market-blue focus:bg-white transition-all shadow-inner" 
            />
         </div>
         <div className="flex items-center gap-3 bg-slate-50/80 px-6 py-4 rounded-2xl border border-slate-100 min-w-[200px] w-full md:w-auto">
            <Filter size={16} className="text-slate-400" />
            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="bg-transparent font-black text-[10px] uppercase text-market-navy outline-none cursor-pointer w-full tracking-widest">
-              <option value="Todos">Todos Status</option>
-              <option value="Disponível">Disponível</option>
-              <option value="Em Serviço">Em Serviço</option>
-              <option value="Manutenção">Manutenção</option>
-              <option value="Lavagem">Lavagem</option>
+              <option value={t('fin.all')}>{t('fleet.all_status')}</option>
+              <option value={t('fleet.available')}>{t('fleet.available')}</option>
+              <option value={t('fleet.in_service')}>{t('fleet.in_service')}</option>
+              <option value={t('fleet.maintenance')}>{t('fleet.maintenance')}</option>
+              <option value={t('fleet.wash')}>{t('fleet.wash')}</option>
            </select>
         </div>
       </div>
@@ -272,14 +275,14 @@ const FleetView: React.FC = () => {
                    <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-200/40">
                       <div className="flex items-center gap-2 mb-2">
                          <User size={12} className="text-slate-400" />
-                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Condutor</span>
+                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t('fleet.driver')}</span>
                       </div>
-                      <p className="text-xs font-bold text-market-navy truncate">{vehicle.current_driver || 'Indefinido'}</p>
+                      <p className="text-xs font-bold text-market-navy truncate">{vehicle.current_driver || t('fin.all')}</p>
                    </div>
                    <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-200/40">
                       <div className="flex items-center gap-2 mb-2">
                          <Gauge size={12} className="text-slate-400" />
-                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Odométro</span>
+                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t('fleet.odometer')}</span>
                       </div>
                       <p className="text-xs font-bold text-market-navy">{vehicle.odometer ? `${Number(vehicle.odometer).toLocaleString()} KM` : 'N/D'}</p>
                    </div>
@@ -290,7 +293,7 @@ const FleetView: React.FC = () => {
                       <div className="flex justify-between items-end">
                          <div className="flex items-center gap-2">
                             <Fuel size={14} className={vehicle.fuel_level < 25 ? 'text-rose-500' : 'text-market-blue'} />
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Nível de Combustível</span>
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t('fleet.fuel_level')}</span>
                          </div>
                          <span className={`text-[11px] font-black ${vehicle.fuel_level < 25 ? 'text-rose-500' : 'text-market-navy'}`}>{vehicle.fuel_level}%</span>
                       </div>
@@ -309,7 +312,7 @@ const FleetView: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-2 text-slate-400">
                          <Calendar size={12} />
-                         <span className="text-[10px] font-bold">{new Date(vehicle.last_maintenance).toLocaleDateString('pt-MZ')}</span>
+                         <span className="text-[10px] font-bold">{new Date(vehicle.last_maintenance).toLocaleDateString(i18n.language === 'en' ? 'en-GB' : 'pt-MZ')}</span>
                       </div>
                    </div>
                 </div>
@@ -325,8 +328,8 @@ const FleetView: React.FC = () => {
              <Navigation2 size={32} />
           </div>
           <div className="space-y-2">
-             <p className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-400">Escaneamento Concluído</p>
-             <p className="text-sm font-medium text-slate-300">Nenhuma unidade detectada nos parâmetros atuais.</p>
+             <p className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-400">{t('fleet.scan_complete')}</p>
+             <p className="text-sm font-medium text-slate-300">{t('fleet.no_units')}</p>
           </div>
         </div>
       )}
@@ -338,9 +341,9 @@ const FleetView: React.FC = () => {
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-market-navy flex items-center gap-3">
                 <Truck size={28} className="text-market-blue" />
-                {editingVehicleId ? 'Editar Veículo' : 'Registar Novo Veículo'}
+                {editingVehicleId ? t('fleet.edit_vehicle') : t('fleet.register_vehicle')}
               </h2>
-              <p className="text-[10px] text-market-slate font-bold uppercase mt-1 tracking-widest">Cadastro Técnico de Frota Monte</p>
+              <p className="text-[10px] text-market-slate font-bold uppercase mt-1 tracking-widest">{t('fleet.tech_reg')}</p>
             </div>
 
             <form onSubmit={handleSaveVehicle} className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -354,50 +357,50 @@ const FleetView: React.FC = () => {
               </div>
 
               <div className="md:col-span-2 space-y-1">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Modelo / Descrição</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('fleet.model_desc')}</label>
                 <input required value={formState.model} onChange={e => setFormState({...formState, model: e.target.value})} className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl p-4 font-bold text-xs outline-none focus:ring-8 focus:ring-market-blue/5 focus:border-market-blue focus:bg-white transition-all shadow-inner" placeholder="Ex: Toyota Hilux 2024 D4D" />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Matrícula</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('fleet.plate')}</label>
                 <input required value={formState.plate} onChange={e => setFormState({...formState, plate: e.target.value})} className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl p-4 font-bold text-xs outline-none focus:ring-8 focus:ring-market-blue/5 focus:border-market-blue focus:bg-white transition-all shadow-inner" placeholder="Ex: ABC-123-MC" />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Condutor Designado</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('fleet.assigned_driver')}</label>
                 <input value={formState.current_driver || ''} onChange={e => setFormState({...formState, current_driver: e.target.value})} className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl p-4 font-bold text-xs outline-none focus:ring-8 focus:ring-market-blue/5 focus:border-market-blue focus:bg-white transition-all shadow-inner" placeholder="Nome do Responsável" />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Estado da Unidade</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('fleet.unit_state')}</label>
                 <select value={formState.status} onChange={e => setFormState({...formState, status: e.target.value as any})} className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl p-4 font-black text-[10px] uppercase tracking-[0.2em] outline-none focus:ring-8 focus:ring-market-blue/5 focus:border-market-blue focus:bg-white transition-all shadow-inner cursor-pointer appearance-none">
-                  <option value="Disponível">Disponível</option>
-                  <option value="Em Serviço">Em Serviço</option>
-                  <option value="Manutenção">Manutenção</option>
-                  <option value="Lavagem">Lavagem</option>
+                  <option value={t('fleet.available')}>{t('fleet.available')}</option>
+                  <option value={t('fleet.in_service')}>{t('fleet.in_service')}</option>
+                  <option value={t('fleet.maintenance')}>{t('fleet.maintenance')}</option>
+                  <option value={t('fleet.wash')}>{t('fleet.wash')}</option>
                 </select>
               </div>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Combustível (%)</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('fleet.fuel_level')} (%)</label>
                 <input type="number" min="0" max="100" value={formState.fuel_level} onChange={e => setFormState({...formState, fuel_level: Number(e.target.value)})} className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl p-4 font-bold text-xs outline-none focus:ring-8 focus:ring-market-blue/5 focus:border-market-blue focus:bg-white transition-all shadow-inner" />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Odométro Atual</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('fleet.odometer')} Atual</label>
                 <input type="number" value={formState.odometer} onChange={e => setFormState({...formState, odometer: Number(e.target.value)})} className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl p-4 font-bold text-xs outline-none focus:ring-8 focus:ring-market-blue/5 focus:border-market-blue focus:bg-white transition-all shadow-inner" placeholder="Ex: 12000" />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Manutenção Recente</label>
-                <input type="date" value={formState.last_maintenance} onChange={e => setFormState({...formState, last_maintenance: e.target.value})} className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl p-4 font-bold text-xs outline-none focus:ring-8 focus:ring-market-blue/5 focus:border-market-blue focus:bg-white transition-all shadow-inner" />
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('fleet.last_maint')}</label>
+                <input type="date" value={formState.last_maintenance} onChange={e => setFormState({...formState, last_maintenance: e.target.value})} className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl p-4 font-bold text-xs outline-none focus:ring-8 focus:ring-market-blue/5 focus:border-market-blue focus:bg-white transition-all shadow-inner" />
               </div>
 
               <div className="md:col-span-3 flex gap-4 pt-8 border-t border-slate-100 mt-4">
                 <button type="submit" disabled={saving} className="market-button market-button-primary flex-1 py-4 text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 shadow-2xl">
-                  {saving ? <Loader2 className="animate-spin" size={18} /> : <><Save size={18} /> {editingVehicleId ? 'Actualizar Unidade' : 'Integrar na Frota'}</>}
+                  {saving ? <Loader2 className="animate-spin" size={18} /> : <><Save size={18} /> {editingVehicleId ? t('fleet.update_unit') : t('fleet.integrate_fleet')}</>}
                 </button>
-                <button type="button" onClick={() => setShowModal(false)} className="market-button market-button-outline px-10 py-4 text-[10px] uppercase tracking-[0.2em]">Descartar</button>
+                <button type="button" onClick={() => setShowModal(false)} className="market-button market-button-outline px-10 py-4 text-[10px] uppercase tracking-[0.2em]">{t('fin.cancel')}</button>
               </div>
             </form>
           </div>

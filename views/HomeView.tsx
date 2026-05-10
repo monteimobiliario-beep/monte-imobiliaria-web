@@ -11,16 +11,29 @@ import { supabase, db } from '../supabaseClient';
 import { UserRole, Property } from '../types';
 import { useBranding } from '../BrandingContext';
 
+import { useTranslation } from '../src/i18nContext';
+
+import { useNavigate } from 'react-router-dom';
+
 interface HomeViewProps {
-  onNavigate: (path: string) => void;
-  onViewProperty: (id: string) => void;
+  // Props no longer needed
 }
 
-const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onViewProperty }) => {
+const HomeView: React.FC<HomeViewProps> = () => {
   const { settings } = useBranding();
+  const { t } = useTranslation();
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [featuredProperties, setFeaturedProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  const onViewProperty = (id: string) => {
+    navigate(`/imovel/${id}`);
+  };
+
+  const onNavigate = (path: string) => {
+    navigate(path.startsWith('/') ? path : `/${path}`);
+  };
 
       // Convert settings to compatible hero content
   const HERO_CONTENT = [
@@ -86,7 +99,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onViewProperty }) => {
               animate={{ opacity: 1, y: 0 }}
               className="text-3xl md:text-5xl font-display font-black text-white leading-tight tracking-tight"
             >
-              {settings.heroTitle}
+              {t('hero.title')}
             </motion.h1>
             
             <motion.p 
@@ -94,7 +107,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onViewProperty }) => {
               animate={{ opacity: 1 }}
               className="text-white/40 text-sm md:text-base max-w-lg font-medium leading-relaxed"
             >
-              {settings.heroDescription}
+              {t('hero.subtitle')}
             </motion.p>
           </div>
 
@@ -105,20 +118,20 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onViewProperty }) => {
           >
             <div className="flex-[2] flex items-center px-6 py-3 gap-3 md:border-r border-white/5 group">
               <Search size={18} className="text-market-blue" />
-              <input type="text" placeholder="Imagine o seu endereço..." className="w-full bg-transparent outline-none text-white font-medium text-sm placeholder:text-white/20 italic" />
+              <input type="text" placeholder={t('hero.placeholder')} className="w-full bg-transparent outline-none text-white font-medium text-sm placeholder:text-white/20 italic" />
             </div>
             <div className="flex-1 flex items-center px-6 py-3 gap-3">
               <MapPin size={18} className="text-market-gold" />
               <select className="w-full bg-transparent outline-none text-white font-bold text-sm cursor-pointer appearance-none bg-market-navy">
-                <option value="">Beira Exclusive</option>
-                <option value="">Maputo Prime</option>
+                <option value="">{t('hero.location.beira')}</option>
+                <option value="">{t('hero.location.maputo')}</option>
               </select>
             </div>
             <button 
               onClick={() => onNavigate('imoveis')} 
               className="bg-market-blue hover:bg-white hover:text-market-navy text-white px-8 py-3 rounded-[1.5rem] font-display font-bold text-[10px] uppercase tracking-widest transition-all shadow-xl"
             >
-              Consultar
+              {t('hero.cta')}
             </button>
           </motion.div>
         </div>
@@ -131,12 +144,12 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onViewProperty }) => {
             <div className="max-w-xl space-y-3">
               <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} className="flex items-center gap-3">
                 <div className="w-8 h-px bg-market-blue"></div>
-                <span className="text-market-blue font-bold text-[9px] uppercase tracking-[0.4em]">Destaques</span>
+                <span className="text-market-blue font-bold text-[9px] uppercase tracking-[0.4em]">{t('home.featured.label')}</span>
               </motion.div>
-              <h2 className="text-2xl md:text-3xl font-display font-black text-market-navy tracking-tight">Imóveis de <span className="italic font-serif font-light text-market-gold">Referência.</span></h2>
+              <h2 className="text-2xl md:text-3xl font-display font-black text-market-navy tracking-tight">{t('home.featured.title')}</h2>
             </div>
             <button onClick={() => onNavigate('imoveis')} className="group flex items-center gap-3 text-market-navy font-bold text-[10px] uppercase tracking-widest hover:text-market-blue transition-all">
-              Ver Tudo 
+              {t('home.featured.viewall')} 
               <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
@@ -186,17 +199,17 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onViewProperty }) => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} className="space-y-8">
                   <div className="space-y-4">
-                     <span className="text-market-blue font-bold text-[10px] uppercase tracking-[0.4em]">Monte Hub</span>
-                     <h2 className="text-3xl md:text-5xl font-display font-black text-white tracking-tight leading-tight">Transformando <span className="text-gradient">Posses</span> em <span className="italic font-serif font-light text-market-gold">Legados.</span></h2>
+                     <span className="text-market-blue font-bold text-[10px] uppercase tracking-[0.4em]">{t('home.philosophy.tag')}</span>
+                     <h2 className="text-3xl md:text-5xl font-display font-black text-white tracking-tight leading-tight">{t('home.philosophy.title')}</h2>
                   </div>
                   <p className="text-white/30 text-sm font-medium leading-relaxed max-w-md">
-                    A nossa abordagem transcende o imobiliário convencional. Unimos consultoria estratégica e gestão de ativos de elite.
+                    {t('home.philosophy.desc')}
                   </p>
                   
                   <div className="grid grid-cols-2 gap-4">
                      {[
-                       { icon: ShieldCheck, title: "Curadoria", desc: "Seleção rigorosa." },
-                       { icon: Waves, title: "Engenharia", desc: "Soluções técnicas." },
+                       { icon: ShieldCheck, title: t('home.curation.title'), desc: t('home.curation.desc') },
+                       { icon: Waves, title: t('home.engineering.title'), desc: t('home.engineering.desc') },
                      ].map((item, i) => (
                        <div key={i} className="p-4 bg-white/5 rounded-xl border border-white/5">
                           <item.icon className="text-market-blue mb-3" size={24} />
@@ -221,9 +234,9 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onViewProperty }) => {
         <div className="max-w-[1200px] mx-auto">
            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {[
-                { label: 'Oportunidades', title: 'Explorar Portfólio', path: 'imoveis', color: 'bg-market-blue' },
-                { label: 'Serviços', title: 'Consultoria Estratégica', path: 'servicos', color: 'bg-market-navy' },
-                { label: 'Gestão', title: 'Administração', path: 'login', color: 'bg-market-accent' },
+                { label: t('home.access.opps.label'), title: t('home.access.opps.title'), path: 'imoveis', color: 'bg-market-blue' },
+                { label: t('home.access.services.label'), title: t('home.access.services.title'), path: 'servicos', color: 'bg-market-navy' },
+                { label: t('home.access.mgmt.label'), title: t('home.access.mgmt.title'), path: 'login', color: 'bg-market-accent' },
               ].map((item, i) => (
                 <motion.div 
                   key={i}

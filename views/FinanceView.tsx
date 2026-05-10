@@ -40,6 +40,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
   ResponsiveContainer, LineChart, Line, Cell, AreaChart, Area
 } from 'recharts';
+import { useTranslation } from '../src/i18nContext';
 import { supabase, db } from '../supabaseClient';
 import { Transaction, Beneficiary, Project, TransactionStatus } from '../types';
 import { getFinancialInsights } from '../geminiService';
@@ -47,6 +48,7 @@ import { getFinancialInsights } from '../geminiService';
 type FinanceTab = 'transactions' | 'receivable' | 'payable' | 'reports';
 
 const FinanceView: React.FC = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<FinanceTab>('transactions');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
@@ -56,10 +58,10 @@ const FinanceView: React.FC = () => {
   const [aiInsight, setAiInsight] = useState<string>('');
   
   // Filtros Globais
-  const [periodFilter, setPeriodFilter] = useState('Este Mês');
-  const [projectFilter, setProjectFilter] = useState('Todas Unidades');
-  const [categoryFilter, setCategoryFilter] = useState('Todas');
-  const [statusFilter, setStatusFilter] = useState('Todos');
+  const [periodFilter, setPeriodFilter] = useState(t('fin.month'));
+  const [projectFilter, setProjectFilter] = useState(t('fin.all_units'));
+  const [categoryFilter, setCategoryFilter] = useState(t('fin.all'));
+  const [statusFilter, setStatusFilter] = useState(t('fin.all_statuses'));
   const [searchTerm, setSearchTerm] = useState('');
 
   // Estados de Lançamento
@@ -200,26 +202,37 @@ const FinanceView: React.FC = () => {
           <div className="flex items-center gap-2 bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200">
             <Calendar size={16} className="text-market-blue" />
             <select value={periodFilter} onChange={e => setPeriodFilter(e.target.value)} className="bg-transparent text-[10px] font-bold uppercase tracking-widest outline-none cursor-pointer text-market-navy">
-              <option>Hoje</option><option>Esta Semana</option><option>Este Mês</option><option>Este Ano</option><option>Personalizado</option>
+              <option value={t('fin.today')}>{t('fin.today')}</option>
+              <option value={t('fin.week')}>{t('fin.week')}</option>
+              <option value={t('fin.month')}>{t('fin.month')}</option>
+              <option value={t('fin.year')}>{t('fin.year')}</option>
+              <option value={t('fin.custom')}>{t('fin.custom')}</option>
             </select>
           </div>
           <div className="flex items-center gap-2 bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200">
             <Building size={16} className="text-market-blue" />
             <select value={projectFilter} onChange={e => setProjectFilter(e.target.value)} className="bg-transparent text-[10px] font-bold uppercase tracking-widest outline-none cursor-pointer text-market-navy">
-              <option>Todas Unidades</option>
+              <option value={t('fin.all_units')}>{t('fin.all_units')}</option>
               {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
           <div className="flex items-center gap-2 bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200">
             <Tag size={16} className="text-market-blue" />
             <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="bg-transparent text-[10px] font-bold uppercase tracking-widest outline-none cursor-pointer text-market-navy">
-              <option>Todas</option><option>Vendas</option><option>Operacional</option><option>Salários</option><option>Marketing</option>
+              <option value={t('fin.all')}>{t('fin.all')}</option>
+              <option value={t('fin.sales')}>{t('fin.sales')}</option>
+              <option value={t('fin.operational')}>{t('fin.operational')}</option>
+              <option value={t('fin.salaries')}>{t('fin.salaries')}</option>
+              <option value={t('fin.marketing')}>{t('fin.marketing')}</option>
             </select>
           </div>
           <div className="flex items-center gap-2 bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200">
             <AlertCircle size={16} className="text-market-blue" />
             <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="bg-transparent text-[10px] font-bold uppercase tracking-widest outline-none cursor-pointer text-market-navy">
-              <option>Todos</option><option>Pago</option><option>Pendente</option><option>Vencido</option>
+              <option value={t('fin.all_statuses')}>{t('fin.all_statuses')}</option>
+              <option value={t('fin.paid')}>{t('fin.paid')}</option>
+              <option value={t('fin.pending')}>{t('fin.pending')}</option>
+              <option value={t('fin.overdue')}>{t('fin.overdue')}</option>
             </select>
           </div>
         </div>
@@ -227,7 +240,7 @@ const FinanceView: React.FC = () => {
         <div className="flex items-center gap-4 w-full lg:w-auto">
           <div className="relative flex-1 lg:w-64">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-            <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Pesquisar..." className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl border border-slate-200 text-sm font-medium outline-none focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" />
+            <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder={t('header.search')} className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl border border-slate-200 text-sm font-medium outline-none focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" />
           </div>
           <button onClick={() => setShowLaunchModal(true)} className="market-button market-button-primary p-4 shadow-lg">
             <Plus size={20} />
@@ -238,13 +251,13 @@ const FinanceView: React.FC = () => {
       {/* 2) KPIs FINANCEIROS AVANÇADOS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-6">
         {[
-          { label: 'Receita', val: `${kpis.revenue.toLocaleString()} MT`, icon: <ArrowUpCircle size={20}/>, color: 'text-market-accent', bg: 'bg-emerald-50' },
-          { label: 'Despesa', val: `${kpis.expenses.toLocaleString()} MT`, icon: <ArrowDownCircle size={20}/>, color: 'text-rose-500', bg: 'bg-rose-50' },
-          { label: 'Lucro Líquido', val: `${kpis.profit.toLocaleString()} MT`, icon: <DollarSign size={20}/>, color: 'text-market-blue', bg: 'bg-blue-50' },
-          { label: 'Margem %', val: `${kpis.margin.toFixed(1)}%`, icon: <TrendingUp size={20}/>, color: 'text-indigo-500', bg: 'bg-indigo-50' },
-          { label: 'Saldo Caixa', val: `${(kpis.revenue - kpis.expenses).toLocaleString()} MT`, icon: <Zap size={20}/>, color: 'text-amber-500', bg: 'bg-amber-50' },
-          { label: 'A Receber', val: `${kpis.receivable.toLocaleString()} MT`, icon: <FileText size={20}/>, color: 'text-blue-400', bg: 'bg-blue-50' },
-          { label: 'A Pagar', val: `${kpis.payable.toLocaleString()} MT`, icon: <FileSpreadsheet size={20}/>, color: 'text-rose-400', bg: 'bg-rose-50' },
+          { label: t('finance.revenue'), val: `${kpis.revenue.toLocaleString()} MT`, icon: <ArrowUpCircle size={20}/>, color: 'text-market-accent', bg: 'bg-emerald-50' },
+          { label: t('finance.expenses'), val: `${kpis.expenses.toLocaleString()} MT`, icon: <ArrowDownCircle size={20}/>, color: 'text-rose-500', bg: 'bg-rose-50' },
+          { label: t('finance.profit'), val: `${kpis.profit.toLocaleString()} MT`, icon: <DollarSign size={20}/>, color: 'text-market-blue', bg: 'bg-blue-50' },
+          { label: t('fin.margin'), val: `${kpis.margin.toFixed(1)}%`, icon: <TrendingUp size={20}/>, color: 'text-indigo-500', bg: 'bg-indigo-50' },
+          { label: t('fin.cash_balance'), val: `${(kpis.revenue - kpis.expenses).toLocaleString()} MT`, icon: <Zap size={20}/>, color: 'text-amber-500', bg: 'bg-amber-50' },
+          { label: t('fin.accounts_receivable'), val: `${kpis.receivable.toLocaleString()} MT`, icon: <FileText size={20}/>, color: 'text-blue-400', bg: 'bg-blue-50' },
+          { label: t('fin.accounts_payable'), val: `${kpis.payable.toLocaleString()} MT`, icon: <FileSpreadsheet size={20}/>, color: 'text-rose-400', bg: 'bg-rose-50' },
         ].map((kpi, i) => (
           <div key={i} className="market-card p-6 hover:shadow-md transition-all">
             <div className={`w-10 h-10 ${kpi.bg} ${kpi.color} rounded-xl flex items-center justify-center mb-4`}>
@@ -261,8 +274,8 @@ const FinanceView: React.FC = () => {
         <div className="xl:col-span-8 market-card p-10 relative overflow-hidden">
            <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12">
               <div>
-                 <h3 className="text-xl font-bold text-market-navy uppercase">Fluxo de <span className="text-market-blue">Caixa Diário</span></h3>
-                 <p className="text-[9px] font-bold text-market-slate uppercase tracking-[0.5em] mt-2">Movimentação Real (Entradas/Saídas)</p>
+                 <h3 className="text-xl font-bold text-market-navy uppercase">{t('fin.cash_flow')} <span className="text-market-blue">{t('side.finance.sub')}</span></h3>
+                 <p className="text-[9px] font-bold text-market-slate uppercase tracking-[0.5em] mt-2">{t('fin.movement')}</p>
               </div>
            </div>
            
@@ -300,12 +313,12 @@ const FinanceView: React.FC = () => {
                  )) : (
                    <div className="flex flex-col items-center gap-4 py-10 opacity-40">
                       <Loader2 size={32} className="animate-spin" />
-                      <p className="text-[10px] font-bold uppercase tracking-widest">Consultando Rede Neural Financeira...</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest">{t('dash.thinking_neural')}</p>
                    </div>
                  )}
               </div>
            </div>
-           <button onClick={fetchData} className="mt-10 py-4 bg-white/5 border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all">Recalcular Cenários</button>
+           <button onClick={fetchData} className="mt-10 py-4 bg-white/5 border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all">{t('dash.recalculate')}</button>
         </div>
       </div>
 
@@ -351,12 +364,12 @@ const FinanceView: React.FC = () => {
              <table className="w-full text-left">
                <thead>
                  <tr className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                   <th className="px-6 py-4">Data / Vencimento</th>
-                   <th className="px-6 py-4">Descrição / Cliente</th>
-                   <th className="px-6 py-4">Categoria / Unidade</th>
-                   <th className="px-6 py-4">Status</th>
-                   <th className="px-6 py-4 text-right">Valor</th>
-                   <th className="px-6 py-4 text-center">Acções</th>
+                   <th className="px-6 py-4">{t('fin.date_due')}</th>
+                   <th className="px-6 py-4">{t('fin.desc_client')}</th>
+                   <th className="px-6 py-4">{t('fin.cat_unit')}</th>
+                   <th className="px-6 py-4">{t('footer.legal.status')}</th>
+                   <th className="px-6 py-4 text-right">{t('finance.amount')}</th>
+                   <th className="px-6 py-4 text-center">{t('fin.actions')}</th>
                  </tr>
                </thead>
                <tbody className="divide-y divide-slate-100">
@@ -374,12 +387,12 @@ const FinanceView: React.FC = () => {
                      </td>
                      <td className="px-6 py-6">
                         <p className="text-sm font-bold text-market-navy leading-none mb-1.5">{t.description}</p>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{t.client_supplier_name || 'Fluxo Interno'}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{t.client_supplier_name || t('fin.internal_flow')}</p>
                      </td>
                      <td className="px-6 py-6">
                         <div className="flex flex-col gap-1.5">
                            <span className="text-[9px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded uppercase w-fit tracking-wider">{t.category}</span>
-                           <span className="text-[9px] font-bold text-market-blue uppercase tracking-tighter truncate max-w-[150px]">{t.project?.name || 'Geral'}</span>
+                           <span className="text-[9px] font-bold text-market-blue uppercase tracking-tighter truncate max-w-[150px]">{t.project?.name || t('fin.general')}</span>
                         </div>
                      </td>
                      <td className="px-6 py-6">

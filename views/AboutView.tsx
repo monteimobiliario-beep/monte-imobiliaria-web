@@ -3,8 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { Target, Users, Heart, History, Sparkles, ChevronLeft, ChevronRight, CheckCircle2, ShieldCheck, Briefcase, MapPin, TrendingUp } from 'lucide-react';
 import { MOCK_PROJECTS } from '../constants';
 import { useBranding } from '../BrandingContext';
+import { useTranslation } from '../src/i18nContext';
 
 const AboutView: React.FC = () => {
+  const { t } = useTranslation();
   const { settings } = useBranding();
   const [currentProject, setCurrentProject] = useState(0);
 
@@ -35,13 +37,13 @@ const AboutView: React.FC = () => {
 
         <div className="relative z-10 w-full max-w-7xl px-6 text-center">
           <div className="inline-flex items-center gap-2 bg-market-blue/10 backdrop-blur-md border border-white/5 px-4 py-1.5 rounded-full text-market-blue text-[9px] font-bold uppercase tracking-[0.4em] mb-4">
-            <TrendingUp size={12} /> Nossa Trajectória
+            <TrendingUp size={12} /> {t('about.hero.tag')}
           </div>
           <h1 className="text-2xl md:text-4xl font-display font-black text-white tracking-tight">
-            Sobre a <span className="text-market-blue">{settings.companyName}</span>
+            {t('about.hero.title')} <span className="text-market-blue">{settings.companyName}</span>
           </h1>
           <p className="text-white/30 text-xs md:text-sm max-w-lg mx-auto mt-4 font-medium italic">
-            Liderança técnica e compromisso com o desenvolvimento imobiliário.
+            {t('about.hero.subtitle')}
           </p>
         </div>
       </section>
@@ -56,15 +58,15 @@ const AboutView: React.FC = () => {
               <div className="w-14 h-14 bg-slate-50 text-market-blue rounded-2xl flex items-center justify-center shadow-inner">
                 <History size={28} />
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-market-navy tracking-tight">História de Inovação</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-market-navy tracking-tight">{t('about.history.title')}</h2>
             </div>
             
             <div className="space-y-6 text-slate-600 text-lg leading-relaxed">
               <p>
-                Fundada no coração estratégico do <span className="text-market-blue font-bold">Bairro Alto da Manga</span>, a {settings.companyName} nasceu para profissionalizar o mercado imobiliário em Moçambique.
+                {t('about.history.p1')}
               </p>
               <p>
-                Ao longo dos anos, consolidámo-nos como um hub técnico multidisciplinar. Hoje, garantimos a integridade estrutural das obras, a rentabilidade de unidades hoteleiras e a transparência total na gestão de condomínios e ativos.
+                {t('about.history.p2')}
               </p>
             </div>
           </div>
@@ -76,8 +78,8 @@ const AboutView: React.FC = () => {
         <section className="mb-24">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <div>
-              <p className="text-market-blue font-bold text-xs uppercase tracking-widest mb-3">Portfolio de Sucesso</p>
-              <h2 className="text-3xl md:text-5xl font-bold text-market-navy tracking-tight leading-tight">Projetos & Serviços <br/><span className="text-market-blue">Concluídos</span></h2>
+              <p className="text-market-blue font-bold text-xs uppercase tracking-widest mb-3">{t('about.portfolio.tag')}</p>
+              <h2 className="text-3xl md:text-5xl font-bold text-market-navy tracking-tight leading-tight">{t('about.portfolio.title')} <br/><span className="text-market-blue">{t('about.portfolio.subtitle')}</span></h2>
             </div>
             <div className="flex gap-4">
                <button onClick={prevProject} className="p-4 rounded-xl border border-slate-200 hover:bg-market-blue hover:text-white transition-all active:scale-95"><ChevronLeft size={24} /></button>
@@ -97,7 +99,7 @@ const AboutView: React.FC = () => {
                 <div className="absolute bottom-12 left-8 right-8 flex flex-col md:flex-row md:items-end justify-between gap-8">
                   <div className="max-w-2xl bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20 shadow-2xl">
                     <div className="flex items-center gap-3 mb-4">
-                      <span className="px-3 py-1 bg-market-blue text-white text-[10px] font-bold uppercase tracking-widest rounded-lg shadow-lg">Serviço Entregue</span>
+                      <span className="px-3 py-1 bg-market-blue text-white text-[10px] font-bold uppercase tracking-widest rounded-lg shadow-lg">{t('about.portfolio.delivered')}</span>
                       <span className="flex items-center gap-2 text-[11px] font-bold text-white/80 uppercase tracking-widest"><MapPin size={14} className="text-market-blue" /> Beira, MZ</span>
                     </div>
                     <h3 className="text-2xl md:text-4xl font-bold text-white tracking-tight leading-tight">{proj.name}</h3>
@@ -113,14 +115,14 @@ const AboutView: React.FC = () => {
       <section className="mt-24 px-6 max-w-7xl mx-auto">
          <div className="bg-market-blue rounded-[2.5rem] p-12 md:p-20 text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-12 shadow-2xl">
             <div className="relative z-10 max-w-2xl text-center md:text-left">
-               <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-tight mb-6">Confie na Liderança da Monte Imobiliária</h2>
+               <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-tight mb-6">{t('about.cta.title')}</h2>
                <p className="text-white/80 text-lg md:text-xl leading-relaxed">
-                 Estamos prontos para gerir, construir e realizar o seu próximo projecto imobiliário com rigor técnico.
+                 {t('about.cta.desc')}
                </p>
             </div>
             <div className="relative z-10 shrink-0">
                <button onClick={() => window.location.href='/contato'} className="px-12 py-4 bg-market-navy text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-xl hover:bg-white hover:text-market-navy transition-all flex items-center gap-3 active:scale-95">
-                  Falar Connosco <ChevronRight size={20} />
+                  {t('about.cta.button')} <ChevronRight size={20} />
                </button>
             </div>
          </div>

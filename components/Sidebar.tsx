@@ -6,10 +6,11 @@ import {
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { User } from '../types';
+import { useTranslation } from '../src/i18nContext';
+
+import { NavLink } from 'react-router-dom';
 
 interface SidebarProps {
-  currentPath: string;
-  onNavigate: (path: string) => void;
   user: User;
   isOpen: boolean;
   toggleSidebar: () => void;
@@ -17,8 +18,9 @@ interface SidebarProps {
 
 import { useBranding } from '../BrandingContext';
 
-const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, user, isOpen, toggleSidebar }) => {
+const Sidebar: React.FC<SidebarProps> = ({ user, isOpen, toggleSidebar }) => {
   const { settings } = useBranding();
+  const { t, tRole } = useTranslation();
   const [stats, setStats] = useState({ revenue: 0, employees: 0, properties: 0 });
   const [isHovered, setIsHovered] = useState(false);
   
@@ -45,12 +47,12 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, user, isOpen
   }
 
   const hubItems = [
-    { label: 'Fluxo Financeiro', sub: 'Cash Control', val: `${(stats.revenue/1000).toFixed(0)}k`, path: 'finance', icon: <Wallet size={20} />, activeColor: 'bg-market-blue', glowColor: 'shadow-market-blue/40' },
-    { label: 'Gestão Staff', sub: 'Recursos', val: stats.employees.toString(), path: 'hr', icon: <Users size={20} />, activeColor: 'bg-market-blue', glowColor: 'shadow-market-blue/40' },
-    { label: 'Catálogo Ativo', sub: 'Imóveis', val: stats.properties.toString(), path: 'catalog', icon: <LayoutTemplate size={20} />, activeColor: 'bg-market-blue', glowColor: 'shadow-market-blue/40' },
-    { label: 'Obras & Projetos', sub: 'Build Ops', val: 'V14', path: 'projects', icon: <Briefcase size={20} />, activeColor: 'bg-market-blue', glowColor: 'shadow-market-blue/40' },
-    { label: 'Operações Frota', sub: 'Logística', val: 'Active', path: 'fleet', icon: <Truck size={20} />, activeColor: 'bg-market-blue', glowColor: 'shadow-market-blue/40' },
-    { label: 'Configurações', sub: 'Security', val: 'v15', path: 'admin', icon: <Settings2 size={20} />, activeColor: 'bg-market-blue', glowColor: 'shadow-market-blue/40' },
+    { label: t('side.finance'), sub: t('side.finance.sub'), val: `${(stats.revenue/1000).toFixed(0)}k`, path: '/finance', icon: <Wallet size={20} />, activeColor: 'bg-market-blue', glowColor: 'shadow-market-blue/40' },
+    { label: t('side.hr'), sub: t('side.hr.sub'), val: stats.employees.toString(), path: '/hr', icon: <Users size={20} />, activeColor: 'bg-market-blue', glowColor: 'shadow-market-blue/40' },
+    { label: t('side.properties'), sub: t('side.props.sub'), val: stats.properties.toString(), path: '/catalog', icon: <LayoutTemplate size={20} />, activeColor: 'bg-market-blue', glowColor: 'shadow-market-blue/40' },
+    { label: t('side.projects'), sub: t('side.projects.sub'), val: 'V14', path: '/projects', icon: <Briefcase size={20} />, activeColor: 'bg-market-blue', glowColor: 'shadow-market-blue/40' },
+    { label: t('side.fleet'), sub: t('side.fleet.sub'), val: 'Active', path: '/fleet', icon: <Truck size={20} />, activeColor: 'bg-market-blue', glowColor: 'shadow-market-blue/40' },
+    { label: t('side.admin'), sub: t('side.admin.sub'), val: 'v15', path: '/admin', icon: <Settings2 size={20} />, activeColor: 'bg-market-blue', glowColor: 'shadow-market-blue/40' },
   ];
 
   return (
@@ -71,7 +73,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, user, isOpen
           <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
           
           <div className="p-2 border-b border-white/5 flex items-center justify-between relative z-10">
-            <div className="flex items-center group/logo cursor-pointer" onClick={() => onNavigate('dashboard')}>
+            <NavLink to="/dashboard" className="flex items-center group/logo cursor-pointer">
               <div className="w-14 h-14 flex items-center justify-center transition-all duration-500">
                 <img 
                   src={systemLogo || null} 
@@ -82,49 +84,52 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, user, isOpen
                   }}
                 />
               </div>
-            </div>
+            </NavLink>
             <button onClick={toggleSidebar} className="md:hidden text-slate-500 hover:text-white transition-colors p-1.5"><X size={16} /></button>
           </div>
 
           <nav className="flex-1 px-2 py-1.5 space-y-0.5 overflow-y-auto custom-scrollbar-dark relative z-10">
             <div className="mb-1 px-2 flex items-center justify-between">
-              <span className="text-[6px] font-black text-slate-500 uppercase tracking-[0.3em]">Operações Core</span>
+              <span className="text-[6px] font-black text-slate-500 uppercase tracking-[0.3em]">{t('side.ops')}</span>
               <button onClick={fetchMiniStats} className="p-1 hover:bg-white/5 rounded-lg text-slate-600 hover:text-market-blue transition-all active:rotate-180 duration-700">
                 <RefreshCw size={8} />
               </button>
             </div>
 
             {hubItems.map((item) => {
-              const isActive = currentPath === item.path;
               return (
-                <button
+                <NavLink
                   key={item.path}
+                  to={item.path}
                   onClick={() => {
-                    onNavigate(item.path);
                     if (window.innerWidth < 768) toggleSidebar();
                   }}
-                  className={`w-full group flex items-center justify-between p-1 rounded-[0.5rem] transition-all duration-500 border ${
+                  className={({ isActive }) => `w-full group flex items-center justify-between p-1 rounded-[0.5rem] transition-all duration-500 border ${
                     isActive 
                     ? `bg-white/10 border-white/20 shadow-xl ${item.glowColor} brightness-110` 
                     : 'hover:bg-white/[0.05] border-transparent hover:border-white/10'
                   }`}
                 >
-                  <div className="flex items-center gap-1.5">
-                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-700 ${
-                      isActive ? `${item.activeColor} text-white shadow-lg` : 'bg-white/5 text-slate-500 group-hover:text-white group-hover:bg-white/10'
-                    }`}>
-                      {React.cloneElement(item.icon as React.ReactElement, { size: 10 })}
-                    </div>
-                    <div className="text-left">
-                      <span className={`block text-[6.5px] font-black uppercase tracking-[0.05em] leading-none mb-0.5 transition-all ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}`}>{item.label}</span>
-                      <span className={`text-[5px] font-bold uppercase tracking-widest transition-all ${isActive ? 'text-white/40' : 'text-slate-600 group-hover:text-slate-400'}`}>{item.sub}</span>
-                    </div>
-                  </div>
-                  <div className="text-right flex items-center gap-1">
-                    <span className={`text-[6px] font-black tracking-tighter transition-all ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-white'}`}>{item.val}</span>
-                    <ChevronRight size={8} className={`transition-all duration-700 ${isActive ? 'text-white opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0'}`} />
-                  </div>
-                </button>
+                  {({ isActive }) => (
+                    <>
+                      <div className="flex items-center gap-1.5">
+                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-700 ${
+                          isActive ? `${item.activeColor} text-white shadow-lg` : 'bg-white/5 text-slate-500 group-hover:text-white group-hover:bg-white/10'
+                        }`}>
+                          {React.cloneElement(item.icon as React.ReactElement, { size: 10 })}
+                        </div>
+                        <div className="text-left">
+                          <span className={`block text-[6.5px] font-black uppercase tracking-[0.05em] leading-none mb-0.5 transition-all ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}`}>{item.label}</span>
+                          <span className={`text-[5px] font-bold uppercase tracking-widest transition-all ${isActive ? 'text-white/40' : 'text-slate-600 group-hover:text-slate-400'}`}>{item.sub}</span>
+                        </div>
+                      </div>
+                      <div className="text-right flex items-center gap-1">
+                        <span className={`text-[6px] font-black tracking-tighter transition-all ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-white'}`}>{item.val}</span>
+                        <ChevronRight size={8} className={`transition-all duration-700 ${isActive ? 'text-white opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0'}`} />
+                      </div>
+                    </>
+                  )}
+                </NavLink>
               );
             })}
           </nav>
@@ -144,7 +149,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, user, isOpen
                   </div>
                   <div className="min-w-0">
                      <p className="text-[8px] font-black text-white truncate leading-none mb-0.5">{user.name}</p>
-                     <p className="text-[5.5px] font-bold text-slate-500 uppercase truncate tracking-widest">{user.role}</p>
+                     <p className="text-[5.5px] font-bold text-slate-500 uppercase truncate tracking-widest">{tRole(user.role)}</p>
                   </div>
                </div>
             </div>

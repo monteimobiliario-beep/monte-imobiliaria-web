@@ -10,6 +10,9 @@ import {
 import { Property } from '../types';
 import { db } from '../supabaseClient';
 import { useBranding } from '../BrandingContext';
+import { useTranslation } from '../src/i18nContext';
+
+import { useNavigate } from 'react-router-dom';
 
 interface Message {
   id: string;
@@ -20,14 +23,19 @@ interface Message {
 
 interface PropertyDetailViewProps {
   propertyId: string | null;
-  onBack: () => void;
 }
 
-const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ propertyId, onBack }) => {
+const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ propertyId }) => {
+  const { t } = useTranslation();
   const { settings } = useBranding();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [property, setProperty] = useState<Property | null>(null);
   const [relatedProperties, setRelatedProperties] = useState<Property[]>([]);
+
+  const onBack = () => {
+    navigate(-1); // Go back in history
+  };
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -45,7 +53,7 @@ const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ propertyId, onB
 
   // Chat States
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', text: 'Olá! Como posso ajudar com este imóvel?', sender: 'agent', timestamp: new Date() }
+    { id: '1', text: t('detail.chat.initial'), sender: 'agent', timestamp: new Date() }
   ]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -128,8 +136,8 @@ const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ propertyId, onB
 
   if (!property && !isLoading) return (
     <div className="py-32 text-center">
-      <p className="text-2xl italic text-market-navy/40">Imóvel não encontrado.</p>
-      <button onClick={onBack} className="text-market-blue font-bold uppercase tracking-widest mt-8 hover:underline">Voltar ao Catálogo</button>
+      <p className="text-2xl italic text-market-navy/40">{t('detail.not_found')}</p>
+      <button onClick={onBack} className="text-market-blue font-bold uppercase tracking-widest mt-8 hover:underline">{t('detail.back')}</button>
     </div>
   );
 
@@ -221,7 +229,7 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
       setTimeout(() => {
         const agentMsg: Message = {
           id: (Date.now() + 1).toString(),
-          text: 'Recebemos a sua mensagem! Um dos nossos consultores irá analisar o seu pedido e responder via WhatsApp ou Email brevemente. Posso ajudar com mais alguma coisa?',
+          text: t('detail.chat.response'),
           sender: 'agent',
           timestamp: new Date()
         };
@@ -291,7 +299,7 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
               onClick={() => setShowGallery(false)} 
               className="group flex items-center gap-4 text-white hover:text-market-blue transition-all font-display font-bold text-[10px] uppercase tracking-widest"
             >
-              Fechar <div className="p-3 bg-white/5 rounded-full group-hover:bg-market-blue transition-all"><X size={18} /></div>
+              {t('dash.view_all')} <span className="p-3 bg-white/5 rounded-full group-hover:bg-market-blue transition-all"><X size={18} /></span>
             </button>
           </div>
           
@@ -349,7 +357,7 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
           </div>
           <div className="flex items-center gap-4">
              <div className="text-right hidden sm:block">
-                <p className="text-[8px] font-bold text-market-blue uppercase tracking-widest leading-none mb-1">Preço Venda</p>
+                <p className="text-[8px] font-bold text-market-blue uppercase tracking-widest leading-none mb-1">{t('detail.price_label')}</p>
                 <p className="text-xl font-display font-black text-market-navy leading-none">
                   {property?.price.toLocaleString('pt-MZ')} <span className="text-[10px] text-market-slate/60 font-medium">MT</span>
                 </p>
@@ -368,7 +376,7 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
                   }}
                   className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-market-navy hover:bg-white hover:text-market-blue hover:shadow-lg transition-all font-display font-bold text-[8px] uppercase tracking-widest"
                 >
-                  <Share2 size={12} /> <span className="hidden md:inline">Partilhar</span>
+                  <Share2 size={12} /> <span className="hidden md:inline">{t('detail.share')}</span>
                 </button>
                 <button 
                   onClick={() => setIsFavorited(!isFavorited)}
@@ -435,7 +443,7 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
                            <button 
                              onClick={(e) => { e.stopPropagation(); setShowGallery(true); }} 
                              className="p-4 hover:bg-market-blue hover:text-white transition-all"
-                             title="Ver Galeria Completa"
+                             title={t('detail.gallery.title')}
                            >
                              <Maximize2 size={20} />
                            </button>
@@ -507,9 +515,9 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
 
                    <div className="grid grid-cols-3 gap-8 pt-12 border-t border-slate-100">
                       {[
-                        { icon: <BedDouble size={24} />, label: 'Suítes Privativas', value: property.bedrooms },
-                        { icon: <Bath size={24} />, label: 'Banheiros', value: property.bathrooms },
-                        { icon: <Ruler size={24} />, label: 'Área do Terreno', value: `${property.area} m²` },
+                        { icon: <BedDouble size={24} />, label: t('detail.suites'), value: property.bedrooms },
+                        { icon: <Bath size={24} />, label: t('detail.bathrooms'), value: property.bathrooms },
+                        { icon: <Ruler size={24} />, label: t('detail.area'), value: `${property.area} m²` },
                       ].map((stat, i) => (
                         <div key={i} className="text-center group cursor-default">
                            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-market-blue mx-auto mb-4 group-hover:bg-market-blue group-hover:text-white transition-all duration-500 shadow-sm border border-slate-100">
@@ -582,8 +590,8 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-16 md:gap-24 items-start">
                  <div className="space-y-10 order-2 xl:order-1">
                     <div className="space-y-3">
-                       <h2 className="text-[11px] font-display font-bold text-market-slate uppercase tracking-[0.5em]">Proximidade</h2>
-                       <p className="text-3xl font-display font-bold text-market-navy tracking-tighter">Mobilidade Estratégica</p>
+                       <h2 className="text-[11px] font-display font-bold text-market-slate uppercase tracking-[0.5em]">{t('detail.proximity')}</h2>
+                       <p className="text-3xl font-display font-bold text-market-navy tracking-tighter">{t('detail.mobility')}</p>
                     </div>
                     <div className="space-y-4">
                        {(property.nearby || [
@@ -634,10 +642,10 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
               <div className="pt-20 border-t border-slate-100">
                  <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
                     <div className="space-y-4">
-                       <h2 className="text-3xl md:text-5xl font-display font-black text-market-navy tracking-tighter">Continuidade</h2>
-                       <p className="text-market-slate text-lg font-medium">Explore outros ativos da prestigiada coleção Monte Hub.</p>
+                       <h2 className="text-3xl md:text-5xl font-display font-black text-market-navy tracking-tighter">{t('detail.continuity')}</h2>
+                       <p className="text-market-slate text-lg font-medium">{t('detail.explore_more')}</p>
                     </div>
-                    <button onClick={() => { onBack(); window.scrollTo(0, 0); }} className="px-8 py-4 bg-white border border-slate-100 rounded-full text-market-navy font-display font-bold text-[10px] uppercase tracking-widest hover:bg-market-navy hover:text-white transition-all shadow-xl">
+                    <button onClick={() => { navigate('/imoveis'); window.scrollTo(0, 0); }} className="px-8 py-4 bg-white border border-slate-100 rounded-full text-market-navy font-display font-bold text-[10px] uppercase tracking-widest hover:bg-market-navy hover:text-white transition-all shadow-xl">
                       Ver Portfólio Completo
                     </button>
                  </div>
@@ -646,7 +654,7 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
                       <div 
                         key={p.id} 
                         className="market-card group cursor-pointer hover:-translate-y-4" 
-                        onClick={() => { onBack(); window.scrollTo(0,0); }}
+                        onClick={() => { navigate(`/imovel/${p.id}`); window.scrollTo(0,0); }}
                       >
                          <div className="relative h-64 overflow-hidden">
                             <img src={p.image || undefined} className="w-full h-full object-cover transition-all duration-[1500ms] group-hover:scale-110" alt="" />
@@ -684,10 +692,10 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
                         <img src={`https://picsum.photos/seed/concierge_${property?.id}/150`} className="w-10 h-10 rounded-xl object-cover border-2 border-white/10 shadow-xl" alt="" />
                       </div>
                       <div className="relative z-10">
-                        <p className="text-lg font-display font-bold text-white tracking-tight leading-none mb-1">Concierge VIP</p>
-                        <p className="text-[7px] font-bold text-market-blue uppercase tracking-widest flex items-center gap-1.5">
-                           <div className="w-1 h-1 bg-market-blue rounded-full"></div> Especialista Ativo
-                        </p>
+                        <div className="text-lg font-display font-bold text-white tracking-tight leading-none mb-1">{t('detail.concierge')}</div>
+                        <div className="text-[7px] font-bold text-market-blue uppercase tracking-widest flex items-center gap-1.5">
+                           <div className="w-1 h-1 bg-market-blue rounded-full"></div> {t('detail.specialist')}
+                        </div>
                       </div>
                    </div>
 
@@ -699,7 +707,7 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
                              <div className="relative group">
                                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-market-blue transition-colors" size={14} />
                                 <input 
-                                  placeholder="Seu Nome" 
+                                  placeholder={t('detail.form.name')} 
                                   value={contactForm.name}
                                   onChange={e => setContactForm({...contactForm, name: e.target.value})}
                                   className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-white/20 focus:ring-2 focus:ring-market-blue/40 outline-none transition-all" 
@@ -709,14 +717,14 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-market-blue transition-colors" size={14} />
                                 <input 
                                   type="email"
-                                  placeholder="Seu Email" 
+                                  placeholder={t('detail.form.email')} 
                                   value={contactForm.email}
                                   onChange={e => setContactForm({...contactForm, email: e.target.value})}
                                   className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-white/20 focus:ring-2 focus:ring-market-blue/40 outline-none transition-all" 
                                 />
                              </div>
                              <textarea 
-                               placeholder="Sua Mensagem / Dúvida" 
+                               placeholder={t('detail.form.message')} 
                                rows={3}
                                value={contactForm.message}
                                onChange={e => setContactForm({...contactForm, message: e.target.value})}
@@ -730,7 +738,7 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
                              className="w-full market-button market-button-primary py-3.5 text-[9px] uppercase tracking-widest flex items-center justify-center gap-3 shadow-2xl relative overflow-hidden group/btn disabled:opacity-50"
                           >
                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000"></div>
-                             {isSending ? <Loader2 size={16} className="animate-spin" /> : <><Sparkles size={14} className="animate-pulse" /> Manifestar Interesse</>}
+                             {isSending ? <Loader2 size={16} className="animate-spin" /> : <><Sparkles size={14} className="animate-pulse" /> {t('detail.interest')}</>}
                           </button>
                         </>
                       ) : (
@@ -739,8 +747,8 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
                               <div className="inline-flex items-center justify-center w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-full mb-3">
                                  <CheckCircle2 size={24} />
                               </div>
-                              <p className="text-white font-bold text-sm">Dados Registados!</p>
-                              <p className="text-white/40 text-[10px] mt-1">Como prefere ser contactado?</p>
+                              <p className="text-white font-bold text-sm">{t('detail.success.title')}</p>
+                              <p className="text-white/40 text-[10px] mt-1">{t('detail.success.contact')}</p>
                            </div>
                            
                            <div className="grid grid-cols-1 gap-3">
@@ -750,13 +758,13 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
                                 rel="noopener noreferrer"
                                 className="w-full bg-[#25D366] hover:bg-[#1db954] text-white py-4 rounded-xl flex items-center justify-center gap-3 font-bold text-[10px] uppercase tracking-widest transition-all shadow-xl active:scale-95"
                               >
-                                 <MessageCircle size={18} /> WhatsApp Directo
+                                 <MessageCircle size={18} /> {t('detail.success.whatsapp')}
                               </a>
                               <a 
                                 href={getContactMessage('email')}
                                 className="w-full bg-white/10 hover:bg-white/20 text-white py-4 rounded-xl flex items-center justify-center gap-3 font-bold text-[10px] uppercase tracking-widest transition-all border border-white/10 active:scale-95"
                               >
-                                 <Mail size={18} /> Enviar por Email
+                                 <Mail size={18} /> {t('detail.success.email')}
                               </a>
                            </div>
                            
@@ -767,7 +775,7 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
                              }}
                              className="w-full text-white/30 hover:text-white text-[9px] uppercase tracking-widest py-2 transition-colors font-bold"
                            >
-                              Novo Pedido
+                               {t('detail.success.new_req')}
                            </button>
                         </div>
                       )}

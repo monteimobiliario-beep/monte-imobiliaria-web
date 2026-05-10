@@ -2,13 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { Phone, Mail, MapPin, Facebook, Instagram, Linkedin, ChevronUp } from 'lucide-react';
 import { useBranding } from '../BrandingContext';
+import { useTranslation } from '../src/i18nContext';
 
-interface FooterProps {
-  onNavigate: (path: string) => void;
-}
+import { NavLink } from 'react-router-dom';
 
-const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
+const Footer: React.FC = () => {
   const { settings } = useBranding();
+  const { t } = useTranslation();
   const systemLogo = settings.logoUrl;
 
   const scrollToTop = () => {
@@ -21,7 +21,7 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
       <button 
         onClick={scrollToTop}
         className="absolute -top-6 right-8 md:right-12 w-10 h-10 bg-market-blue text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-90 transition-all z-20"
-        title="Rolar para cima"
+        title={t('footer.legal.terms')}
       >
         <ChevronUp size={20} />
       </button>
@@ -38,7 +38,7 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </div>
           </div>
           <p className="text-[9px] leading-relaxed font-medium text-white/30 max-w-[200px]">
-            Curadoria imobiliária e manutenção em Moçambique.
+            {t('footer.tagline')}
           </p>
           <div className="flex gap-2">
             <button className="p-1.5 bg-white/5 rounded-lg hover:bg-market-blue hover:text-white transition-all border border-white/5"><Facebook size={12} /></button>
@@ -48,17 +48,17 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         </div>
 
         <div>
-          <h4 className="text-white font-display font-bold text-[8px] uppercase tracking-widest mb-2">Links</h4>
+          <h4 className="text-white font-display font-bold text-[8px] uppercase tracking-widest mb-2">{t('footer.links.title')}</h4>
           <ul className="space-y-1 text-[8px] font-bold uppercase tracking-widest">
-            <li><button onClick={() => onNavigate('home')} className="hover:text-market-blue transition-all">Início</button></li>
-            <li><button onClick={() => onNavigate('imoveis')} className="hover:text-market-blue transition-all">Imóveis</button></li>
-            <li><button onClick={() => onNavigate('servicos')} className="hover:text-market-blue transition-all">Serviços</button></li>
-            <li><button onClick={() => onNavigate('login')} className="hover:text-amber-500 transition-all">Gestão [Staff]</button></li>
+            <li><NavLink to="/" className="hover:text-market-blue transition-all">{t('nav.home')}</NavLink></li>
+            <li><NavLink to="/imoveis" className="hover:text-market-blue transition-all">{t('nav.catalog')}</NavLink></li>
+            <li><NavLink to="/servicos" className="hover:text-market-blue transition-all">{t('nav.services')}</NavLink></li>
+            <li><NavLink to="/login" className="hover:text-amber-500 transition-all">{t('footer.links.staff')}</NavLink></li>
           </ul>
         </div>
 
         <div>
-          <h4 className="text-white font-display font-bold text-[8px] uppercase tracking-widest mb-2">Unidades</h4>
+          <h4 className="text-white font-display font-bold text-[8px] uppercase tracking-widest mb-2">{t('footer.units.title')}</h4>
           <ul className="space-y-1 text-[8px] font-bold uppercase tracking-widest">
             <li className="text-white/20">Beira</li>
             <li className="text-white/20">Maputo</li>
@@ -67,7 +67,7 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         </div>
 
         <div>
-          <h4 className="text-white font-display font-bold text-[8px] uppercase tracking-widest mb-2">Contacto</h4>
+           <h4 className="text-white font-display font-bold text-[8px] uppercase tracking-widest mb-2">{t('footer.contact.title')}</h4>
           <ul className="space-y-1 text-[9px] font-medium italic">
             <li>
               <a href="https://wa.me/258875018283" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-market-blue transition-colors">
@@ -85,8 +85,8 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
       <div className="max-w-[1500px] mx-auto pt-2 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-2 text-[7px] font-bold uppercase tracking-[0.2em] text-white/10">
         <p>© 2024 Monte Hub Group.</p>
         <div className="flex gap-4">
-          <button className="hover:text-white">Privacidade</button>
-          <button className="hover:text-white">Termos</button>
+          <button className="hover:text-white">{t('footer.legal.privacy')}</button>
+          <button className="hover:text-white">{t('footer.legal.terms')}</button>
         </div>
       </div>
     </footer>

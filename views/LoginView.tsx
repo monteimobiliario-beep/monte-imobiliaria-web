@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase, db } from '../supabaseClient';
 import { Mail, Lock, Zap, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { UserRole } from '../types';
+import { useTranslation } from '../src/i18nContext';
 
 interface LoginViewProps {
   onLoginSuccess: (user: any) => void;
@@ -10,6 +11,7 @@ interface LoginViewProps {
 }
 
 const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -46,7 +48,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
       } else if (err.message?.includes('Lock broken')) {
         setError('Erro de sincronização de sessão. Por favor, tente clicar em entrar novamente.');
       } else {
-        setError(err.message === 'Invalid login credentials' ? 'Credenciais de acesso inválidas. Verifique e-mail e senha.' : err.message);
+        setError(err.message === 'Invalid login credentials' ? t('login.error.creds') : err.message);
       }
     } finally {
       setLoading(false);
@@ -81,7 +83,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
           <form onSubmit={handleSignIn} className="space-y-6 pointer-events-auto">
             <div className="space-y-2">
               <label htmlFor="email-field" className="text-[10px] font-bold uppercase tracking-widest ml-2 flex items-center gap-2 text-market-slate">
-                <Mail size={12} className="text-market-blue" /> Identificador Staff
+                <Mail size={12} className="text-market-blue" /> {t('login.staff_id')}
               </label>
               <input 
                 id="email-field"
@@ -98,7 +100,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
             <div className="space-y-2">
               <div className="flex justify-between items-center ml-2">
                 <label htmlFor="pass-field" className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-market-slate">
-                  <Lock size={12} className="text-market-blue" /> Chave de Segurança
+                  <Lock size={12} className="text-market-blue" /> {t('login.security_key')}
                 </label>
               </div>
               <input 
@@ -123,7 +125,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
                   <Loader2 className="animate-spin" size={22} />
                 ) : (
                   <>
-                    Entrar no Ecossistema <Zap size={18} className="fill-white" />
+                    {t('login.title')} <Zap size={18} className="fill-white" />
                   </>
                 )}
               </button>
@@ -152,7 +154,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
                   }}
                   className="text-[9px] font-bold text-market-blue uppercase tracking-widest hover:underline opacity-60 hover:opacity-100 transition-all"
                 >
-                  Registar Novo Colaborador [Staff]
+                  {t('login.register_staff')}
                 </button>
               </div>
 
@@ -160,7 +162,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
                 <div className="absolute inset-0 flex items-center px-2">
                   <div className="w-full border-t border-slate-100"></div>
                 </div>
-                <span className="relative z-10 bg-white px-4 text-[8px] font-black uppercase tracking-[0.4em] text-slate-300">Ou use Cloud ID</span>
+                <span className="relative z-10 bg-white px-4 text-[8px] font-black uppercase tracking-[0.4em] text-slate-300">{t('login.or_cloud')}</span>
               </div>
 
               <button 
@@ -178,19 +180,18 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
                 className="w-full py-5 rounded-[1.8rem] border border-slate-200 bg-white hover:bg-slate-50 transition-all flex items-center justify-center gap-4 text-xs font-bold text-market-navy relative z-20 pointer-events-auto"
               >
                 <img src="https://www.google.com/favicon.ico" className="w-4 h-4" alt="Google" />
-                <span>Entrar com Google Cloud</span>
+                <span>{t('login.google')}</span>
               </button>
             </div>
           </form>
 
           <div className="mt-12 pt-8 border-t border-dashed border-slate-200 flex flex-col items-center gap-6 text-center">
             <p className="text-[9px] font-bold text-market-slate uppercase tracking-widest leading-relaxed">
-              Autentique-se com o seu e-mail corporativo. <br />
-              Acesso monitorizado pelo Protocolo Core 15.0.
+              {t('login.monitor')}
             </p>
             
             <button onClick={onBack} className="group text-[10px] font-bold uppercase tracking-widest flex items-center gap-3 transition-colors text-market-slate hover:text-market-blue">
-              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Voltar ao Portal Público
+              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> {t('login.back')}
             </button>
           </div>
         </div>

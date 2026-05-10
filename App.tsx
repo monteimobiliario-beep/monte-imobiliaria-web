@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { UserRole, User } from './types';
 import { ArrowUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Routes, Route, useNavigate, useLocation, Navigate, useParams } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Navbar from './components/Navbar';
@@ -34,16 +35,22 @@ import CareerView from './views/CareerView';
 
 import { useBranding } from './BrandingContext';
 
+// Helper for Property Detail with params
+const PropertyDetailWrapper: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  return <PropertyDetailView propertyId={id || null} onBack={() => navigate('/imoveis')} />;
+};
+
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [currentPath, setCurrentPath] = useState('home');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
   
   const { settings } = useBranding();
-  // Using settings.logoUrl instead of local state
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const ADMIN_GERAL_EMAIL = 'monteimobiliario@gmail.com';
 
@@ -67,7 +74,6 @@ const App: React.FC = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth Event:", event);
       if (session) {
-        // Only fetch if identity is different or null
         if (lastFetchedEmail.current !== session.user.email) {
           fetchAndSetUser(session.user);
         }
@@ -83,30 +89,23 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const handleInternalNav = (e: any) => { if (e.detail) setCurrentPath(e.detail); };
-    window.addEventListener('navigate', handleInternalNav);
+    // Protected Routes logic
+    const erpPaths = [
+      '/dashboard', '/finance', '/hr', '/projects', '/plans', 
+      '/reports', '/admin', '/catalog', '/fleet', '/overview', '/beneficiaries'
+    ];
     
-    return () => {
-      window.removeEventListener('navigate', handleInternalNav);
-    };
-  }, []);
+    if (!isInitializing && !currentUser && erpPaths.some(path => location.pathname.startsWith(path))) {
+      console.log("Redirecting to login: ERP route protected");
+      navigate('/login');
+    }
+  }, [currentUser, location.pathname, isInitializing, navigate]);
 
   useEffect(() => {
-    // Se estivermos numa rota de ERP e o utilizador não estiver logado (e não estiver inicializando)
-    if (!isInitializing && !currentUser) {
-      const erpPaths = ['dashboard', 'finance', 'hr', 'projects', 'plans', 'reports', 'admin', 'catalog', 'fleet', 'overview', 'beneficiaries'];
-      if (erpPaths.includes(currentPath)) {
-        console.log("Redirecting to home: ERP route protected");
-        setCurrentPath('home');
-      }
+    if (currentUser && location.pathname === '/login') {
+      navigate('/dashboard');
     }
-  }, [currentUser, currentPath, isInitializing]);
-
-  useEffect(() => {
-    if (currentUser && currentPath === 'login') {
-      setCurrentPath('dashboard');
-    }
-  }, [currentUser, currentPath]);
+  }, [currentUser, location.pathname, navigate]);
 
   const isChecking = React.useRef(false);
 
@@ -156,11 +155,9 @@ const App: React.FC = () => {
         const { data, error: empError } = await db.hr('employees').select('*').eq('email', sbUser.email).maybeSingle();
         if (!empError) {
           emp = data;
-        } else {
-          console.warn("DICA: Se o erro for 'schema not found', lembre-se de expor os esquemas em Project Settings > API > Exposed schemas no Supabase.");
         }
       } catch (e) {
-        console.warn("Esquema HR ainda não acessível via API. Verifique a configuração de 'Exposed schemas' no Supabase.");
+        console.warn("Esquema HR ainda não acessível via API.");
       }
 
       const isOwner = sbUser.email === ADMIN_GERAL_EMAIL;
@@ -173,48 +170,20 @@ const App: React.FC = () => {
         permissions: isOwner ? ['dashboard.view', 'catalog.view', 'catalog.manage', 'finance.view', 'finance.manage', 'projects.view', 'projects.manage', 'hr.view', 'hr.manage', 'fleet.view', 'fleet.manage', 'plans.view', 'plans.manage', 'admin.access', 'system.repair'] : (emp?.permissions || [])
       };
       setCurrentUser(user);
-      if (currentPath === 'login') setCurrentPath('dashboard');
     } catch (err) {
       console.error("fetchAndSetUser error:", err);
       setCurrentUser({ id: sbUser.id, name: sbUser.email.split('@')[0], email: sbUser.email, role: UserRole.EMPLOYEE, avatar: `https://picsum.photos/seed/${sbUser.id}/100`, permissions: [] });
     }
   }
 
-  const handleLogout = async () => { await supabase.auth.signOut(); setCurrentUser(null); setCurrentPath('home'); };
-
-  const handleViewProperty = (id: string) => { setSelectedPropertyId(id); setCurrentPath('imovel-detalhes'); window.scrollTo(0, 0); };
-
-  const isERPRoute = ['dashboard', 'finance', 'hr', 'projects', 'plans', 'reports', 'admin', 'catalog', 'fleet', 'overview', 'beneficiaries'].includes(currentPath);
-
-  const renderContent = () => {
-    switch (currentPath) {
-      case 'home': return <HomeView onNavigate={setCurrentPath} onViewProperty={handleViewProperty} />;
-      case 'imoveis': return <PropertyListView onViewProperty={handleViewProperty} />;
-      case 'imovel-detalhes': return <PropertyDetailView propertyId={selectedPropertyId} onBack={() => setCurrentPath('imoveis')} />;
-      case 'servicos': return <ServicesView />;
-      case 'contato': return <ContactView />;
-      case 'sobre': return <AboutView />;
-      case 'carreira': return <CareerView />;
-      case 'login': return (
-        <LoginView 
-          onLoginSuccess={(u) => { setCurrentUser(u); setCurrentPath('dashboard'); }} 
-          onBack={() => setCurrentPath('home')} 
-        />
-      );
-      case 'dashboard': return <DashboardView />;
-      case 'catalog': return <CatalogView />;
-      case 'finance': return <FinanceView />;
-      case 'beneficiaries': return <BeneficiariesView />;
-      case 'hr': return <HRView />;
-      case 'fleet': return <FleetView />;
-      case 'projects': return <ProjectsView />;
-      case 'plans': return <PlansView />;
-      case 'reports': return <ReportsView />;
-      case 'overview': return <OverviewView />;
-      case 'admin': return <AdminView currentUser={currentUser} />;
-      default: return <HomeView onNavigate={setCurrentPath} onViewProperty={handleViewProperty} />;
-    }
+  const handleLogout = async () => { 
+    await supabase.auth.signOut(); 
+    setCurrentUser(null); 
+    navigate('/'); 
   };
+
+  const currentERPPath = location.pathname.substring(1); // e.g. "dashboard"
+  const isERPRoute = ['dashboard', 'finance', 'hr', 'projects', 'plans', 'reports', 'admin', 'catalog', 'fleet', 'overview', 'beneficiaries'].includes(currentERPPath);
 
   if (isInitializing) {
     return (
@@ -244,35 +213,12 @@ const App: React.FC = () => {
     );
   }
 
-  if (isERPRoute && currentUser) {
-    return (
-      <div className={`flex h-screen overflow-hidden bg-slate-50 relative`}>
-        <Sidebar currentPath={currentPath} onNavigate={setCurrentPath} user={currentUser} isOpen={isSidebarOpen} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <Header 
-            user={currentUser} 
-            onLogout={handleLogout} 
-            onOpenSidebar={() => setIsSidebarOpen(true)} 
-            onViewProperty={handleViewProperty}
-          />
-          <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
-            <div className="max-w-[1800px] mx-auto min-h-[calc(100vh-theme(spacing.40))]">{renderContent()}</div>
-            <div className="mt-12 -mx-4 md:-mx-8">
-              <Footer onNavigate={setCurrentPath} />
-            </div>
-          </main>
-        </div>
-      </div>
-    );
-  }
-
-  return (
+  const publicLayout = (content: React.ReactNode) => (
     <div className={`min-h-screen flex flex-col bg-white text-slate-900`}>
-      <Navbar currentPath={currentPath} onNavigate={setCurrentPath} isLoggedIn={!!currentUser} />
-      <main className="flex-1">{renderContent()}</main>
-      <Footer onNavigate={setCurrentPath} />
+      <Navbar isLoggedIn={!!currentUser} />
+      <main className="flex-1">{content}</main>
+      <Footer />
 
-      {/* Scroll to Top */}
       <AnimatePresence>
         {showScrollTop && (
           <motion.button
@@ -287,6 +233,61 @@ const App: React.FC = () => {
         )}
       </AnimatePresence>
     </div>
+  );
+
+  const erpLayout = (content: React.ReactNode) => (
+    <div className={`flex h-screen overflow-hidden bg-slate-50 relative`}>
+      <Sidebar user={currentUser!} isOpen={isSidebarOpen} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <Header 
+          user={currentUser!} 
+          onLogout={handleLogout} 
+          onOpenSidebar={() => setIsSidebarOpen(true)} 
+        />
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+          <div className="max-w-[1800px] mx-auto min-h-[calc(100vh-theme(spacing.40))]">{content}</div>
+          <div className="mt-12 -mx-4 md:-mx-8">
+            <Footer />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+
+  return (
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/" element={publicLayout(<HomeView />)} />
+      <Route path="/home" element={<Navigate to="/" replace />} />
+      <Route path="/imoveis" element={publicLayout(<PropertyListView />)} />
+      <Route path="/imovel/:id" element={publicLayout(<PropertyDetailWrapper />)} />
+      <Route path="/servicos" element={publicLayout(<ServicesView />)} />
+      <Route path="/contato" element={publicLayout(<ContactView />)} />
+      <Route path="/sobre" element={publicLayout(<AboutView />)} />
+      <Route path="/carreira" element={publicLayout(<CareerView />)} />
+      <Route path="/login" element={
+        <LoginView 
+          onLoginSuccess={(u) => { setCurrentUser(u); navigate('/dashboard'); }} 
+          onBack={() => navigate('/')} 
+        />
+      } />
+
+      {/* ERP Routes */}
+      <Route path="/dashboard" element={currentUser ? erpLayout(<DashboardView />) : <Navigate to="/login" replace />} />
+      <Route path="/catalog" element={currentUser ? erpLayout(<CatalogView />) : <Navigate to="/login" replace />} />
+      <Route path="/finance" element={currentUser ? erpLayout(<FinanceView />) : <Navigate to="/login" replace />} />
+      <Route path="/beneficiaries" element={currentUser ? erpLayout(<BeneficiariesView />) : <Navigate to="/login" replace />} />
+      <Route path="/hr" element={currentUser ? erpLayout(<HRView />) : <Navigate to="/login" replace />} />
+      <Route path="/fleet" element={currentUser ? erpLayout(<FleetView />) : <Navigate to="/login" replace />} />
+      <Route path="/projects" element={currentUser ? erpLayout(<ProjectsView />) : <Navigate to="/login" replace />} />
+      <Route path="/plans" element={currentUser ? erpLayout(<PlansView />) : <Navigate to="/login" replace />} />
+      <Route path="/reports" element={currentUser ? erpLayout(<ReportsView />) : <Navigate to="/login" replace />} />
+      <Route path="/overview" element={currentUser ? erpLayout(<OverviewView />) : <Navigate to="/login" replace />} />
+      <Route path="/admin" element={currentUser ? erpLayout(<AdminView currentUser={currentUser} />) : <Navigate to="/login" replace />} />
+
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 };
 

@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'motion/react';
+import { useTranslation } from '../src/i18nContext';
 import { 
   Wallet, Sparkles, Bot, RefreshCw, ArrowUpRight, Zap, Home, Users, 
   PieChart as PieIcon, Activity, Gauge, Briefcase, UserPlus, Linkedin, Truck, 
@@ -15,7 +16,11 @@ import { getStrategicInsight } from '../geminiService';
 import TodoList from '../components/TodoList';
 import { Transaction, JobApplication } from '../types';
 
+import { useNavigate } from 'react-router-dom';
+
 const DashboardView: React.FC = () => {
+  const { t, language } = useTranslation();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({ 
     revenue: 0, 
     expenses: 0, 
@@ -31,7 +36,7 @@ const DashboardView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSync, setLastSync] = useState<string>(new Date().toLocaleTimeString());
-  const [aiInsight, setAiInsight] = useState<string>('Analisando pulso financeiro...');
+  const [aiInsight, setAiInsight] = useState<string>(t('dash.thinking'));
   
   const [propertyTypes, setPropertyTypes] = useState<{name: string, value: number, color: string}[]>([]);
   
@@ -102,7 +107,7 @@ const DashboardView: React.FC = () => {
     const now = new Date();
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthName = d.toLocaleString('pt-MZ', { month: 'short' });
+      const monthName = d.toLocaleString(language === 'pt' ? 'pt-MZ' : 'en-US', { month: 'short' });
       months.push({
         monthKey: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
         name: monthName.charAt(0).toUpperCase() + monthName.slice(1),
@@ -126,8 +131,8 @@ const DashboardView: React.FC = () => {
         <div className="absolute inset-0 blur-xl bg-market-blue/20 animate-pulse"></div>
       </div>
       <div className="space-y-1 text-center">
-        <p className="text-[10px] font-black text-market-navy uppercase tracking-[0.4em] animate-pulse">Neural Core Sincronizando</p>
-        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">A carregar pulso operacional...</p>
+        <p className="text-[10px] font-black text-market-navy uppercase tracking-[0.4em] animate-pulse">{t('dash.core_sync')}</p>
+        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{t('dash.syncing')}</p>
       </div>
     </div>
   );
@@ -172,7 +177,7 @@ const DashboardView: React.FC = () => {
                      <span className="text-[8px] font-black text-market-accent uppercase tracking-[0.4em] bg-market-accent/10 px-3 py-1 rounded-full border border-market-accent/20 flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
                         <Activity size={10} className="animate-pulse" /> Live Pulse
                      </span>
-                     <span className="text-[8px] font-black text-white/30 uppercase tracking-[0.2em]">Sinc: {lastSync}</span>
+                     <span className="text-[8px] font-black text-white/30 uppercase tracking-[0.2em]">{t('dash.last_sync')}: {lastSync}</span>
                   </div>
                   <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight leading-snug italic truncate font-display">"{aiInsight}"</h2>
                </div>
@@ -182,7 +187,7 @@ const DashboardView: React.FC = () => {
               disabled={isSyncing}
               className="bg-white/10 hover:bg-white hover:text-market-navy text-white px-7 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all border border-white/10 flex items-center gap-3 relative z-10 group/btn shadow-xl"
             >
-               <RefreshCw size={14} className={`group-hover/btn:rotate-180 transition-transform duration-1000 ${isSyncing ? 'animate-spin' : ''}`} /> Sincronizar
+               <RefreshCw size={14} className={`group-hover/btn:rotate-180 transition-transform duration-1000 ${isSyncing ? 'animate-spin' : ''}`} /> {isSyncing ? t('dash.syncing') : t('dash.sync_button')}
             </button>
          </motion.div>
 
@@ -208,13 +213,13 @@ const DashboardView: React.FC = () => {
       {/* KPI Ribbons */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         {[
-          { label: 'Fluxo Líquido', val: `${(stats.revenue - stats.expenses).toLocaleString()} MT`, icon: <Wallet size={18}/>, color: 'text-market-accent', trend: <TrendingUp size={12}/>, bg: 'bg-market-accent/10', border: 'border-market-accent/20' },
-          { label: 'Capacidade Ativos', val: stats.properties, icon: <Home size={18}/>, color: 'text-market-blue', trend: '+2', bg: 'bg-market-blue/10', border: 'border-market-blue/20' },
-          { label: 'Monte Staff', val: stats.employees, icon: <Users size={18}/>, color: 'text-market-navy', trend: 'Online', bg: 'bg-slate-100', border: 'border-slate-200' },
-          { label: 'Operações Ativas', val: stats.projects, icon: <Briefcase size={18}/>, color: 'text-market-blue', trend: 'V14', bg: 'bg-market-blue/10', border: 'border-market-blue/20' },
-          { label: 'Frota Gestão', val: stats.fleet, icon: <Truck size={18}/>, color: 'text-market-blue', trend: 'Audit', bg: 'bg-market-blue/10', border: 'border-market-blue/20' },
-          { label: 'Pool Candidatos', val: stats.pendingApps, icon: <UserPlus size={18}/>, color: 'text-indigo-500', trend: 'Novos', bg: 'bg-indigo-50', border: 'border-indigo-100' },
-          { label: 'Lead Velocity', val: stats.contacts, icon: <Zap size={18}/>, color: 'text-amber-500', trend: 'Peak', bg: 'bg-amber-50', border: 'border-amber-100' },
+          { label: t('dash.profit'), val: `${(stats.revenue - stats.expenses).toLocaleString()} MT`, icon: <Wallet size={18}/>, color: 'text-market-accent', trend: <TrendingUp size={12}/>, bg: 'bg-market-accent/10', border: 'border-market-accent/20' },
+          { label: t('dash.properties'), val: stats.properties, icon: <Home size={18}/>, color: 'text-market-blue', trend: '+2', bg: 'bg-market-blue/10', border: 'border-market-blue/20' },
+          { label: t('dash.employees'), val: stats.employees, icon: <Users size={18}/>, color: 'text-market-navy', trend: t('dash.online'), bg: 'bg-slate-100', border: 'border-slate-200' },
+          { label: t('dash.projects'), val: stats.projects, icon: <Briefcase size={18}/>, color: 'text-market-blue', trend: 'V14', bg: 'bg-market-blue/10', border: 'border-market-blue/20' },
+          { label: t('dash.fleet'), val: stats.fleet, icon: <Truck size={18}/>, color: 'text-market-blue', trend: t('dash.audit'), bg: 'bg-market-blue/10', border: 'border-market-blue/20' },
+          { label: t('dash.pending_apps'), val: stats.pendingApps, icon: <UserPlus size={18}/>, color: 'text-indigo-500', trend: t('dash.new'), bg: 'bg-indigo-50', border: 'border-indigo-100' },
+          { label: t('dash.contacts'), val: stats.contacts, icon: <Zap size={18}/>, color: 'text-amber-500', trend: t('dash.peak'), bg: 'bg-amber-50', border: 'border-amber-100' },
         ].map((kpi, i) => (
           <motion.div 
             key={i} 
@@ -246,9 +251,9 @@ const DashboardView: React.FC = () => {
            <div className="flex items-center justify-between mb-8 relative z-10">
               <div className="space-y-1">
                 <h3 className="text-[12px] font-black text-market-navy uppercase tracking-widest flex items-center gap-2 italic">
-                  <PieIcon className="text-market-blue" size={16} /> Mix de Património
+                  <PieIcon className="text-market-blue" size={16} /> {t('dash.asset_dist')}
                 </h3>
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Distribuição por Tipologia</p>
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{t('dash.asset_dist')}</p>
               </div>
            </div>
            <div className="flex-1 w-full h-[220px] relative z-10">
@@ -275,7 +280,7 @@ const DashboardView: React.FC = () => {
               ) : (
                 <div className="flex flex-col items-center justify-center h-full gap-3 opacity-20">
                    <Loader2 className="animate-spin text-market-blue" size={24} />
-                   <p className="text-[10px] font-black uppercase tracking-widest">Aguardando dados...</p>
+                   <p className="text-[10px] font-black uppercase tracking-widest">{t('dash.thinking_neural')}</p>
                 </div>
               )}
            </div>
@@ -285,7 +290,7 @@ const DashboardView: React.FC = () => {
                    <div className="w-3 h-3 rounded-full shadow-lg" style={{ backgroundColor: t.color }}></div>
                    <div className="min-w-0 flex-1">
                       <p className="text-[9px] font-black text-market-navy truncate uppercase leading-none mb-1">{t.name}</p>
-                      <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{t.value} Unidades</p>
+                      <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{t('dash.properties')}</p>
                    </div>
                 </motion.div>
               ))}
@@ -298,14 +303,14 @@ const DashboardView: React.FC = () => {
            <div className="flex items-center justify-between mb-8 relative z-10">
               <div className="space-y-1">
                 <h3 className="text-[12px] font-black text-market-navy uppercase tracking-widest flex items-center gap-2 italic">
-                  <BarChart3 className="text-market-blue" size={16} /> Fluxo Financeiro Logístico
+                  <BarChart3 className="text-market-blue" size={16} /> {t('dash.financial_overview') || 'Fluxo Financeiro'}
                 </h3>
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Timeline de Despesas Operacionais</p>
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{t('dash.expenses')}</p>
               </div>
               <div className="flex items-center gap-4">
                  <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-market-blue ring-4 ring-market-blue/10"></div>
-                    <span className="text-[9px] font-bold text-market-navy uppercase">Projeção</span>
+                    <span className="text-[9px] font-bold text-market-navy uppercase">{t('dash.projection')}</span>
                  </div>
               </div>
            </div>
@@ -334,12 +339,12 @@ const DashboardView: React.FC = () => {
            <div className="flex justify-between items-center mb-8">
               <div className="space-y-1">
                  <h4 className="text-[12px] font-black uppercase tracking-widest text-market-navy flex items-center gap-2 italic">
-                    <Briefcase size={16} className="text-market-blue" /> Talent Pipeline
+                    <Briefcase size={16} className="text-market-blue" /> {t('dash.recent_apps')}
                  </h4>
-                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Recrutamento e Novas Admissões</p>
+                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{t('dash.pending_apps')}</p>
               </div>
               <button 
-                onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'hr' }))}
+                onClick={() => navigate('/hr')}
                 className="p-2.5 bg-slate-50 text-market-navy rounded-xl hover:bg-market-blue hover:text-white transition-all shadow-sm border border-slate-100"
               >
                  <ArrowUpRight size={18} />
@@ -380,7 +385,7 @@ const DashboardView: React.FC = () => {
               )) : (
                  <div className="flex flex-col items-center justify-center py-16 opacity-20 text-center">
                     <UserPlus size={48} className="mb-4 text-slate-400" />
-                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Sem atividade recente</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">{t('header.no_results')}</p>
                  </div>
               )}
            </div>
@@ -392,9 +397,9 @@ const DashboardView: React.FC = () => {
               <div className="flex items-center justify-between mb-8 relative z-10">
                  <div className="space-y-1">
                     <h4 className="text-[12px] font-black uppercase tracking-widest text-white flex items-center gap-2 italic">
-                       <Target size={16} className="text-market-blue" /> Mission Control
+                       <Target size={16} className="text-market-blue" /> {t('dash.insight')}
                     </h4>
-                    <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Agenda Operacional Crítica</p>
+                    <p className="text-[9px] font-bold text-white/30 uppercase tracking-widest">{t('dash.agenda')}</p>
                  </div>
                  <div className="w-10 h-10 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 text-white/40">
                     <History size={18} />

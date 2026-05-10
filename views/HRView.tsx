@@ -12,12 +12,14 @@ import {
 import { supabase, db } from '../supabaseClient';
 import { Employee, UserRole, JobVacancy, JobApplication } from '../types';
 import { ImageUploadField } from '../components/ImageUploadField';
+import { useTranslation } from '../src/i18nContext';
 import { formatImageUrl } from '../imageUtils';
 import { generateJobDescription } from '../geminiService';
 
 const NOTIFICATION_SOUND = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3';
 
 const HRView: React.FC = () => {
+  const { t, tRole } = useTranslation();
   const [activeTab, setActiveTab] = useState<'employees' | 'vacancies' | 'applications'>('employees');
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [vacancies, setVacancies] = useState<JobVacancy[]>([]);
@@ -34,14 +36,14 @@ const HRView: React.FC = () => {
   
   const [staffSearch, setStaffSearch] = useState('');
   const [vacancySearch, setVacancySearch] = useState('');
-  const [deptFilter, setDeptFilter] = useState('Todos');
+  const [deptFilter, setDeptFilter] = useState(t('fin.all'));
   const [appSearch, setAppSearch] = useState('');
-  const [appStatusFilter, setAppStatusFilter] = useState('Todos');
+  const [appStatusFilter, setAppStatusFilter] = useState(t('fin.all'));
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const initialVacancyState: Partial<JobVacancy> = {
-    title: '', area: 'Geral', type: 'Full-Time', location: 'Maputo', 
+    title: '', area: t('fin.general'), type: 'Full-Time', location: 'Maputo', 
     salary: 'A Negociar', description: '', status: 'Open',
     created_at: new Date().toISOString()
   };
@@ -58,11 +60,11 @@ const HRView: React.FC = () => {
   };
 
   const initialFormState: Partial<Employee> = {
-    name: '', role: UserRole.EMPLOYEE, department: 'Geral', salary: 0, 
+    name: '', role: UserRole.EMPLOYEE, department: t('fin.general'), salary: 0, 
     email: '', phone: '+258 ', document_type: 'BI', document_number: '', 
     document_expiry: '', payment_method: 'Banco', 
     contract_start: new Date().toISOString().split('T')[0],
-    status: 'Ativo', join_date: new Date().toISOString().split('T')[0],
+    status: t('hr.active'), join_date: new Date().toISOString().split('T')[0],
     nuit: '', niss: '', emergency_contact: '', gender: 'M', address: ''
   };
 
@@ -138,13 +140,13 @@ const HRView: React.FC = () => {
     });
   }, [employees, staffSearch, deptFilter]);
 
-  const departments = ['Todos', 'Vendas', 'Administrativo', 'Engenharia', 'TI', 'Manutenção', 'Direcção', 'Geral'];
+  const departments = [t('fin.all'), t('fin.sales'), 'Administrativo', 'Engenharia', 'TI', 'Manutenção', 'Direcção', t('fin.general')];
 
   const handleSaveVacancy = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!vacancyForm.title) {
-      alert("O título da vaga é obrigatório.");
+      alert(t('hr.vac_title_required') || "O título da vaga é obrigatório.");
       return;
     }
 
@@ -153,7 +155,7 @@ const HRView: React.FC = () => {
       // Garantir que todos os campos obrigatórios e opcionais estão no payload
       const payload = {
         title: vacancyForm.title.trim(),
-        area: vacancyForm.area || 'Geral',
+        area: vacancyForm.area || t('fin.general'),
         type: vacancyForm.type || 'Full-Time',
         location: vacancyForm.location || 'Maputo',
         salary: vacancyForm.salary || 'A Negociar',
@@ -330,7 +332,7 @@ const HRView: React.FC = () => {
   if (loading && activeTab === 'employees') return (
     <div className="h-[60vh] flex flex-col items-center justify-center gap-6">
       <Loader2 className="animate-spin text-market-blue" size={48} />
-      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] animate-pulse">Sincronizando Staff Hub</p>
+      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] animate-pulse">{t('dash.syncing')} Staff Hub</p>
     </div>
   );
 
@@ -342,24 +344,24 @@ const HRView: React.FC = () => {
         <div className="space-y-3">
           <div className="flex items-center gap-3">
             <div className="w-1.5 h-6 bg-market-blue rounded-full"></div>
-            <p className="text-[10px] text-market-blue font-black uppercase tracking-[0.4em]">Gestão de Capital Humano</p>
+            <p className="text-[10px] text-market-blue font-black uppercase tracking-[0.4em]">{t('hr.title')}</p>
           </div>
           <h1 className="text-3xl md:text-4xl font-black text-market-navy tracking-tight">Monte <span className="italic font-display font-light text-market-blue">Staff</span> Hub</h1>
         </div>
         
         <div className="flex flex-col sm:flex-row gap-3 items-center">
            <div className="flex gap-2 bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200/50 shadow-inner">
-              <button onClick={() => setActiveTab('employees')} className={`px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${activeTab === 'employees' ? 'bg-white text-market-blue shadow-lg' : 'text-slate-500 hover:text-market-navy'}`}>Corpo Ativo</button>
-              <button onClick={() => setActiveTab('vacancies')} className={`px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${activeTab === 'vacancies' ? 'bg-white text-market-blue shadow-lg' : 'text-slate-500 hover:text-market-navy'}`}>Vagas</button>
+              <button onClick={() => setActiveTab('employees')} className={`px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${activeTab === 'employees' ? 'bg-white text-market-blue shadow-lg' : 'text-slate-500 hover:text-market-navy'}`}>{t('hr.staff')}</button>
+              <button onClick={() => setActiveTab('vacancies')} className={`px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${activeTab === 'vacancies' ? 'bg-white text-market-blue shadow-lg' : 'text-slate-500 hover:text-market-navy'}`}>{t('hr.vacancies')}</button>
               <button onClick={() => setActiveTab('applications')} className={`px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'applications' ? 'bg-white text-market-blue shadow-lg' : 'text-slate-500 hover:text-market-navy'}`}>
-                Candidaturas {staffStats.pendingApps > 0 && <span className="w-2 h-2 bg-market-accent rounded-full animate-pulse"></span>}
+                {t('hr.applications')} {staffStats.pendingApps > 0 && <span className="w-2 h-2 bg-market-accent rounded-full animate-pulse"></span>}
               </button>
            </div>
            <button 
               onClick={() => { setEditingVacId(null); setVacancyForm(initialVacancyState); setShowVacancyModal(true); }} 
               className="market-button market-button-primary px-6 py-3.5 text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-market-blue/20"
             >
-               <Plus size={16} /> <span className="hidden lg:inline">Publicar Vaga</span><span className="lg:hidden">Publicar</span>
+               <Plus size={16} /> <span className="hidden lg:inline">{t('hr.publish_vacancy')}</span><span className="lg:hidden">{t('fin.sales')}</span>
             </button>
         </div>
       </div>
@@ -372,7 +374,7 @@ const HRView: React.FC = () => {
                <input 
                  value={vacancySearch} 
                  onChange={e => setVacancySearch(e.target.value)} 
-                 placeholder="Pesquisar vagas..." 
+                 placeholder={t('hr.search_vacancies')} 
                  className="w-full pl-14 pr-6 py-4 bg-slate-50/50 rounded-2xl border border-slate-100 outline-none font-bold text-xs focus:ring-8 focus:ring-market-blue/5 focus:border-market-blue focus:bg-white transition-all shadow-inner" 
                />
             </div>
@@ -391,16 +393,16 @@ const HRView: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-6 py-4 border-y border-slate-50">
                    <div className="text-center flex-1">
-                      <p className="text-[8px] font-bold text-market-slate uppercase mb-1">Tipo</p>
+                      <p className="text-[8px] font-bold text-market-slate uppercase mb-1">{t('hr.type')}</p>
                       <p className="text-xs font-bold text-market-navy">{vac.type}</p>
                    </div>
                    <div className="text-center flex-1">
-                      <p className="text-[8px] font-bold text-market-slate uppercase mb-1">Candidaturas</p>
+                      <p className="text-[8px] font-bold text-market-slate uppercase mb-1">{t('hr.applications')}</p>
                       <p className="text-xs font-bold text-market-navy">{applications.filter(a => a.job_id === vac.id).length}</p>
                    </div>
                 </div>
                 <div className="flex gap-2 pt-2">
-                   <button onClick={() => { setVacancyForm(vac); setEditingVacId(vac.id); setShowVacancyModal(true); }} className="flex-1 py-3 bg-slate-50 text-market-navy rounded-xl text-[9px] font-bold uppercase tracking-widest hover:bg-market-blue hover:text-white transition-all border border-slate-100 flex items-center justify-center gap-2"><Edit3 size={14}/> Editar</button>
+                   <button onClick={() => { setVacancyForm(vac); setEditingVacId(vac.id); setShowVacancyModal(true); }} className="flex-1 py-3 bg-slate-50 text-market-navy rounded-xl text-[9px] font-bold uppercase tracking-widest hover:bg-market-blue hover:text-white transition-all border border-slate-100 flex items-center justify-center gap-2"><Edit3 size={14}/> {t('hr.edit')}</button>
                    <button onClick={() => handleDeleteVacancy(vac.id)} className="p-3 bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all border border-rose-100"><Trash2 size={16}/></button>
                 </div>
               </div>
@@ -411,10 +413,10 @@ const HRView: React.FC = () => {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
              {[
-               { label: 'Efetivos Totais', value: staffStats.total, icon: <Users size={18} />, color: 'text-market-blue', bg: 'bg-market-blue/10' },
-               { label: 'Status Ativo', value: staffStats.active, icon: <BadgeCheck size={18} />, color: 'text-market-accent', bg: 'bg-market-accent/10' },
-               { label: 'Pipeline RH', value: applications.length, icon: <Briefcase size={18} />, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-               { label: 'Vagas Abertas', value: staffStats.activeVacancies, icon: <Activity size={18} />, color: 'text-amber-500', bg: 'bg-amber-50' },
+               { label: t('hr.total_effective'), value: staffStats.total, icon: <Users size={18} />, color: 'text-market-blue', bg: 'bg-market-blue/10' },
+               { label: t('hr.active_status'), value: staffStats.active, icon: <BadgeCheck size={18} />, color: 'text-market-accent', bg: 'bg-market-accent/10' },
+               { label: t('hr.hr_pipeline'), value: applications.length, icon: <Briefcase size={18} />, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+               { label: t('hr.open_vacancies'), value: staffStats.activeVacancies, icon: <Activity size={18} />, color: 'text-amber-500', bg: 'bg-amber-50' },
              ].map((stat, i) => (
                <div key={i} className="market-card p-5 group flex justify-between items-center">
                   <div>
@@ -432,7 +434,7 @@ const HRView: React.FC = () => {
                <input 
                  value={staffSearch} 
                  onChange={e => setStaffSearch(e.target.value)} 
-                 placeholder="Pesquisar por nome ou email..." 
+                 placeholder={t('hr.search_staff')} 
                  className="w-full pl-14 pr-6 py-4 bg-slate-50/50 rounded-2xl border border-slate-100 outline-none font-bold text-xs focus:ring-8 focus:ring-market-blue/5 focus:border-market-blue focus:bg-white transition-all shadow-inner" 
                />
             </div>
@@ -446,7 +448,7 @@ const HRView: React.FC = () => {
               onClick={() => { setEditingEmpId(null); setFormState(initialFormState); setShowAddModal(true); }} 
               className="market-button market-button-primary w-full md:w-auto px-8 py-4 text-[10px] uppercase tracking-[0.2em]"
             >
-               <UserPlus size={18} /> Admitir Colaborador
+               <UserPlus size={18} /> {t('hr.hire_employee')}
             </button>
           </div>
 
@@ -466,9 +468,9 @@ const HRView: React.FC = () => {
                     <img src={formatImageUrl(emp.avatar) || undefined} className="w-16 h-16 rounded-2xl object-cover shadow-lg" alt="" />
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-black text-market-navy truncate uppercase leading-tight">{emp.name}</h3>
-                      <p className="text-[10px] font-bold text-market-blue uppercase tracking-widest truncate">{emp.role}</p>
+                      <p className="text-[10px] font-bold text-market-blue uppercase tracking-widest truncate">{tRole(emp.role)}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className={`w-1.5 h-1.5 rounded-full ${emp.status === 'Ativo' ? 'bg-market-accent' : 'bg-amber-500'}`}></span>
+                        <span className={`w-1.5 h-1.5 rounded-full ${emp.status === t('hr.active') ? 'bg-market-accent' : 'bg-amber-500'}`}></span>
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{emp.department}</span>
                       </div>
                     </div>
@@ -484,21 +486,21 @@ const HRView: React.FC = () => {
              <div className="market-card p-6 flex items-center gap-4">
                 <div className="w-12 h-12 bg-market-blue/10 text-market-blue rounded-2xl flex items-center justify-center"><Briefcase size={20}/></div>
                 <div>
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Candidaturas</p>
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('hr.total_apps')}</p>
                    <p className="text-2xl font-black text-market-navy">{applications.length}</p>
                 </div>
              </div>
              <div className="market-card p-6 flex items-center gap-4">
                 <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center"><Activity size={20}/></div>
                 <div>
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Em Pendente</p>
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('hr.pending')}</p>
                    <p className="text-2xl font-black text-market-navy">{applications.filter(a => a.status === 'Pendente').length}</p>
                 </div>
              </div>
              <div className="market-card p-6 flex items-center gap-4">
                 <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center"><CheckCircle2 size={20}/></div>
                 <div>
-                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Aprovadas</p>
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('hr.approved')}</p>
                    <p className="text-2xl font-black text-market-navy">{applications.filter(a => a.status === 'Aprovado').length}</p>
                 </div>
              </div>
@@ -510,16 +512,16 @@ const HRView: React.FC = () => {
                <input 
                  value={appSearch} 
                  onChange={e => setAppSearch(e.target.value)} 
-                 placeholder="Localizar candidato ou vaga..." 
+                 placeholder={t('hr.locate_candidate')} 
                  className="w-full pl-14 pr-6 py-4 bg-slate-50/50 rounded-2xl border border-slate-100 outline-none font-bold text-xs focus:ring-8 focus:ring-market-blue/5 focus:border-market-blue focus:bg-white transition-all shadow-inner" 
                />
             </div>
             <div className="flex items-center gap-3 bg-slate-50 px-6 py-4 rounded-2xl border border-slate-100 min-w-[200px] w-full md:w-auto">
                <Filter size={16} className="text-slate-400" />
                <select value={appStatusFilter} onChange={e => setAppStatusFilter(e.target.value)} className="bg-transparent font-black text-[10px] uppercase text-market-navy outline-none cursor-pointer w-full tracking-widest">
-                  <option value="Todos">Todos Status</option>
-                  <option value="Pendente">Pendente</option>
-                  <option value="Aprovado">Aprovado</option>
+                  <option value={t('fin.all')}>{t('hr.all_statuses')}</option>
+                  <option value="Pendente">{t('hr.pending')}</option>
+                  <option value="Aprovado">{t('hr.approved')}</option>
                   <option value="Rejeitado">Rejeitado</option>
                </select>
             </div>
@@ -530,11 +532,11 @@ const HRView: React.FC = () => {
                <table className="w-full text-left">
                   <thead>
                      <tr className="text-[9px] font-black text-market-slate uppercase tracking-widest bg-slate-50/50">
-                        <th className="px-6 py-4">Candidato</th>
-                        <th className="px-6 py-4">Vaga / Data</th>
-                        <th className="px-6 py-4">Dossiê / Documentos</th>
-                        <th className="px-6 py-4">Status</th>
-                        <th className="px-6 py-4 text-right">Acções</th>
+                        <th className="px-6 py-4">{t('hr.candidate')}</th>
+                        <th className="px-6 py-4">{t('hr.vac_date')}</th>
+                        <th className="px-6 py-4">{t('hr.dossier_docs')}</th>
+                        <th className="px-6 py-4">{t('footer.legal.status')}</th>
+                        <th className="px-6 py-4 text-right">{t('fin.actions')}</th>
                      </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
@@ -554,19 +556,19 @@ const HRView: React.FC = () => {
                                     <a href={app.cv_url} target="_blank" rel="noopener noreferrer" className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-600 hover:text-white transition-all border border-emerald-100 flex items-center gap-2 text-[9px] font-black uppercase"><FileBadge size={14}/> CV</a>
                                  )}
                                  {app.cover_letter_url && (
-                                    <a href={app.cover_letter_url} target="_blank" rel="noopener noreferrer" className="p-2 bg-market-blue/5 text-market-blue rounded-lg hover:bg-market-blue hover:text-white transition-all border border-market-blue/10 flex items-center gap-2 text-[9px] font-black uppercase"><ExternalLink size={14}/> Carta</a>
+                                    <a href={app.cover_letter_url} target="_blank" rel="noopener noreferrer" className="p-2 bg-market-blue/5 text-market-blue rounded-lg hover:bg-market-blue hover:text-white transition-all border border-market-blue/10 flex items-center gap-2 text-[9px] font-black uppercase"><ExternalLink size={14}/> {t('side.legal.sub')}</a>
                                  )}
                                  {app.applicant_linkedin && (
                                     <a href={app.applicant_linkedin} target="_blank" rel="noopener noreferrer" className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-all border border-indigo-100 flex items-center gap-2 text-[9px] font-black uppercase"><Linkedin size={14}/> Profile</a>
                                  )}
                                  {!app.cv_url && !app.cover_letter_url && !app.applicant_linkedin && (
-                                    <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Sem Anexos</span>
+                                    <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">{t('hr.no_attachments')}</span>
                                  )}
                               </div>
                            </td>
                            <td className="px-6 py-5">
                               <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${app.status === 'Pendente' ? 'bg-amber-50 text-amber-600' : app.status === 'Aprovado' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-                                 {app.status}
+                                 {app.status === 'Aprovado' ? t('hr.approved') : app.status === 'Pendente' ? t('hr.pending') : app.status}
                               </span>
                            </td>
                            <td className="px-6 py-5 text-right space-x-2">
@@ -577,7 +579,7 @@ const HRView: React.FC = () => {
                                 </div>
                               )}
                               {app.status !== 'Pendente' && (
-                                <button onClick={() => handleUpdateAppStatus(app.id, 'Pendente')} className="text-[8px] font-black text-slate-300 hover:text-market-blue uppercase tracking-widest">Reverter</button>
+                                <button onClick={() => handleUpdateAppStatus(app.id, 'Pendente')} className="text-[8px] font-black text-slate-300 hover:text-market-blue uppercase tracking-widest">{t('hr.revert')}</button>
                               )}
                            </td>
                         </tr>
@@ -604,9 +606,9 @@ const HRView: React.FC = () => {
               <div>
                 <h2 className="text-2xl font-bold text-market-navy flex items-center gap-3">
                   <Briefcase size={28} className="text-market-blue" />
-                  {editingVacId ? 'Editar Oportunidade' : 'Publicar Nova Vaga'}
+                  {editingVacId ? t('hr.edit_vac') : t('hr.new_vac')}
                 </h2>
-                <p className="text-[10px] text-market-slate font-bold uppercase mt-1 tracking-widest">Este anúncio será visível no portal público de carreiras</p>
+                <p className="text-[10px] text-market-slate font-bold uppercase mt-1 tracking-widest">{t('hr.vac_public_desc') || 'Este anúncio será visível no portal público de carreiras'}</p>
               </div>
             </div>
 
@@ -614,15 +616,15 @@ const HRView: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-8 pt-6 scrollbar-thin scrollbar-thumb-slate-200">
               <form id="vacancy-form" onSubmit={handleSaveVacancy} className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4">
                 <div className="md:col-span-2 space-y-1">
-                  <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Título da Vaga / Cargo</label>
+                  <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('hr.vac_title')}</label>
                   <input required value={vacancyForm.title} onChange={e => setVacancyForm({...vacancyForm, title: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 focus:border-market-blue transition-all" placeholder="Ex: Gestor Imobiliário Senior" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Área / Sector</label>
+                  <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('hr.vac_area')}</label>
                   <input value={vacancyForm.area} onChange={e => setVacancyForm({...vacancyForm, area: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 transition-all" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Tipo de Contrato</label>
+                  <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('hr.contract_type')}</label>
                   <select value={vacancyForm.type} onChange={e => setVacancyForm({...vacancyForm, type: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 transition-all">
                      <option>Full-Time</option>
                      <option>Part-Time</option>
@@ -631,15 +633,15 @@ const HRView: React.FC = () => {
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Localização</label>
+                  <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('hr.location')}</label>
                   <input value={vacancyForm.location} onChange={e => setVacancyForm({...vacancyForm, location: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 transition-all" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Salário / Remuneração</label>
+                  <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('hr.salary_remun')}</label>
                   <input value={vacancyForm.salary} onChange={e => setVacancyForm({...vacancyForm, salary: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 transition-all" placeholder="Ex: 50.000 ou A Negociar" />
                 </div>
                 <div className="md:col-span-2 space-y-1">
-                  <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Status da Vaga</label>
+                  <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('hr.vac_status')}</label>
                   <select value={vacancyForm.status} onChange={e => setVacancyForm({...vacancyForm, status: e.target.value as any})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 transition-all">
                      <option value="Open">Aberta (Público)</option>
                      <option value="Closed">Fechada / Arquivada</option>
@@ -647,21 +649,21 @@ const HRView: React.FC = () => {
                 </div>
                 <div className="md:col-span-2 space-y-2">
                   <div className="flex justify-between items-center px-1">
-                    <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest">Descrição e Requisitos</label>
+                    <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest">{t('hr.desc_reqs')}</label>
                     <div className="flex items-center gap-2">
                       <button 
                         type="button"
                         onClick={async () => {
                           try {
                             await navigator.clipboard.writeText(vacancyForm.description || '');
-                            alert('Conteúdo copiado (HTML)!');
+                            alert(t('hr.content_copied') || 'Conteúdo copiado (HTML)!');
                           } catch (err) {
-                            alert('Erro ao copiar.');
+                            alert(t('hr.copy_error') || 'Erro ao copiar.');
                           }
                         }}
                         className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
                       >
-                        <Save size={10} /> Copiar Conteúdo
+                        <Save size={10} /> {t('hr.copy_content')}
                       </button>
                       <button 
                         type="button"
@@ -670,7 +672,7 @@ const HRView: React.FC = () => {
                         className="flex items-center gap-1.5 px-3 py-1 bg-market-blue/5 text-market-blue rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-market-blue hover:text-white transition-all disabled:opacity-50"
                       >
                         {generatingAI ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />}
-                        {generatingAI ? 'A gerar...' : 'Gerar com IA'}
+                        {generatingAI ? 'A gerar...' : t('hr.generate_ai')}
                       </button>
                     </div>
                   </div>
@@ -703,7 +705,7 @@ const HRView: React.FC = () => {
                 disabled={saving} 
                 className="market-button market-button-primary flex-1 py-4 text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl shadow-market-blue/20"
               >
-                {saving ? <Loader2 className="animate-spin" size={18} /> : <><Save size={18} /> {editingVacId ? 'Actualizar Vaga' : 'Confirmar e Publicar'}</>}
+                {saving ? <Loader2 className="animate-spin" size={18} /> : <><Save size={18} /> {editingVacId ? t('hr.update_vac_btn') || 'Actualizar Vaga' : t('hr.confirm_publish') || 'Confirmar e Publicar'}</>}
               </button>
             </div>
           </div>
@@ -718,9 +720,9 @@ const HRView: React.FC = () => {
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-market-navy flex items-center gap-3">
                 <UserPlus size={28} className="text-market-blue" />
-                {editingEmpId ? 'Actualizar Cadastro' : 'Nova Admissão de Staff'}
+                {editingEmpId ? t('hr.update_profile') : t('hr.new_hire')}
               </h2>
-              <p className="text-[10px] text-market-slate font-bold uppercase mt-1 tracking-widest">Registo Oficial no Core System</p>
+              <p className="text-[10px] text-market-slate font-bold uppercase mt-1 tracking-widest">{t('hr.official_reg') || 'Registo Oficial no Core System'}</p>
             </div>
 
             <form onSubmit={handleSaveEmployee} className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -734,54 +736,54 @@ const HRView: React.FC = () => {
               </div>
 
               <div className="md:col-span-2 space-y-1">
-                <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Nome Completo</label>
+                <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('hr.full_name')}</label>
                 <input required value={formState.name} onChange={e => setFormState({...formState, name: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 focus:border-market-blue transition-all" />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Gênero</label>
+                <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('hr.gender')}</label>
                 <select value={formState.gender} onChange={e => setFormState({...formState, gender: e.target.value as any})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 transition-all">
-                  <option value="M">Masculino</option>
-                  <option value="F">Feminino</option>
+                  <option value="M">{t('hr.male')}</option>
+                  <option value="F">{t('hr.female')}</option>
                 </select>
               </div>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Cargo / Função</label>
+                <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('hr.role_func')}</label>
                 <select value={formState.role} onChange={e => setFormState({...formState, role: e.target.value as UserRole})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 transition-all">
-                  {Object.values(UserRole).map(role => <option key={role} value={role}>{role}</option>)}
+                  {Object.values(UserRole).map(role => <option key={role} value={role}>{tRole(role)}</option>)}
                 </select>
               </div>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Departamento</label>
+                <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('hr.department')}</label>
                 <select value={formState.department} onChange={e => setFormState({...formState, department: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 transition-all">
-                  {departments.filter(d => d !== 'Todos').map(d => <option key={d} value={d}>{d}</option>)}
+                  {departments.filter(d => d !== t('fin.all')).map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Salário Base (MT)</label>
+                <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('hr.base_salary')}</label>
                 <input type="number" required value={formState.salary} onChange={e => setFormState({...formState, salary: Number(e.target.value)})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 transition-all" />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Email Corporativo</label>
+                <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('hr.corp_email')}</label>
                 <input type="email" required value={formState.email} onChange={e => setFormState({...formState, email: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 transition-all" />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Contacto Telefónico</label>
+                <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('hr.phone_contact')}</label>
                 <input required value={formState.phone} onChange={e => setFormState({...formState, phone: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 transition-all" />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">Status Contratual</label>
+                <label className="text-[9px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('hr.contract_status')}</label>
                 <select value={formState.status} onChange={e => setFormState({...formState, status: e.target.value as any})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 font-medium text-sm outline-none focus:ring-4 focus:ring-market-blue/10 transition-all">
-                  <option value="Ativo">Ativo</option>
-                  <option value="Férias">Férias</option>
-                  <option value="Inativo">Inativo</option>
-                  <option value="Suspenso">Suspenso</option>
+                  <option value={t('hr.active')}>{t('hr.active')}</option>
+                  <option value={t('hr.vacation')}>{t('hr.vacation')}</option>
+                  <option value={t('hr.inactive')}>{t('hr.inactive')}</option>
+                  <option value={t('hr.suspended')}>{t('hr.suspended')}</option>
                 </select>
               </div>
 
@@ -806,9 +808,9 @@ const HRView: React.FC = () => {
 
               <div className="md:col-span-3 flex gap-4 pt-6 border-t border-slate-100">
                 <button type="submit" disabled={saving} className="market-button market-button-primary flex-1 py-4 text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg">
-                  {saving ? <Loader2 className="animate-spin" size={18} /> : <><Save size={18} /> {editingEmpId ? 'Actualizar Dados' : 'Confirmar Admissão'}</>}
+                  {saving ? <Loader2 className="animate-spin" size={18} /> : <><Save size={18} /> {editingEmpId ? t('hr.update_data') || 'Actualizar Dados' : t('hr.confirm_hire') || 'Confirmar Admissão'}</>}
                 </button>
-                <button type="button" onClick={() => setShowAddModal(false)} className="market-button market-button-outline px-8 py-4 text-[10px] uppercase tracking-widest">Cancelar</button>
+                <button type="button" onClick={() => setShowAddModal(false)} className="market-button market-button-outline px-8 py-4 text-[10px] uppercase tracking-widest">{t('fin.cancel') || 'Cancelar'}</button>
               </div>
             </form>
           </div>
@@ -822,10 +824,10 @@ const HRView: React.FC = () => {
             <div className="w-full md:w-1/3 bg-slate-50 p-10 flex flex-col items-center text-center border-r border-slate-100">
                <div className="relative mb-6">
                   <img src={formatImageUrl(viewingEmp.avatar) || undefined} className="w-32 h-32 rounded-3xl object-cover shadow-2xl ring-4 ring-white" alt="" />
-                  <div className={`absolute -bottom-2 -right-2 px-3 py-1 rounded-full text-[9px] font-bold uppercase text-white shadow-lg ${viewingEmp.status === 'Ativo' ? 'bg-market-accent' : 'bg-amber-500'}`}>{viewingEmp.status}</div>
+                  <div className={`absolute -bottom-2 -right-2 px-3 py-1 rounded-full text-[9px] font-bold uppercase text-white shadow-lg ${viewingEmp.status === t('hr.active') ? 'bg-market-accent' : 'bg-amber-500'}`}>{viewingEmp.status}</div>
                </div>
                <h2 className="text-xl font-bold text-market-navy mb-1">{viewingEmp.name}</h2>
-               <p className="text-[9px] font-bold text-market-blue uppercase tracking-widest mb-6 bg-market-blue/5 px-3 py-1 rounded-full">{viewingEmp.role}</p>
+               <p className="text-[9px] font-bold text-market-blue uppercase tracking-widest mb-6 bg-market-blue/5 px-3 py-1 rounded-full">{tRole(viewingEmp.role)}</p>
                
                <div className="w-full space-y-3 pt-6 border-t border-slate-200">
                   <div className="flex items-center gap-3 text-market-slate"><Mail size={14} /><span className="text-[11px] font-medium truncate">{viewingEmp.email}</span></div>
@@ -833,7 +835,7 @@ const HRView: React.FC = () => {
                </div>
 
                <div className="mt-auto flex gap-2 w-full pt-6">
-                  <button onClick={() => { setFormState(viewingEmp); setEditingEmpId(viewingEmp.id); setShowViewModal(false); setShowAddModal(true); }} className="flex-1 p-3 bg-white hover:bg-market-blue hover:text-white text-market-blue border border-market-blue/20 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 font-bold text-[10px] uppercase"><Edit3 size={16} /> Editar</button>
+                  <button onClick={() => { setFormState(viewingEmp); setEditingEmpId(viewingEmp.id); setShowViewModal(false); setShowAddModal(true); }} className="flex-1 p-3 bg-white hover:bg-market-blue hover:text-white text-market-blue border border-market-blue/20 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 font-bold text-[10px] uppercase"><Edit3 size={16} /> {t('hr.edit')}</button>
                   <button onClick={() => handleDeleteEmployee(viewingEmp.id)} className="p-3 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white border border-rose-100 rounded-xl transition-all shadow-sm flex items-center justify-center"><Trash2 size={16}/></button>
                   <button onClick={() => setShowViewModal(false)} className="p-3 bg-slate-200 text-slate-500 rounded-xl hover:bg-slate-300 transition-all"><X size={16}/></button>
                </div>
@@ -842,24 +844,24 @@ const HRView: React.FC = () => {
             <div className="flex-1 p-10 overflow-y-auto custom-scrollbar">
                <div className="grid grid-cols-2 gap-8">
                   <div>
-                     <h4 className="text-[9px] font-bold text-market-slate uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><Fingerprint size={12} className="text-market-blue"/> Identificação</h4>
+                     <h4 className="text-[9px] font-bold text-market-slate uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><Fingerprint size={12} className="text-market-blue"/> {t('hr.identification')}</h4>
                      <div className="space-y-4">
-                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100"><p className="text-[8px] font-bold text-market-slate uppercase mb-0.5">Tipo de Documento</p><p className="text-xs font-bold text-market-navy">{viewingEmp.document_type || 'BI'}</p></div>
-                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100"><p className="text-[8px] font-bold text-market-slate uppercase mb-0.5">Nº Documento</p><p className="text-xs font-bold text-market-navy">{viewingEmp.document_number || 'N/D'}</p></div>
+                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100"><p className="text-[8px] font-bold text-market-slate uppercase mb-0.5">{t('hr.doc_type')}</p><p className="text-xs font-bold text-market-navy">{viewingEmp.document_type || 'BI'}</p></div>
+                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100"><p className="text-[8px] font-bold text-market-slate uppercase mb-0.5">{t('hr.doc_number')}</p><p className="text-xs font-bold text-market-navy">{viewingEmp.document_number || 'N/D'}</p></div>
                         <div className="bg-slate-50 p-3 rounded-xl border border-slate-100"><p className="text-[8px] font-bold text-market-slate uppercase mb-0.5">NUIT</p><p className="text-xs font-bold text-market-navy">{viewingEmp.nuit || 'N/D'}</p></div>
                      </div>
                   </div>
                   <div>
-                     <h4 className="text-[9px] font-bold text-market-slate uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><CreditCard size={12} className="text-market-blue"/> Financeiro</h4>
+                     <h4 className="text-[9px] font-bold text-market-slate uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><CreditCard size={12} className="text-market-blue"/> {t('fin.financial')}</h4>
                      <div className="space-y-4">
-                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100"><p className="text-[8px] font-bold text-market-slate uppercase mb-0.5">Salário Mensal</p><p className="text-xs font-bold text-market-accent">{Number(viewingEmp.salary).toLocaleString()} MT</p></div>
-                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100"><p className="text-[8px] font-bold text-market-slate uppercase mb-0.5">Método de Pagamento</p><p className="text-xs font-bold text-market-navy">{viewingEmp.payment_method || 'Transferência'}</p></div>
+                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100"><p className="text-[8px] font-bold text-market-slate uppercase mb-0.5">{t('hr.monthly_salary')}</p><p className="text-xs font-bold text-market-accent">{Number(viewingEmp.salary).toLocaleString()} MT</p></div>
+                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100"><p className="text-[8px] font-bold text-market-slate uppercase mb-0.5">{t('hr.payment_method')}</p><p className="text-xs font-bold text-market-navy">{viewingEmp.payment_method || (t('hr.bank_transf') || 'Transferência')}</p></div>
                      </div>
                   </div>
                   <div className="col-span-2">
-                     <h4 className="text-[9px] font-bold text-market-slate uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><Map size={12} className="text-market-blue"/> Localização</h4>
+                     <h4 className="text-[9px] font-bold text-market-slate uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><Map size={12} className="text-market-blue"/> {t('hr.location')}</h4>
                      <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                        <p className="text-xs font-medium text-market-navy italic">"{viewingEmp.address || 'Morada não especificada no sistema.'}"</p>
+                        <p className="text-xs font-medium text-market-navy italic">"{viewingEmp.address || (t('hr.addr_not_spec') || 'Morada não especificada no sistema.')}"</p>
                      </div>
                   </div>
                </div>

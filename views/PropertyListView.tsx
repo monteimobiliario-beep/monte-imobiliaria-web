@@ -5,23 +5,39 @@ import { Filter, MapPin, Building2, Ruler, BedDouble, Bath, Search, Star, Maximi
 import { supabase, db } from '../supabaseClient';
 import { Property, PropertyCategory } from '../types';
 import { useBranding } from '../BrandingContext';
+import { useTranslation } from '../src/i18nContext';
+
+import { useNavigate } from 'react-router-dom';
 
 interface PropertyListViewProps {
-  onViewProperty: (id: string) => void;
+  // Props no longer needed
 }
 
-const PropertyListView: React.FC<PropertyListViewProps> = ({ onViewProperty }) => {
+const PropertyListView: React.FC<PropertyListViewProps> = () => {
+  const { t } = useTranslation();
   const { settings } = useBranding();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dealTypeFilter, setDealTypeFilter] = useState('Todos');
-  const [categoryFilter, setCategoryFilter] = useState<PropertyCategory | 'Todas'>('Todas');
+  const [dealTypeFilter, setDealTypeFilter] = useState(t('props.filter.todos'));
+  const [categoryFilter, setCategoryFilter] = useState<string>(t('props.filter.all'));
+  const navigate = useNavigate();
 
-  const categories: (PropertyCategory | 'Todas')[] = ['Todas', 'Casa', 'Apartamento', 'Guest House', 'Hotel', 'Condomínio', 'Terreno'];
+  const onViewProperty = (id: string) => {
+    navigate(`/imovel/${id}`);
+  };
+
+  const categories: string[] = [t('props.filter.all'), t('type.house'), t('type.apartment'), t('type.guesthouse'), t('type.hotel'), t('type.condo'), t('type.land')];
 
   useEffect(() => {
     fetchProperties();
   }, []);
+
+  useEffect(() => {
+    // Reset filters when language changes to match new translation strings if needed
+    // But better to use internal keys. For now, let's just make sure they match.
+    setDealTypeFilter(t('props.filter.todos'));
+    setCategoryFilter(t('props.filter.all'));
+  }, [t]);
 
   async function fetchProperties() {
     setLoading(true);
@@ -37,8 +53,8 @@ const PropertyListView: React.FC<PropertyListViewProps> = ({ onViewProperty }) =
   }
 
   const filteredProperties = properties
-    .filter(p => (dealTypeFilter === 'Todos' || p.deal_type === dealTypeFilter))
-    .filter(p => (categoryFilter === 'Todas' || p.type === categoryFilter));
+    .filter(p => (dealTypeFilter === t('props.filter.todos') || p.deal_type === dealTypeFilter))
+    .filter(p => (categoryFilter === t('props.filter.all') || p.type === categoryFilter));
 
   return (
     <div className="bg-[#FDFCFB]">
@@ -59,14 +75,14 @@ const PropertyListView: React.FC<PropertyListViewProps> = ({ onViewProperty }) =
               animate={{ opacity: 1, y: 0 }}
               className="text-3xl md:text-4xl font-display font-black text-white tracking-tight"
             >
-              Explore <span className="text-gradient">Legados Patrimoniais.</span>
+              {t('props.hero.title')} <span className="text-gradient">{t('props.hero.subtitle')}</span>
             </motion.h1>
             <motion.p 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="text-white/40 text-sm font-medium leading-normal"
             >
-              Uma coleção rigorosa de ativos selecionados para investidores de elite.
+              {t('props.hero.desc')}
             </motion.p>
           </div>
         </div>
@@ -83,14 +99,14 @@ const PropertyListView: React.FC<PropertyListViewProps> = ({ onViewProperty }) =
             >
               <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
                  <Filter size={12} className="text-market-blue" />
-                 <h3 className="font-bold text-[10px] text-market-navy uppercase tracking-widest">Filtros</h3>
+                 <h3 className="font-bold text-[10px] text-market-navy uppercase tracking-widest">{t('props.filter.title')}</h3>
               </div>
               
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Finalidade</label>
+                  <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">{t('props.filter.deal')}</label>
                   <div className="flex flex-col gap-0.5">
-                    {['Todos', 'Venda', 'Aluguel'].map(type => (
+                    {[t('props.filter.todos'), t('deal.sale'), t('deal.rent')].map(type => (
                       <button 
                         key={type}
                         onClick={() => setDealTypeFilter(type)}
@@ -105,7 +121,7 @@ const PropertyListView: React.FC<PropertyListViewProps> = ({ onViewProperty }) =
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Categorias</label>
+                  <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">{t('props.filter.category')}</label>
                   <div className="flex flex-col gap-0.5">
                     {categories.map(cat => (
                       <button 
@@ -128,12 +144,12 @@ const PropertyListView: React.FC<PropertyListViewProps> = ({ onViewProperty }) =
           <div className="flex-1 space-y-8">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  Resultados: <span className="text-market-navy">
-                    {filteredProperties.length} Unidades
+                  {t('props.results')}: <span className="text-market-navy">
+                    {filteredProperties.length} {t('props.units')}
                   </span>
                </p>
                <div className="text-[10px] font-bold text-market-navy flex items-center gap-2 cursor-pointer hover:text-market-blue transition-colors">
-                  Recentes <ChevronDown size={12} />
+                  {t('props.recent')} <ChevronDown size={12} />
                </div>
             </div>
 
@@ -141,7 +157,7 @@ const PropertyListView: React.FC<PropertyListViewProps> = ({ onViewProperty }) =
               {loading ? (
                 <div className="col-span-full py-20 flex flex-col items-center gap-4">
                   <Loader2 className="animate-spin text-market-blue" size={32} />
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Consultando Portfólio...</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('props.loading')}</p>
                 </div>
               ) : (
                 <AnimatePresence mode="popLayout">
@@ -200,9 +216,9 @@ const PropertyListView: React.FC<PropertyListViewProps> = ({ onViewProperty }) =
                  <div className="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 text-slate-300">
                     <Search size={48} strokeWidth={1} />
                  </div>
-                 <h4 className="text-3xl font-display font-bold text-market-navy mb-4 tracking-tight">Nenhuma Correspondência</h4>
-                 <p className="text-market-slate text-lg font-medium max-w-sm mx-auto mb-12">Não encontramos ativos com estes critérios exatos no momento.</p>
-                 <button onClick={() => {setDealTypeFilter('Todos'); setCategoryFilter('Todas');}} className="px-12 py-5 bg-market-navy text-white rounded-full font-display font-bold text-[10px] uppercase tracking-widest hover:bg-market-blue transition-all shadow-2xl">Limpar Todos os Filtros</button>
+                 <h4 className="text-3xl font-display font-bold text-market-navy mb-4 tracking-tight">{t('props.empty.title')}</h4>
+                 <p className="text-market-slate text-lg font-medium max-w-sm mx-auto mb-12">{t('props.empty.desc')}</p>
+                 <button onClick={() => {setDealTypeFilter(t('props.filter.todos')); setCategoryFilter(t('props.filter.all'));}} className="px-12 py-5 bg-market-navy text-white rounded-full font-display font-bold text-[10px] uppercase tracking-widest hover:bg-market-blue transition-all shadow-2xl">{t('props.empty.button')}</button>
               </motion.div>
             )}
             

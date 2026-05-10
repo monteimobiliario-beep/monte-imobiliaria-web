@@ -4,7 +4,10 @@ import { Briefcase, MapPin, ArrowRight, UserPlus, Mail, Loader2, Info, ChevronDo
 import { supabase, db } from '../supabaseClient';
 import { JobVacancy } from '../types';
 
+import { useTranslation } from '../src/i18nContext';
+
 const CareerView: React.FC = () => {
+  const { t } = useTranslation();
   const [vacancies, setVacancies] = useState<JobVacancy[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -87,7 +90,7 @@ const CareerView: React.FC = () => {
   if (loading) return (
     <div className="py-32 flex flex-col items-center gap-4 bg-white min-h-[60vh]">
        <Loader2 className="animate-spin text-blue-600" size={48} />
-       <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest animate-pulse">Sincronizando com a Monte Imobiliária...</p>
+       <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest animate-pulse">{t('careers.syncing')}</p>
     </div>
   );
 
@@ -100,21 +103,21 @@ const CareerView: React.FC = () => {
         </div>
         <div className="relative z-10 max-w-4xl px-4">
           <h1 className="text-3xl md:text-5xl font-bold mb-3 leading-tight tracking-tight">
-            Carreira na <span className="text-market-blue">Monte Imobiliária</span>
+            {t('careers.hero.title')}
           </h1>
           <p className="text-white/70 text-xs md:text-sm font-medium max-w-xl mx-auto mb-8 leading-relaxed">
-            Construa o futuro do mercado imobiliário em Moçambique connosco.
+            {t('careers.hero.subtitle')}
           </p>
-          <a href="#vagas" className="market-button market-button-primary px-10 py-4 text-[11px] uppercase tracking-widest">Ver Oportunidades</a>
+          <a href="#vagas" className="market-button market-button-primary px-10 py-4 text-[11px] uppercase tracking-widest">{t('careers.hero.cta')}</a>
         </div>
       </section>
 
       <section id="vagas" className="py-20 px-4 md:px-8 bg-market-bg">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-12">
-            <h2 className="text-2xl font-bold text-market-navy tracking-tight">Vagas em Aberto</h2>
+            <h2 className="text-2xl font-bold text-market-navy tracking-tight">{t('careers.vacancies.title')}</h2>
             <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-slate-200 text-[10px] font-bold text-market-slate uppercase tracking-widest">
-               <ShieldCheck size={14} className="text-market-blue" /> Vagas Oficiais
+               <ShieldCheck size={14} className="text-market-blue" /> {t('careers.vacancies.official')}
             </div>
           </div>
 
@@ -122,7 +125,7 @@ const CareerView: React.FC = () => {
             {vacancies.length === 0 ? (
               <div className="market-card p-16 text-center border-dashed">
                  <Briefcase size={40} className="mx-auto text-slate-200 mb-4" />
-                 <p className="text-market-slate font-bold uppercase text-[10px] tracking-widest">Não existem vagas de momento.</p>
+                 <p className="text-market-slate font-bold uppercase text-[10px] tracking-widest">{t('careers.vacancies.empty')}</p>
               </div>
             ) : vacancies.map((job) => (
               <div key={job.id} className="market-card overflow-hidden transition-all hover:shadow-xl group">
@@ -135,7 +138,7 @@ const CareerView: React.FC = () => {
                       </div>
                    </div>
                    <div className="flex items-center gap-4">
-                      <button onClick={(e) => { e.stopPropagation(); handleOpenApply(job); }} className="market-button market-button-primary px-8 py-3 text-[10px] uppercase tracking-widest">Candidatar</button>
+                      <button onClick={(e) => { e.stopPropagation(); handleOpenApply(job); }} className="market-button market-button-primary px-8 py-3 text-[10px] uppercase tracking-widest">{t('careers.vacancies.apply')}</button>
                       <div className={`p-2.5 rounded-full bg-slate-50 text-slate-400 transition-transform border border-slate-100 ${expandedId === job.id ? 'rotate-180' : ''}`}><ChevronDown size={20} /></div>
                    </div>
                 </div>
@@ -143,7 +146,7 @@ const CareerView: React.FC = () => {
                   <div className="px-8 pb-8 pt-2 border-t border-slate-100 animate-in slide-in-from-top-2 duration-300">
                      <div 
                        className="prose prose-slate max-w-none text-market-slate font-medium leading-relaxed text-sm bg-slate-50 p-8 rounded-2xl border border-slate-100 quill-content"
-                       dangerouslySetInnerHTML={{ __html: job.description || "Dossiê em atualização." }}
+                       dangerouslySetInnerHTML={{ __html: job.description || t('careers.vacancies.empty') }}
                      />
                   </div>
                 )}
@@ -163,8 +166,8 @@ const CareerView: React.FC = () => {
                 <div className="w-20 h-20 bg-emerald-50 text-market-accent rounded-2xl flex items-center justify-center mx-auto shadow-inner border border-emerald-100"><CheckCircle2 size={40} /></div>
                 
                 <div>
-                   <h2 className="text-2xl font-bold text-market-navy mb-2">Candidatura Registada!</h2>
-                   <p className="text-market-slate font-medium text-sm">O seu perfil foi guardado na nossa base de talentos. Para uma resposta mais rápida, envie o seu dossiê diretamente ao RH:</p>
+                   <h2 className="text-2xl font-bold text-market-navy mb-2">{t('careers.success.title')}</h2>
+                   <p className="text-market-slate font-medium text-sm">{t('careers.success.desc')}</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -186,33 +189,33 @@ const CareerView: React.FC = () => {
                    </a>
                 </div>
 
-                <button onClick={() => setShowApplyModal(false)} className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] hover:text-market-navy transition-colors">Voltar ao Portal</button>
+                <button onClick={() => setShowApplyModal(false)} className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] hover:text-market-navy transition-colors">{t('careers.success.back')}</button>
               </div>
             ) : (
               <>
                 <div className="mb-10">
-                   <h2 className="text-2xl font-bold text-market-navy tracking-tight">Candidatura <br/><span className="text-market-blue text-lg uppercase">{selectedJob?.title}</span></h2>
-                   <p className="text-[11px] text-market-slate font-bold uppercase tracking-widest mt-2">Preencha os dados abaixo para iniciar o processo</p>
+                   <h2 className="text-2xl font-bold text-market-navy tracking-tight">{t('careers.modal.title')} <br/><span className="text-market-blue text-lg uppercase">{selectedJob?.title}</span></h2>
+                   <p className="text-[11px] text-market-slate font-bold uppercase tracking-widest mt-2">{t('careers.modal.subtitle')}</p>
                 </div>
 
                 <form onSubmit={handleApplySubmit} className="space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="md:col-span-2 space-y-1.5">
-                      <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Nome Completo</label>
+                      <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('careers.form.name')}</label>
                       <input required disabled={isApplying} value={applyForm.name} onChange={e => setApplyForm({...applyForm, name: e.target.value})} className="w-full bg-slate-50 rounded-xl p-4 font-medium text-sm outline-none border border-slate-200 focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" placeholder="Seu Nome" />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Email Profissional</label>
+                      <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('careers.form.email')}</label>
                       <input required disabled={isApplying} type="email" value={applyForm.email} onChange={e => setApplyForm({...applyForm, email: e.target.value})} className="w-full bg-slate-50 rounded-xl p-4 font-medium text-sm outline-none border border-slate-200 focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" placeholder="exemplo@email.com" />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Telefone / WhatsApp</label>
+                      <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('careers.form.phone')}</label>
                       <input required disabled={isApplying} value={applyForm.phone} onChange={e => setApplyForm({...applyForm, phone: e.target.value})} className="w-full bg-slate-50 rounded-xl p-4 font-medium text-sm outline-none border border-slate-200 focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" placeholder="+258..." />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">LinkedIn ou Portfólio</label>
+                    <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('careers.form.linkedin')}</label>
                     <div className="relative">
                       <Linkedin className="absolute left-4 top-1/2 -translate-y-1/2 text-market-blue" size={16} />
                       <input disabled={isApplying} value={applyForm.linkedin} onChange={e => setApplyForm({...applyForm, linkedin: e.target.value})} className="w-full bg-slate-50 rounded-xl p-4 pl-12 font-medium text-sm outline-none border border-slate-200 focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" placeholder="linkedin.com/in/perfil" />
@@ -221,14 +224,14 @@ const CareerView: React.FC = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Link do CV (Google Drive/PDF)</label>
+                      <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('careers.form.cv')}</label>
                       <div className="relative">
                         <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-market-blue" size={16} />
                         <input required disabled={isApplying} value={applyForm.cv_url} onChange={e => setApplyForm({...applyForm, cv_url: e.target.value})} className="w-full bg-slate-50 rounded-xl p-4 pl-12 font-medium text-sm outline-none border border-slate-200 focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" placeholder="Link do seu currículo" />
                       </div>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Link da Carta de Manifestação</label>
+                      <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('careers.form.letter')}</label>
                       <div className="relative">
                         <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-market-blue" size={16} />
                         <input required disabled={isApplying} value={applyForm.cover_letter_url} onChange={e => setApplyForm({...applyForm, cover_letter_url: e.target.value})} className="w-full bg-slate-50 rounded-xl p-4 pl-12 font-medium text-sm outline-none border border-slate-200 focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" placeholder="Link da sua carta" />
@@ -237,30 +240,30 @@ const CareerView: React.FC = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Apresentação / Comentário</label>
-                    <textarea required disabled={isApplying} value={applyForm.message} onChange={e => setApplyForm({...applyForm, message: e.target.value})} rows={4} className="w-full bg-slate-50 rounded-2xl p-6 text-sm font-medium outline-none border border-slate-200 focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all resize-none" placeholder="Conte-nos brevemente sobre a sua experiência e motivação..." />
+                    <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">{t('careers.form.message')}</label>
+                    <textarea required disabled={isApplying} value={applyForm.message} onChange={e => setApplyForm({...applyForm, message: e.target.value})} rows={4} className="w-full bg-slate-50 rounded-2xl p-6 text-sm font-medium outline-none border border-slate-200 focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all resize-none" placeholder={t('careers.form.msg_placeholder')} />
                   </div>
 
                   <div className="flex items-start gap-3 p-5 bg-slate-50 rounded-xl border border-slate-200">
                     <input required type="checkbox" checked={hasConsent} onChange={e => setHasConsent(e.target.checked)} className="mt-1 w-4 h-4 rounded border-slate-300 text-market-blue focus:ring-market-blue" />
-                    <label className="text-[10px] text-market-slate font-medium leading-relaxed">Autorizo a Monte Imobiliária a processar os meus dados para fins de recrutamento e seleção.</label>
+                    <label className="text-[10px] text-market-slate font-medium leading-relaxed">{t('careers.form.consent')}</label>
                   </div>
 
                   <button disabled={isApplying || !hasConsent} type="submit" className="market-button market-button-primary w-full py-5 text-[11px] uppercase tracking-widest flex items-center justify-center gap-3">
-                    {isApplying ? <Loader2 className="animate-spin" /> : <><Send size={16} /> Submeter Candidatura</>}
+                    {isApplying ? <Loader2 className="animate-spin" /> : <><Send size={16} /> {t('careers.form.submit')}</>}
                   </button>
                 </form>
 
                 <div className="mt-10 pt-8 border-t border-slate-100">
                    <div className="bg-slate-50 p-8 rounded-2xl border border-slate-200 text-center">
-                      <p className="text-[10px] font-bold text-market-slate uppercase tracking-widest mb-4">Prefere enviar por email?</p>
+                      <p className="text-[10px] font-bold text-market-slate uppercase tracking-widest mb-4">{t('careers.form.email_pref')}</p>
                       <a 
                         href={`mailto:monteimobiliario@gmail.com?subject=Candidatura: ${selectedJob?.title} - ${applyForm.name || 'Candidato'}&body=Olá, gostaria de me candidatar à vaga de ${selectedJob?.title}. Segue em anexo o meu currículo.`}
                         className="inline-flex items-center gap-2 text-market-blue font-bold text-[11px] uppercase tracking-widest hover:text-market-navy transition-colors"
                       >
-                        <Mail size={18} /> Enviar Candidatura via Email
+                        <Mail size={18} /> {t('careers.form.email_button')}
                       </a>
-                      <p className="mt-3 text-[9px] text-market-slate font-medium">Anexe o seu CV em formato PDF (Máx. 5MB).</p>
+                      <p className="mt-3 text-[9px] text-market-slate font-medium">{t('careers.form.email_hint')}</p>
                    </div>
                 </div>
               </>
