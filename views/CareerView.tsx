@@ -55,20 +55,17 @@ const CareerView: React.FC = () => {
     try {
       const now = new Date().toISOString();
       const payload = {
-        job_id: selectedJob?.id, 
-        job_title: selectedJob?.title,
-        applicant_name: applyForm.name.trim(),
-        applicant_email: applyForm.email.trim(), 
-        applicant_phone: applyForm.phone.trim(), 
-        applicant_linkedin: applyForm.linkedin.trim(), 
-        cv_url: applyForm.cv_url.trim(),
-        cover_letter_url: applyForm.cover_letter_url.trim(),
+        vacancy_id: selectedJob?.id, 
+        name: applyForm.name.trim(),
+        email: applyForm.email.trim(), 
+        phone: applyForm.phone.trim(), 
+        resume_url: applyForm.cv_url.trim(),
         message: applyForm.message.trim(), 
         status: 'Pendente',
         created_at: now
       };
 
-      console.log("Submitting job application:", payload);
+      console.log("Submitting job application to db.hr('job_applications'):", payload);
       
       const { error } = await db.hr('job_applications').insert([payload]);
       

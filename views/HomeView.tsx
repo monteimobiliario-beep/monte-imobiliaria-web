@@ -25,6 +25,8 @@ const HomeView: React.FC<HomeViewProps> = () => {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [featuredProperties, setFeaturedProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [citySelect, setCitySelect] = useState('');
   const navigate = useNavigate();
 
   const onViewProperty = (id: string) => {
@@ -33,6 +35,17 @@ const HomeView: React.FC<HomeViewProps> = () => {
 
   const onNavigate = (path: string) => {
     navigate(path.startsWith('/') ? path : `/${path}`);
+  };
+
+  const handleSearchSubmit = () => {
+    const params = new URLSearchParams();
+    if (searchQuery.trim()) {
+      params.append('search', searchQuery.trim());
+    }
+    if (citySelect) {
+      params.append('city', citySelect);
+    }
+    navigate(`/imoveis?${params.toString()}`);
   };
 
       // Convert settings to compatible hero content
@@ -118,17 +131,29 @@ const HomeView: React.FC<HomeViewProps> = () => {
           >
             <div className="flex-[2] flex items-center px-6 py-3 gap-3 md:border-r border-white/5 group">
               <Search size={18} className="text-market-blue" />
-              <input type="text" placeholder={t('hero.placeholder')} className="w-full bg-transparent outline-none text-white font-medium text-sm placeholder:text-white/20 italic" />
+              <input 
+                type="text" 
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder={t('hero.placeholder')} 
+                className="w-full bg-transparent outline-none text-white font-medium text-sm placeholder:text-white/20 italic" 
+                onKeyDown={e => { if (e.key === 'Enter') handleSearchSubmit(); }}
+              />
             </div>
             <div className="flex-1 flex items-center px-6 py-3 gap-3">
               <MapPin size={18} className="text-market-gold" />
-              <select className="w-full bg-transparent outline-none text-white font-bold text-sm cursor-pointer appearance-none bg-market-navy">
-                <option value="">{t('hero.location.beira')}</option>
-                <option value="">{t('hero.location.maputo')}</option>
+              <select 
+                value={citySelect} 
+                onChange={e => setCitySelect(e.target.value)}
+                className="w-full bg-transparent outline-none text-white font-bold text-sm cursor-pointer appearance-none bg-market-navy select-reset"
+              >
+                <option value="" className="text-slate-800">Cidades (Todas)</option>
+                <option value="Beira" className="text-slate-800">{t('hero.location.beira')}</option>
+                <option value="Maputo" className="text-slate-800">{t('hero.location.maputo')}</option>
               </select>
             </div>
             <button 
-              onClick={() => onNavigate('imoveis')} 
+              onClick={handleSearchSubmit} 
               className="bg-market-blue hover:bg-white hover:text-market-navy text-white px-8 py-3 rounded-[1.5rem] font-display font-bold text-[10px] uppercase tracking-widest transition-all shadow-xl"
             >
               {t('hero.cta')}

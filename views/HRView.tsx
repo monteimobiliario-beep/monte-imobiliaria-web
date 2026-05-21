@@ -113,9 +113,34 @@ const HRView: React.FC = () => {
 
   async function fetchApplications() {
     try {
-      const { data } = await db.hr('job_applications').select('*').order('created_at', { ascending: false });
-      setApplications(data || []);
-    } catch (e) {}
+      const { data, error } = await db.hr('job_applications')
+        .select('id, vacancy_id, name, email, phone, resume_url, message, status, created_at, job_vacancies:vacancy_id (title)')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error("Error fetching job applications:", error);
+        return;
+      }
+
+      const mapped: JobApplication[] = (data || []).map((app: any) => ({
+        id: app.id,
+        job_id: app.vacancy_id || '',
+        job_title: app.job_vacancies?.title || 'Vaga Geral',
+        applicant_name: app.name || '',
+        applicant_email: app.email || '',
+        applicant_phone: app.phone || '',
+        cv_url: app.resume_url || '',
+        cover_letter_url: '',
+        applicant_linkedin: '',
+        message: app.message || '',
+        status: app.status || 'Pendente',
+        created_at: app.created_at
+      }));
+
+      setApplications(mapped);
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   const staffStats = useMemo(() => {

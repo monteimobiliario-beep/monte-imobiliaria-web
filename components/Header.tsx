@@ -116,7 +116,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onOpenSidebar }) => {
   };
 
   const { settings } = useBranding();
-  const { language, setLanguage, t } = useTranslation();
+  const { language, setLanguage, t, tRole } = useTranslation();
   const systemLogo = settings.logoUrl;
 
   const toggleLanguage = () => {

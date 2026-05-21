@@ -41,9 +41,9 @@ const Footer: React.FC = () => {
             {t('footer.tagline')}
           </p>
           <div className="flex gap-2">
-            <button className="p-1.5 bg-white/5 rounded-lg hover:bg-market-blue hover:text-white transition-all border border-white/5"><Facebook size={12} /></button>
-            <button className="p-1.5 bg-white/5 rounded-lg hover:bg-market-blue hover:text-white transition-all border border-white/5"><Instagram size={12} /></button>
-            <button className="p-1.5 bg-white/5 rounded-lg hover:bg-market-blue hover:text-white transition-all border border-white/5"><Linkedin size={12} /></button>
+            <a href="https://web.facebook.com/profile.php?id=100090022435019" target="_blank" rel="noopener noreferrer" className="p-1.5 bg-white/5 rounded-lg hover:bg-market-blue hover:text-white transition-all border border-white/5 flex items-center justify-center" aria-label="Facebook"><Facebook size={12} /></a>
+            <a href="https://www.instagram.com/monteimobiliaria?igsh=MWF5Zzk1ejdwMjJ6Mw==" target="_blank" rel="noopener noreferrer" className="p-1.5 bg-white/5 rounded-lg hover:bg-market-blue hover:text-white transition-all border border-white/5 flex items-center justify-center" aria-label="Instagram"><Instagram size={12} /></a>
+            <a href="https://www.linkedin.com/in/monte-imobili%C3%A1ria-a8345a300?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noopener noreferrer" className="p-1.5 bg-white/5 rounded-lg hover:bg-market-blue hover:text-white transition-all border border-white/5 flex items-center justify-center" aria-label="LinkedIn"><Linkedin size={12} /></a>
           </div>
         </div>
 

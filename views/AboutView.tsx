@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Target, Users, Heart, History, Sparkles, ChevronLeft, ChevronRight, CheckCircle2, ShieldCheck, Briefcase, MapPin, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { MOCK_PROJECTS } from '../constants';
 import { useBranding } from '../BrandingContext';
 import { useTranslation } from '../src/i18nContext';
@@ -8,6 +9,7 @@ import { useTranslation } from '../src/i18nContext';
 const AboutView: React.FC = () => {
   const { t } = useTranslation();
   const { settings } = useBranding();
+  const navigate = useNavigate();
   const [currentProject, setCurrentProject] = useState(0);
 
   // Auto-slide para o portfólio de projetos realizados
@@ -121,7 +123,7 @@ const AboutView: React.FC = () => {
                </p>
             </div>
             <div className="relative z-10 shrink-0">
-               <button onClick={() => window.location.href='/contato'} className="px-12 py-4 bg-market-navy text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-xl hover:bg-white hover:text-market-navy transition-all flex items-center gap-3 active:scale-95">
+               <button onClick={() => navigate('/contato')} className="px-12 py-4 bg-market-navy text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-xl hover:bg-white hover:text-market-navy transition-all flex items-center gap-3 active:scale-95">
                   {t('about.cta.button')} <ChevronRight size={20} />
                </button>
             </div>

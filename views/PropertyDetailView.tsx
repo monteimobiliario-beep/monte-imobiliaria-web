@@ -789,7 +789,7 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
                       </div>
                       <div>
                          <p className="text-[8px] font-bold text-market-slate uppercase tracking-widest leading-none mb-1">Directo</p>
-                         <p className="text-sm font-display font-black text-market-navy">+258 84 000 0000</p>
+                         <p className="text-sm font-display font-black text-market-navy">+258 87 501 8283</p>
                       </div>
                    </div>
                 </div>

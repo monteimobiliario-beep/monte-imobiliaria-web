@@ -36,12 +36,6 @@ const translations: TranslationDict = {
   'home.philosophy.tag': { pt: 'Monte Hub', en: 'Monte Hub' },
   'home.philosophy.title': { pt: 'Transformando Posses em Legados', en: 'Transforming Assets into Legacies' },
   'home.philosophy.desc': { pt: 'A nossa abordagem transcende o imobiliário convencional. Unimos consultoria estratégica e gestão de ativos de elite.', en: 'Our approach transcends conventional real estate. We combine strategic consulting and elite asset management.' },
-  'erp.welcome': { pt: 'Bem-vindo ao Monte Hub', en: 'Welcome to Monte Hub' },
-  'erp.search': { pt: 'Pesquisar...', en: 'Search...' },
-  'erp.logout': { pt: 'Sair', en: 'Logout' },
-  'erp.settings': { pt: 'Configurações', en: 'Settings' },
-
-  // HR / Careers
   'careers.hero.title': { pt: 'Carreira na Monte Imobiliária', en: 'Careers at Monte Imobiliária' },
   'careers.hero.subtitle': { pt: 'Construa o futuro do mercado imobiliário em Moçambique connosco.', en: 'Build the future of the real estate market in Mozambique with us.' },
   'careers.hero.cta': { pt: 'Ver Oportunidades', en: 'View Opportunities' },
@@ -377,7 +371,6 @@ const translations: TranslationDict = {
   'fin.general': { pt: 'Geral', en: 'General' },
 
   // HR Module
-  'hr.title': { pt: 'Gestão de Capital Humano', en: 'Human Capital Management' },
   'hr.hub': { pt: 'Monte Staff Hub', en: 'Monte Staff Hub' },
   'hr.staff': { pt: 'Corpo Ativo', en: 'Active Staff' },
   'hr.vacancies': { pt: 'Vagas', en: 'Vacancies' },
@@ -436,7 +429,6 @@ const translations: TranslationDict = {
   'hr.confirm_delete_vac': { pt: 'Tem a certeza que deseja remover esta vaga?', en: 'Are you sure you want to remove this vacancy?' },
   'hr.confirm_delete_emp': { pt: 'Tem a certeza que deseja remover este colaborador?', en: 'Are you sure you want to remove this employee?' },
   'hr.mgmt': { pt: 'Gestão de Capital Humano', en: 'Human Capital Management' },
-  'fleet.title': { pt: 'Logística Operacional', en: 'Operational Logistics' },
   'fleet.incorporate': { pt: 'Incorporar Veículo', en: 'Add Vehicle' },
   'fleet.total_units': { pt: 'Unidades Totais', en: 'Total Units' },
   'fleet.active_flow': { pt: 'Fluxo Activo', en: 'Active Flow' },
@@ -446,7 +438,6 @@ const translations: TranslationDict = {
   'fleet.all_status': { pt: 'Todos Status', en: 'All Statuses' },
   'fleet.available': { pt: 'Disponível', en: 'Available' },
   'fleet.in_service': { pt: 'Em Serviço', en: 'In Service' },
-  'fleet.maintenance': { pt: 'Manutenção', en: 'Maintenance' },
   'fleet.wash': { pt: 'Lavagem', en: 'Wash' },
   'fleet.driver': { pt: 'Condutor', en: 'Driver' },
   'fleet.odometer': { pt: 'Odométro', en: 'Odometer' },

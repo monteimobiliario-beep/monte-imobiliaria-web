@@ -7,7 +7,7 @@ import { Property, PropertyCategory } from '../types';
 import { useBranding } from '../BrandingContext';
 import { useTranslation } from '../src/i18nContext';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface PropertyListViewProps {
   // Props no longer needed
@@ -20,7 +20,11 @@ const PropertyListView: React.FC<PropertyListViewProps> = () => {
   const [loading, setLoading] = useState(true);
   const [dealTypeFilter, setDealTypeFilter] = useState(t('props.filter.todos'));
   const [categoryFilter, setCategoryFilter] = useState<string>(t('props.filter.all'));
+  const [searchTerm, setSearchTerm] = useState('');
+  const [cityFilter, setCityFilter] = useState('');
+  
   const navigate = useNavigate();
+  const { search } = useLocation();
 
   const onViewProperty = (id: string) => {
     navigate(`/imovel/${id}`);
@@ -31,6 +35,14 @@ const PropertyListView: React.FC<PropertyListViewProps> = () => {
   useEffect(() => {
     fetchProperties();
   }, []);
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(search);
+    const qSearch = queryParams.get('search') || '';
+    const qCity = queryParams.get('city') || '';
+    if (qSearch) setSearchTerm(qSearch);
+    if (qCity) setCityFilter(qCity);
+  }, [search]);
 
   useEffect(() => {
     // Reset filters when language changes to match new translation strings if needed
@@ -54,7 +66,21 @@ const PropertyListView: React.FC<PropertyListViewProps> = () => {
 
   const filteredProperties = properties
     .filter(p => (dealTypeFilter === t('props.filter.todos') || p.deal_type === dealTypeFilter))
-    .filter(p => (categoryFilter === t('props.filter.all') || p.type === categoryFilter));
+    .filter(p => (categoryFilter === t('props.filter.all') || p.type === categoryFilter))
+    .filter(p => {
+      if (!cityFilter) return true;
+      return p.location?.toLowerCase().includes(cityFilter.toLowerCase());
+    })
+    .filter(p => {
+      if (!searchTerm) return true;
+      const term = searchTerm.toLowerCase();
+      return (
+        p.title?.toLowerCase().includes(term) ||
+        p.location?.toLowerCase().includes(term) ||
+        p.description?.toLowerCase().includes(term) ||
+        p.type?.toLowerCase().includes(term)
+      );
+    });
 
   return (
     <div className="bg-[#FDFCFB]">
@@ -142,6 +168,36 @@ const PropertyListView: React.FC<PropertyListViewProps> = () => {
 
           {/* High Density Grid Section */}
           <div className="flex-1 space-y-8">
+            {/* Search and Filters Bar */}
+            <div className="flex flex-col sm:flex-row gap-4 items-center bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+              <div className="flex-1 w-full flex items-center gap-2 bg-slate-50 rounded-xl px-4 py-3 border border-slate-100">
+                <Search size={16} className="text-slate-400" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Pesquisar por bairro, condomínio ou palavra-chave..."
+                  className="w-full bg-transparent outline-none text-xs font-semibold text-slate-700 placeholder:text-slate-400"
+                />
+              </div>
+              
+              <div className="w-full sm:w-56 flex items-center gap-2 bg-slate-50 rounded-xl px-4 py-3 border border-slate-100 relative">
+                <MapPin size={16} className="text-market-blue shrink-0" />
+                <select
+                  value={cityFilter}
+                  onChange={(e) => setCityFilter(e.target.value)}
+                  className="w-full bg-transparent outline-none text-xs font-semibold text-slate-700 cursor-pointer appearance-none pr-8"
+                >
+                  <option value="">Todas as Cidades</option>
+                  <option value="Beira">Beira</option>
+                  <option value="Maputo">Maputo</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                  <ChevronDown size={14} />
+                </div>
+              </div>
+            </div>
+
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                   {t('props.results')}: <span className="text-market-navy">
