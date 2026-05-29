@@ -379,33 +379,33 @@ const FinanceView: React.FC = () => {
                      if (activeTab === 'payable') return t.type === 'DESPESA';
                      return true;
                    })
-                   .map(t => (
-                   <tr key={t.id} className="hover:bg-slate-50/50 transition-all group">
+                   .map(tx => (
+                   <tr key={tx.id} className="hover:bg-slate-50/50 transition-all group">
                      <td className="px-6 py-6">
-                       <p className="text-[11px] font-bold text-market-navy">{new Date(t.date).toLocaleDateString('pt-MZ')}</p>
-                       {t.due_date && <p className="text-[9px] font-bold text-rose-400 mt-1 uppercase">Vence: {new Date(t.due_date).toLocaleDateString('pt-MZ')}</p>}
+                       <p className="text-[11px] font-bold text-market-navy">{new Date(tx.date).toLocaleDateString('pt-MZ')}</p>
+                       {tx.due_date && <p className="text-[9px] font-bold text-rose-400 mt-1 uppercase">Vence: {new Date(tx.due_date).toLocaleDateString('pt-MZ')}</p>}
                      </td>
                      <td className="px-6 py-6">
-                        <p className="text-sm font-bold text-market-navy leading-none mb-1.5">{t.description}</p>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{t.client_supplier_name || t('fin.internal_flow')}</p>
+                        <p className="text-sm font-bold text-market-navy leading-none mb-1.5">{tx.description}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{tx.client_supplier_name || t('fin.internal_flow')}</p>
                      </td>
                      <td className="px-6 py-6">
                         <div className="flex flex-col gap-1.5">
-                           <span className="text-[9px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded uppercase w-fit tracking-wider">{t.category}</span>
-                           <span className="text-[9px] font-bold text-market-blue uppercase tracking-tighter truncate max-w-[150px]">{t.project?.name || t('fin.general')}</span>
+                           <span className="text-[9px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded uppercase w-fit tracking-wider">{tx.category}</span>
+                           <span className="text-[9px] font-bold text-market-blue uppercase tracking-tighter truncate max-w-[150px]">{tx.project?.name || t('fin.general')}</span>
                         </div>
                      </td>
                      <td className="px-6 py-6">
                         <span className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${
-                          t.status === 'Pago' ? 'bg-emerald-50 text-market-accent' : 
-                          t.status === 'Vencido' ? 'bg-rose-50 text-rose-600 animate-pulse' : 
+                          tx.status === 'Pago' ? 'bg-emerald-50 text-market-accent' : 
+                          tx.status === 'Vencido' ? 'bg-rose-50 text-rose-600 animate-pulse' : 
                           'bg-amber-50 text-amber-600'
                         }`}>
-                          {t.status}
+                          {tx.status}
                         </span>
                      </td>
-                     <td className={`px-6 py-6 text-right font-bold text-sm tracking-tighter ${t.type === 'RECEITA' ? 'text-market-accent' : 'text-rose-600'}`}>
-                        {t.type === 'RECEITA' ? '+' : '-'} {Number(t.amount).toLocaleString()} MT
+                     <td className={`px-6 py-6 text-right font-bold text-sm tracking-tighter ${tx.type === 'RECEITA' ? 'text-market-accent' : 'text-rose-600'}`}>
+                        {tx.type === 'RECEITA' ? '+' : '-'} {Number(tx.amount).toLocaleString()} MT
                      </td>
                      <td className="px-6 py-6 text-center">
                         <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">

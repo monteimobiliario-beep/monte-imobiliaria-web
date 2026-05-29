@@ -301,11 +301,11 @@ const DashboardView: React.FC = () => {
               )}
            </div>
            <div className="grid grid-cols-2 gap-4 mt-8 relative z-10 border-t border-slate-50 pt-6">
-              {propertyTypes.slice(0, 4).map((t, i) => (
+              {propertyTypes.slice(0, 4).map((propType, i) => (
                 <motion.div key={i} whileHover={{ x: 5 }} className="flex items-center gap-3 p-2 rounded-xl transition-all hover:bg-slate-50 cursor-pointer">
-                   <div className="w-3 h-3 rounded-full shadow-lg" style={{ backgroundColor: t.color }}></div>
+                   <div className="w-3 h-3 rounded-full shadow-lg" style={{ backgroundColor: propType.color }}></div>
                    <div className="min-w-0 flex-1">
-                      <p className="text-[9px] font-black text-market-navy truncate uppercase leading-none mb-1">{t.name}</p>
+                      <p className="text-[9px] font-black text-market-navy truncate uppercase leading-none mb-1">{propType.name}</p>
                       <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{t('dash.properties')}</p>
                    </div>
                 </motion.div>
