@@ -68,6 +68,15 @@ const HomeView: React.FC<HomeViewProps> = () => {
       const { data, error } = await db.catalog('properties').select('*').eq('featured', true).limit(10);
       if (error) throw error;
       const activeFeatured = (data || [])
+        .map((p: any) => {
+          const mc = p.map_coords ? (typeof p.map_coords === 'string' ? JSON.parse(p.map_coords) : p.map_coords) : {};
+          return {
+            ...p,
+            is_active: p.is_active !== undefined && p.is_active !== null ? p.is_active : (mc.is_active !== undefined ? mc.is_active : true),
+            is_promo: p.is_promo !== undefined && p.is_promo !== null ? !!p.is_promo : (mc.is_promo !== undefined ? !!mc.is_promo : false),
+            old_price: p.old_price !== undefined && p.old_price !== null ? Number(p.old_price) : (mc.old_price !== undefined && mc.old_price !== null ? Number(mc.old_price) : undefined)
+          };
+        })
         .filter((p: any) => p.is_active !== false)
         .slice(0, 4);
       setFeaturedProperties(activeFeatured);
@@ -215,7 +224,14 @@ const HomeView: React.FC<HomeViewProps> = () => {
                   <div className="flex items-center justify-between pt-3 border-t border-slate-50">
                     <div>
                       {property.is_promo && property.old_price && (
-                        <p className="text-[9px] line-through text-slate-400 font-semibold leading-none mb-0.5">{property.old_price.toLocaleString()} MT</p>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <p className="text-[9px] line-through text-slate-400 font-semibold leading-none">{property.old_price.toLocaleString()} MT</p>
+                          {property.old_price > property.price && (
+                            <span className="bg-rose-500/10 text-rose-600 text-[8px] font-black px-1.5 py-0.5 rounded-full leading-none">
+                              -{Math.round(((property.old_price - property.price) / property.old_price) * 100)}%
+                            </span>
+                          )}
+                        </div>
                       )}
                       <p className="text-sm font-black text-market-navy">{property.price.toLocaleString()} <span className="text-[8px] opacity-40">MT</span></p>
                     </div>

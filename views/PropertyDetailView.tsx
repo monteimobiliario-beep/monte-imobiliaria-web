@@ -89,16 +89,29 @@ const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ propertyId }) =
       const { data, error } = await db.catalog('properties').select('*').eq('id', propertyId).single();
       if (error) throw error;
       
+      const mc = data.map_coords ? (typeof data.map_coords === 'string' ? JSON.parse(data.map_coords) : data.map_coords) : {};
       const p = {
         ...data,
-        gallery: Array.isArray(data.gallery) ? data.gallery : (typeof data.gallery === 'string' ? JSON.parse(data.gallery) : [])
+        gallery: Array.isArray(data.gallery) ? data.gallery : (typeof data.gallery === 'string' ? JSON.parse(data.gallery) : []),
+        is_active: data.is_active !== undefined && data.is_active !== null ? data.is_active : (mc.is_active !== undefined ? mc.is_active : true),
+        is_promo: data.is_promo !== undefined && data.is_promo !== null ? !!data.is_promo : (mc.is_promo !== undefined ? !!mc.is_promo : false),
+        old_price: data.old_price !== undefined && data.old_price !== null ? Number(data.old_price) : (mc.old_price !== undefined && mc.old_price !== null ? Number(mc.old_price) : undefined)
       } as Property;
       
       setProperty(p);
       
       // Fetch related
       const { data: related } = await db.catalog('properties').select('*').neq('id', propertyId).limit(3);
-      setRelatedProperties(related || []);
+      const mappedRelated = (related || []).map((r: any) => {
+        const rmc = r.map_coords ? (typeof r.map_coords === 'string' ? JSON.parse(r.map_coords) : r.map_coords) : {};
+        return {
+          ...r,
+          is_active: r.is_active !== undefined && r.is_active !== null ? r.is_active : (rmc.is_active !== undefined ? rmc.is_active : true),
+          is_promo: r.is_promo !== undefined && r.is_promo !== null ? !!r.is_promo : (rmc.is_promo !== undefined ? !!rmc.is_promo : false),
+          old_price: r.old_price !== undefined && r.old_price !== null ? Number(r.old_price) : (rmc.old_price !== undefined && rmc.old_price !== null ? Number(rmc.old_price) : undefined)
+        };
+      });
+      setRelatedProperties(mappedRelated);
       
     } catch (err) {
       console.error("Erro ao carregar detalhes:", err);
@@ -359,7 +372,14 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
              <div className="text-right hidden sm:block">
                 <p className="text-[8px] font-bold text-market-blue uppercase tracking-widest leading-none mb-1">{t('detail.price_label')}</p>
                 {property?.is_promo && property?.old_price && (
-                  <p className="text-xs line-through text-slate-400 font-semibold leading-none mb-1">{property.old_price.toLocaleString('pt-MZ')} MT</p>
+                  <div className="flex items-center justify-end gap-1.5 mb-1.5">
+                    <p className="text-xs line-through text-slate-400 font-semibold leading-none">{property.old_price.toLocaleString('pt-MZ')} MT</p>
+                    {property.old_price > property.price && (
+                      <span className="bg-rose-500/10 text-rose-600 text-[8px] font-black px-1.5 py-0.5 rounded-full leading-none">
+                        -{Math.round(((property.old_price - property.price) / property.old_price) * 100)}%
+                      </span>
+                    )}
+                  </div>
                 )}
                 <p className="text-xl font-display font-black text-market-navy leading-none">
                   {property?.price.toLocaleString('pt-MZ')} <span className="text-[10px] text-market-slate/60 font-medium">MT</span>
@@ -546,7 +566,14 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
                              )}
                            </p>
                            {property.is_promo && property.old_price && (
-                             <p className="text-sm line-through text-slate-400 font-bold leading-none select-none mb-1">{property.old_price.toLocaleString('pt-MZ')} MT</p>
+                             <div className="flex items-center gap-2 mb-1.5 select-none font-sans">
+                               <p className="text-sm line-through text-slate-400 font-bold leading-none">{property.old_price.toLocaleString('pt-MZ')} MT</p>
+                               {property.old_price > property.price && (
+                                 <span className="bg-rose-500/10 text-rose-600 text-[10px] font-black px-2 py-0.5 rounded-full leading-none">
+                                   -{Math.round(((property.old_price - property.price) / property.old_price) * 100)}% Economia
+                                 </span>
+                                )}
+                             </div>
                            )}
                            <h3 className="text-5xl font-display font-black text-market-navy tracking-tighter">
                              {property.price.toLocaleString('pt-MZ')} <span className="text-sm text-market-slate/40 uppercase">MT</span>

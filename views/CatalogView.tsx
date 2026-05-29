@@ -50,13 +50,16 @@ const CatalogView: React.FC = () => {
     try {
       const { data, error } = await db.catalog('properties').select('*').order('created_at', { ascending: false });
       if (error) throw error;
-      setProperties((data || []).map(p => ({
-        ...p,
-        gallery: Array.isArray(p.gallery) ? p.gallery : (typeof p.gallery === 'string' ? JSON.parse(p.gallery) : []),
-        is_active: p.is_active !== false, // Fallback to true if null/undefined
-        is_promo: !!p.is_promo,
-        old_price: p.old_price !== null ? Number(p.old_price) : undefined
-      })));
+      setProperties((data || []).map(p => {
+        const mc = p.map_coords ? (typeof p.map_coords === 'string' ? JSON.parse(p.map_coords) : p.map_coords) : {};
+        return {
+          ...p,
+          gallery: Array.isArray(p.gallery) ? p.gallery : (typeof p.gallery === 'string' ? JSON.parse(p.gallery) : []),
+          is_active: p.is_active !== undefined && p.is_active !== null ? p.is_active : (mc.is_active !== undefined ? mc.is_active : true),
+          is_promo: p.is_promo !== undefined && p.is_promo !== null ? !!p.is_promo : (mc.is_promo !== undefined ? !!mc.is_promo : false),
+          old_price: p.old_price !== undefined && p.old_price !== null ? Number(p.old_price) : (mc.old_price !== undefined && mc.old_price !== null ? Number(mc.old_price) : undefined)
+        };
+      }));
     } catch (err: any) {
       console.error("Fetch error:", err);
     } finally {
@@ -114,7 +117,13 @@ const CatalogView: React.FC = () => {
           gallery: newProp.gallery || [],
           is_active: newProp.is_active !== undefined ? newProp.is_active : true,
           is_promo: newProp.is_promo !== undefined ? newProp.is_promo : false,
-          old_price: newProp.is_promo && newProp.old_price ? Number(newProp.old_price) : null
+          old_price: newProp.is_promo && newProp.old_price ? Number(newProp.old_price) : null,
+          map_coords: {
+            ...(newProp.map_coords || {}),
+            is_active: newProp.is_active !== undefined ? newProp.is_active : true,
+            is_promo: newProp.is_promo !== undefined ? newProp.is_promo : false,
+            old_price: newProp.is_promo && newProp.old_price ? Number(newProp.old_price) : null
+          }
         };
 
         const result = editingItem 
@@ -127,6 +136,12 @@ const CatalogView: React.FC = () => {
           if (errMsg.includes('column') || errMsg.includes('not exist') || errMsg.includes('missing')) {
             console.warn("New columns not found in database, retrying without is_active / promo fields...");
             const safePayload = { ...payload };
+            safePayload.map_coords = {
+              ...(safePayload.map_coords || {}),
+              is_active: payload.is_active,
+              is_promo: payload.is_promo,
+              old_price: payload.old_price
+            };
             delete safePayload.is_active;
             delete safePayload.is_promo;
             delete safePayload.old_price;
