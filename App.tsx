@@ -161,6 +161,17 @@ const App: React.FC = () => {
       }
 
       const isOwner = sbUser.email === ADMIN_GERAL_EMAIL || sbUser.email === 'monteimobiliario@gmail.com';
+      
+      if (!isOwner && (!emp || emp.status === 'Inativo' || emp.status === 'Suspenso')) {
+        console.warn("Acesso negado: Colaborador não cadastrado ou inativo.");
+        localStorage.setItem('monte_auth_error', emp && (emp.status === 'Inativo' || emp.status === 'Suspenso') ? 'suspended_staff' : 'unauthorized_staff');
+        lastFetchedEmail.current = null;
+        setCurrentUser(null);
+        await supabase.auth.signOut();
+        navigate('/login');
+        return;
+      }
+
       const user: User = {
         id: sbUser.id,
         name: isOwner ? 'Administrador Geral' : (emp?.name || sbUser.email.split('@')[0]),

@@ -28,6 +28,18 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
     return () => window.removeEventListener('monteLogoUpdated', handleLogoUpdate);
   }, []);
 
+  useEffect(() => {
+    const authError = localStorage.getItem('monte_auth_error');
+    if (authError) {
+      if (authError === 'unauthorized_staff') {
+        setError('Acesso Negado: Seu e-mail não está cadastrado como um colaborador autorizado no sistema ERP. Por favor, solicite o seu cadastro à Administração.');
+      } else if (authError === 'suspended_staff') {
+        setError('Acesso Negado: A sua conta de colaborador na Monte Imobiliária está inativa ou suspensa. Contacte os Recursos Humanos.');
+      }
+      localStorage.removeItem('monte_auth_error');
+    }
+  }, []);
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
