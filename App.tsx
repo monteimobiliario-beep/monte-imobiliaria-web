@@ -52,7 +52,7 @@ const App: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const ADMIN_GERAL_EMAIL = 'monteimobiliario@gmail.com';
+  const ADMIN_GERAL_EMAIL = 'info@monteimobiliaria.com';
 
   useEffect(() => {
     document.documentElement.classList.remove('dark');
@@ -160,7 +160,7 @@ const App: React.FC = () => {
         console.warn("Esquema HR ainda não acessível via API.");
       }
 
-      const isOwner = sbUser.email === ADMIN_GERAL_EMAIL;
+      const isOwner = sbUser.email === ADMIN_GERAL_EMAIL || sbUser.email === 'monteimobiliario@gmail.com';
       const user: User = {
         id: sbUser.id,
         name: isOwner ? 'Administrador Geral' : (emp?.name || sbUser.email.split('@')[0]),

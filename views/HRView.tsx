@@ -7,7 +7,8 @@ import {
   Users, AlertTriangle, Loader2, X, Mail, Phone, 
   Edit3, UserPlus, CheckCircle2, 
   Search, Building2, Save, Trash2, ShieldCheck, Fingerprint, FileBadge, CreditCard, Map, Shield, Briefcase, Linkedin, ExternalLink, Filter, Camera, 
-  ChevronRight, MoreVertical, BadgeCheck, TrendingUp, Activity, Plus, Sparkles
+  ChevronRight, MoreVertical, BadgeCheck, TrendingUp, Activity, Plus, Sparkles,
+  Grid, List, DollarSign, Calendar, MessageSquare
 } from 'lucide-react';
 import { supabase, db } from '../supabaseClient';
 import { Employee, UserRole, JobVacancy, JobApplication } from '../types';
@@ -34,6 +35,71 @@ const HRView: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [generatingAI, setGeneratingAI] = useState(false);
   
+  const [employeesViewMode, setEmployeesViewMode] = useState<'grid' | 'table'>('grid');
+
+  const getStatusBadgeStyles = (status: string) => {
+    switch (status) {
+      case 'Ativo':
+      case 'Active':
+        return 'bg-emerald-50 text-emerald-700 border border-emerald-250';
+      case 'Férias':
+      case 'Vacation':
+        return 'bg-sky-50 text-sky-700 border border-sky-200';
+      case 'Suspenso':
+      case 'Suspended':
+        return 'bg-amber-50 text-amber-800 border border-amber-200';
+      case 'Inativo':
+      case 'Inactive':
+        return 'bg-rose-50 text-rose-700 border border-rose-200';
+      default:
+        return 'bg-slate-50 text-slate-700 border border-slate-200';
+    }
+  };
+
+  const getDeptColorClasses = (dept: string) => {
+    const dLower = (dept || '').toLowerCase();
+    if (dLower.includes('venda') || dLower.includes('sales')) {
+      return {
+        bg: 'from-amber-400 to-orange-500',
+        text: 'text-amber-700 bg-amber-50/70 border-amber-250',
+        dot: 'bg-amber-500'
+      };
+    }
+    if (dLower.includes('eng') || dLower.includes('hardware')) {
+      return {
+        bg: 'from-blue-400 to-indigo-500',
+        text: 'text-blue-700 bg-blue-50/70 border-blue-200',
+        dot: 'bg-blue-500'
+      };
+    }
+    if (dLower.includes('ti') || dLower.includes('tech') || dLower.includes('it')) {
+      return {
+        bg: 'from-violet-400 to-purple-500',
+        text: 'text-violet-700 bg-violet-50/70 border-violet-200',
+        dot: 'bg-violet-500'
+      };
+    }
+    if (dLower.includes('admin') || dLower.includes('adm')) {
+      return {
+        bg: 'from-emerald-400 to-teal-500',
+        text: 'text-emerald-700 bg-emerald-50/70 border-emerald-200',
+        dot: 'bg-emerald-500'
+      };
+    }
+    if (dLower.includes('dir') || dLower.includes('mng') || dLower.includes('gest')) {
+      return {
+        bg: 'from-rose-400 to-pink-500',
+        text: 'text-rose-700 bg-rose-50/70 border-rose-200',
+        dot: 'bg-rose-500'
+      };
+    }
+    return {
+      bg: 'from-slate-400 to-slate-500',
+      text: 'text-slate-700 bg-slate-50/70 border-slate-200',
+      dot: 'bg-slate-400'
+    };
+  };
+
   const [staffSearch, setStaffSearch] = useState('');
   const [vacancySearch, setVacancySearch] = useState('');
   const [deptFilter, setDeptFilter] = useState(t('fin.all'));
@@ -469,6 +535,27 @@ const HRView: React.FC = () => {
                   {departments.map(d => <option key={d} value={d}>{d}</option>)}
                </select>
             </div>
+
+            {/* Seletor de Modo de Visualização */}
+            <div className="flex bg-slate-100/80 p-1 rounded-2xl border border-slate-200/40 shadow-inner w-full md:w-auto justify-center">
+               <button 
+                 type="button"
+                 onClick={() => setEmployeesViewMode('grid')} 
+                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all ${employeesViewMode === 'grid' ? 'bg-white text-market-blue shadow-md' : 'text-slate-400 hover:text-market-navy'}`}
+               >
+                 <Grid size={14} />
+                 <span>Grelha</span>
+               </button>
+               <button 
+                 type="button"
+                 onClick={() => setEmployeesViewMode('table')} 
+                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all ${employeesViewMode === 'table' ? 'bg-white text-market-blue shadow-md' : 'text-slate-400 hover:text-market-navy'}`}
+               >
+                 <List size={14} />
+                 <span>Lista</span>
+               </button>
+            </div>
+
             <button 
               onClick={() => { setEditingEmpId(null); setFormState(initialFormState); setShowAddModal(true); }} 
               className="market-button market-button-primary w-full md:w-auto px-8 py-4 text-[10px] uppercase tracking-[0.2em]"
@@ -477,33 +564,175 @@ const HRView: React.FC = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <AnimatePresence mode="popLayout">
-              {filteredEmployees.map((emp) => (
-                <motion.div 
-                  layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  key={emp.id} 
-                  onClick={() => {setViewingEmp(emp); setShowViewModal(true);}} 
-                  className="market-card p-6 relative group hover:scale-[1.02] cursor-pointer"
-                >
-                  <div className="flex items-center gap-4">
-                    <img src={formatImageUrl(emp.avatar) || undefined} className="w-16 h-16 rounded-2xl object-cover shadow-lg" alt="" />
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-black text-market-navy truncate uppercase leading-tight">{emp.name}</h3>
-                      <p className="text-[10px] font-bold text-market-blue uppercase tracking-widest truncate">{tRole(emp.role)}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className={`w-1.5 h-1.5 rounded-full ${emp.status === t('hr.active') ? 'bg-market-accent' : 'bg-amber-500'}`}></span>
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{emp.department}</span>
+          {employeesViewMode === 'grid' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <AnimatePresence mode="popLayout">
+                {filteredEmployees.map((emp) => {
+                  const deptColors = getDeptColorClasses(emp.department);
+                  return (
+                    <motion.div 
+                      layout
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.3 }}
+                      key={emp.id} 
+                      onClick={() => {setViewingEmp(emp); setShowViewModal(true);}} 
+                      className="market-card overflow-hidden bg-white hover:shadow-2xl hover:shadow-slate-100 transition-all duration-300 relative group cursor-pointer border border-slate-100 flex flex-col justify-between"
+                    >
+                      {/* Top Decorative Stripe */}
+                      <div className={`h-2 text-transparent w-full bg-gradient-to-r ${deptColors.bg}`} />
+                      
+                      <div className="p-6 pb-2 flex-1 flex flex-col items-center text-center">
+                        <div className="relative mb-4 group-hover:scale-105 transition-all duration-300">
+                           <img 
+                             src={formatImageUrl(emp.avatar) || undefined} 
+                             className="w-20 h-20 rounded-3xl object-cover shadow-lg ring-4 ring-white group-hover:ring-offset-2 transition-all" 
+                             alt={emp.name} 
+                           />
+                           <span className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full ring-2 ring-white ${emp.status === t('hr.active') ? 'bg-emerald-500' : emp.status === 'Férias' ? 'bg-sky-500' : 'bg-amber-500'} animate-pulse`} />
+                        </div>
+
+                        <span className={`text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-full border mb-2 ${deptColors.text}`}>
+                           {emp.department}
+                        </span>
+
+                        <h3 className="text-sm font-black text-market-navy truncate max-w-full uppercase tracking-tight group-hover:text-market-blue transition-colors duration-300 leading-tight">
+                          {emp.name}
+                        </h3>
+
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 mb-2">
+                           {tRole(emp.role)}
+                        </p>
+
+                        <div className="flex gap-2.5 my-3 bg-slate-50/70 p-1.5 rounded-2xl border border-slate-100 transition-all duration-300 group-hover:bg-white group-hover:border-slate-200">
+                           <a 
+                             href={`mailto:${emp.email}`} 
+                             onClick={e => e.stopPropagation()} 
+                             className="p-2 bg-white hover:bg-market-blue hover:text-white text-slate-500 rounded-xl transition-all border border-slate-150 flex items-center justify-center hover:scale-110 shadow-sm"
+                             title={`Enviar Email para ${emp.name}`}
+                           >
+                              <Mail size={13} />
+                           </a>
+                           <a 
+                             href={`tel:${emp.phone}`} 
+                             onClick={e => e.stopPropagation()} 
+                             className="p-2 bg-white hover:bg-market-blue hover:text-white text-slate-500 rounded-xl transition-all border border-slate-150 flex items-center justify-center hover:scale-110 shadow-sm"
+                             title={`Ligar para ${emp.name}`}
+                           >
+                              <Phone size={13} />
+                           </a>
+                           <a 
+                             href={`https://wa.me/${(emp.phone || '').replace(/[^0-9]/g, '')}`} 
+                             target="_blank" 
+                             rel="noopener noreferrer" 
+                             onClick={e => e.stopPropagation()} 
+                             className="p-2 bg-white hover:bg-emerald-500 hover:text-white text-slate-500 rounded-xl transition-all border border-slate-150 flex items-center justify-center hover:scale-110 shadow-sm"
+                             title="WhatsApp"
+                           >
+                              <MessageSquare size={13} />
+                           </a>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+
+                      <div className="mt-auto px-6 py-4 bg-slate-50/50 border-t border-slate-100/60 flex items-center justify-between text-[11px] text-slate-500 font-bold">
+                         <div className="flex items-center gap-1.5 text-slate-400">
+                            <Calendar size={13} />
+                            <span className="font-medium text-[9px] text-slate-400">
+                              {emp.join_date ? new Date(emp.join_date).toLocaleDateString('pt-MZ') : 'N/D'}
+                            </span>
+                         </div>
+                         <div className="flex items-center gap-1.5 text-market-navy bg-white px-2.5 py-1 rounded-xl border border-slate-150 shadow-sm">
+                            <DollarSign size={13} className="text-market-blue" />
+                            <span className="font-mono font-bold text-[10px]">
+                              {Number(emp.salary).toLocaleString('pt-MZ')} MT
+                            </span>
+                         </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              className="market-card overflow-hidden bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-100/50"
+            >
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="text-[10px] font-black text-market-slate uppercase tracking-wider bg-slate-50 border-b border-slate-100">
+                      <th className="px-6 py-4.5">Colaborador</th>
+                      <th className="px-6 py-4.5">Departamento & Cargo</th>
+                      <th className="px-6 py-4.5">Salário Base</th>
+                      <th className="px-6 py-4.5">Estado</th>
+                      <th className="px-6 py-4.5">Data de Admissão</th>
+                      <th className="px-6 py-4.5 text-right">Contacto Rápido / Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredEmployees.map((emp) => {
+                      const deptColors = getDeptColorClasses(emp.department);
+                      return (
+                        <tr 
+                          key={emp.id} 
+                          onClick={() => {setViewingEmp(emp); setShowViewModal(true);}} 
+                          className="hover:bg-slate-50/50 transition-all duration-200 cursor-pointer group"
+                        >
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-4">
+                              <img src={formatImageUrl(emp.avatar) || undefined} className="w-11 h-11 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-all" alt="" />
+                              <div>
+                                <p className="text-[12px] font-black text-market-navy uppercase tracking-tight mb-0.5 group-hover:text-market-blue transition-colors">{emp.name}</p>
+                                <p className="text-[10px] text-slate-400 font-medium">{emp.email}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <p className="text-[11px] font-bold text-market-navy leading-none mb-1">{tRole(emp.role)}</p>
+                            <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border inline-block ${deptColors.text}`}>
+                              {emp.department}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-1 text-slate-705">
+                              <DollarSign size={13} className="text-market-blue" />
+                              <span className="font-mono font-bold text-xs">{Number(emp.salary).toLocaleString('pt-MZ')} MT</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2.5 py-1 rounded-full text-[8.5px] font-black uppercase tracking-wider inline-block text-center border ${getStatusBadgeStyles(emp.status)}`}>
+                              {emp.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-1 text-slate-500">
+                              <Calendar size={13} className="text-slate-400" />
+                              <span className="text-[11px] font-bold">{emp.join_date ? new Date(emp.join_date).toLocaleDateString('pt-MZ') : 'N/D'}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-right space-x-2" onClick={e => e.stopPropagation()}>
+                            <div className="flex justify-end gap-1.5 items-center">
+                               <a href={`mailto:${emp.email}`} className="p-2 bg-slate-50 hover:bg-market-blue hover:text-white text-slate-500 border border-slate-150 rounded-xl transition-all shadow-sm" title="Email"><Mail size={13} /></a>
+                               <a href={`tel:${emp.phone}`} className="p-2 bg-slate-50 hover:bg-market-blue hover:text-white text-slate-500 border border-slate-150 rounded-xl transition-all shadow-sm" title="Ligar"><Phone size={13} /></a>
+                               <button 
+                                 onClick={() => {setViewingEmp(emp); setShowViewModal(true);}} 
+                                 className="py-1.5 px-3 bg-white hover:bg-market-navy hover:text-white text-market-navy font-black text-[9px] uppercase tracking-widest border border-slate-200 rounded-xl transition-all shadow-sm"
+                               >
+                                  Ficha
+                               </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
       ) : (
         <div className="space-y-6">
@@ -844,49 +1073,136 @@ const HRView: React.FC = () => {
 
       {/* View Modal */}
       {showViewModal && viewingEmp && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-market-navy/80 backdrop-blur-xl animate-in fade-in">
-          <div className="bg-white rounded-3xl p-0 max-w-4xl w-full shadow-2xl relative overflow-hidden flex flex-col md:flex-row h-[70vh]">
-            <div className="w-full md:w-1/3 bg-slate-50 p-10 flex flex-col items-center text-center border-r border-slate-100">
-               <div className="relative mb-6">
-                  <img src={formatImageUrl(viewingEmp.avatar) || undefined} className="w-32 h-32 rounded-3xl object-cover shadow-2xl ring-4 ring-white" alt="" />
-                  <div className={`absolute -bottom-2 -right-2 px-3 py-1 rounded-full text-[9px] font-bold uppercase text-white shadow-lg ${viewingEmp.status === t('hr.active') ? 'bg-market-accent' : 'bg-amber-500'}`}>{viewingEmp.status}</div>
-               </div>
-               <h2 className="text-xl font-bold text-market-navy mb-1">{viewingEmp.name}</h2>
-               <p className="text-[9px] font-bold text-market-blue uppercase tracking-widest mb-6 bg-market-blue/5 px-3 py-1 rounded-full">{tRole(viewingEmp.role)}</p>
-               
-               <div className="w-full space-y-3 pt-6 border-t border-slate-200">
-                  <div className="flex items-center gap-3 text-market-slate"><Mail size={14} /><span className="text-[11px] font-medium truncate">{viewingEmp.email}</span></div>
-                  <div className="flex items-center gap-3 text-market-slate"><Phone size={14} /><span className="text-[11px] font-medium">{viewingEmp.phone}</span></div>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-white rounded-[2.5rem] p-0 max-w-4xl w-full shadow-2xl relative overflow-hidden flex flex-col md:flex-row h-[75vh] border border-slate-100 animate-in zoom-in-95 duration-300">
+            {/* Left side panel */}
+            <div className="w-full md:w-1/3 bg-slate-50/50 p-8 flex flex-col items-center text-center border-r border-slate-100 relative">
+               {/* Accent decoration */}
+               <div className={`absolute top-0 inset-x-0 h-2 bg-gradient-to-r ${getDeptColorClasses(viewingEmp.department).bg}`} />
+
+               <div className="relative mb-6 mt-4 group">
+                  <img src={formatImageUrl(viewingEmp.avatar) || undefined} className="w-28 h-28 rounded-[2.5rem] object-cover shadow-xl ring-4 ring-white group-hover:scale-105 transition-all duration-300" alt={viewingEmp.name} />
+                  <div className={`absolute -bottom-2 right-1 px-3.5 py-1 rounded-full text-[8.5px] font-black uppercase text-white shadow-md tracking-wider flex items-center gap-1 bg-gradient-to-r ${getDeptColorClasses(viewingEmp.department).bg}`}>
+                     {viewingEmp.status}
+                  </div>
                </div>
 
-               <div className="mt-auto flex gap-2 w-full pt-6">
-                  <button onClick={() => { setFormState(viewingEmp); setEditingEmpId(viewingEmp.id); setShowViewModal(false); setShowAddModal(true); }} className="flex-1 p-3 bg-white hover:bg-market-blue hover:text-white text-market-blue border border-market-blue/20 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 font-bold text-[10px] uppercase"><Edit3 size={16} /> {t('hr.edit')}</button>
-                  <button onClick={() => handleDeleteEmployee(viewingEmp.id)} className="p-3 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white border border-rose-100 rounded-xl transition-all shadow-sm flex items-center justify-center"><Trash2 size={16}/></button>
-                  <button onClick={() => setShowViewModal(false)} className="p-3 bg-slate-200 text-slate-500 rounded-xl hover:bg-slate-300 transition-all"><X size={16}/></button>
+               <h2 className="text-lg font-black text-market-navy uppercase tracking-tight mb-1 leading-tight">{viewingEmp.name}</h2>
+               <span className={`text-[8.5px] font-black uppercase tracking-widest px-3.5 py-1 rounded-full border mb-6 inline-block bg-white ${getDeptColorClasses(viewingEmp.department).text}`}>
+                  {viewingEmp.department}
+               </span>
+               
+               <div className="w-full space-y-3.5 pt-6 border-t border-slate-100 flex-1">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-left mb-2">Contacto Direto</p>
+                  
+                  <a href={`mailto:${viewingEmp.email}`} className="flex items-center gap-3 text-market-slate hover:text-market-blue transition-colors bg-white px-3.5 py-2.5 rounded-xl border border-slate-100 shadow-sm w-full">
+                     <Mail size={14} className="text-slate-400" />
+                     <span className="text-[11px] font-bold truncate text-left flex-1">{viewingEmp.email}</span>
+                  </a>
+                  
+                  <a href={`tel:${viewingEmp.phone}`} className="flex items-center gap-3 text-market-slate hover:text-market-blue transition-colors bg-white px-3.5 py-2.5 rounded-xl border border-slate-100 shadow-sm w-full">
+                     <Phone size={14} className="text-slate-400" />
+                     <span className="text-[11px] font-bold text-left flex-1">{viewingEmp.phone}</span>
+                  </a>
+               </div>
+
+               <div className="mt-8 flex gap-2 w-full pt-4 border-t border-slate-100">
+                  <button 
+                    onClick={() => { setFormState(viewingEmp); setEditingEmpId(viewingEmp.id); setShowViewModal(false); setShowAddModal(true); }} 
+                    className="flex-1 p-3.5 bg-market-blue hover:bg-market-navy text-white rounded-xl transition-all shadow-md flex items-center justify-center gap-2 font-bold text-[10px] uppercase tracking-wider"
+                  >
+                    <Edit3 size={15} /> {t('hr.edit')}
+                  </button>
+                  <button 
+                    onClick={() => handleDeleteEmployee(viewingEmp.id)} 
+                    className="p-3.5 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white border border-rose-100 rounded-xl transition-all shadow-sm flex items-center justify-center hover:scale-105"
+                  >
+                    <Trash2 size={15}/>
+                  </button>
+                  <button 
+                    onClick={() => setShowViewModal(false)} 
+                    className="p-3.5 bg-slate-100 text-slate-500 rounded-xl hover:bg-slate-200 transition-all"
+                  >
+                    <X size={15}/>
+                  </button>
                </div>
             </div>
             
-            <div className="flex-1 p-10 overflow-y-auto custom-scrollbar">
-               <div className="grid grid-cols-2 gap-8">
-                  <div>
-                     <h4 className="text-[9px] font-bold text-market-slate uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><Fingerprint size={12} className="text-market-blue"/> {t('hr.identification')}</h4>
-                     <div className="space-y-4">
-                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100"><p className="text-[8px] font-bold text-market-slate uppercase mb-0.5">{t('hr.doc_type')}</p><p className="text-xs font-bold text-market-navy">{viewingEmp.document_type || 'BI'}</p></div>
-                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100"><p className="text-[8px] font-bold text-market-slate uppercase mb-0.5">{t('hr.doc_number')}</p><p className="text-xs font-bold text-market-navy">{viewingEmp.document_number || 'N/D'}</p></div>
-                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100"><p className="text-[8px] font-bold text-market-slate uppercase mb-0.5">NUIT</p><p className="text-xs font-bold text-market-navy">{viewingEmp.nuit || 'N/D'}</p></div>
+            {/* Right side content */}
+            <div className="flex-1 p-8 md:p-10 overflow-y-auto custom-scrollbar bg-white">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Identification Card */}
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100/80">
+                     <h4 className="text-[10px] font-black text-market-navy uppercase tracking-[0.2em] mb-4.5 flex items-center gap-2">
+                       <Fingerprint size={14} className="text-market-blue"/> 
+                       {t('hr.identification')}
+                     </h4>
+                     <div className="space-y-3">
+                        <div className="bg-white p-3 rounded-2xl border border-slate-100 flex items-center justify-between">
+                          <p className="text-[8.5px] font-black text-slate-400 uppercase">{t('hr.doc_type')}</p>
+                          <p className="text-xs font-black text-market-navy">{viewingEmp.document_type || 'BI'}</p>
+                        </div>
+                        <div className="bg-white p-3 rounded-2xl border border-slate-100 flex items-center justify-between">
+                          <p className="text-[8.5px] font-black text-slate-400 uppercase">{t('hr.doc_number')}</p>
+                          <p className="text-xs font-mono font-bold text-market-navy">{viewingEmp.document_number || 'N/D'}</p>
+                        </div>
+                        <div className="bg-white p-3 rounded-2xl border border-slate-100 flex items-center justify-between">
+                          <p className="text-[8.5px] font-black text-slate-400 uppercase">NUIT</p>
+                          <p className="text-xs font-mono font-bold text-market-navy">{viewingEmp.nuit || 'N/D'}</p>
+                        </div>
                      </div>
                   </div>
-                  <div>
-                     <h4 className="text-[9px] font-bold text-market-slate uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><CreditCard size={12} className="text-market-blue"/> {t('fin.financial')}</h4>
-                     <div className="space-y-4">
-                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100"><p className="text-[8px] font-bold text-market-slate uppercase mb-0.5">{t('hr.monthly_salary')}</p><p className="text-xs font-bold text-market-accent">{Number(viewingEmp.salary).toLocaleString()} MT</p></div>
-                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100"><p className="text-[8px] font-bold text-market-slate uppercase mb-0.5">{t('hr.payment_method')}</p><p className="text-xs font-bold text-market-navy">{viewingEmp.payment_method || (t('hr.bank_transf') || 'Transferência')}</p></div>
+
+                  {/* Financial & Hiring info Card */}
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100/80">
+                     <h4 className="text-[10px] font-black text-market-navy uppercase tracking-[0.2em] mb-4.5 flex items-center gap-2">
+                       <CreditCard size={14} className="text-market-blue"/> 
+                       {t('fin.financial')}
+                     </h4>
+                     <div className="space-y-3">
+                        <div className="bg-white p-3 rounded-2xl border border-slate-100 flex items-center justify-between">
+                          <p className="text-[8.5px] font-black text-slate-400 uppercase">{t('hr.monthly_salary')}</p>
+                          <p className="text-xs font-black text-market-accent font-mono">{Number(viewingEmp.salary).toLocaleString('pt-MZ')} MT</p>
+                        </div>
+                        <div className="bg-white p-3 rounded-2xl border border-slate-100 flex items-center justify-between">
+                          <p className="text-[8.5px] font-black text-slate-400 uppercase">{t('hr.payment_method')}</p>
+                          <p className="text-xs font-bold text-market-navy">{viewingEmp.payment_method || 'Transferência Bancária'}</p>
+                        </div>
+                        <div className="bg-white p-3 rounded-2xl border border-slate-100 flex items-center justify-between">
+                          <p className="text-[8.5px] font-black text-slate-400 uppercase">Cargo / Função</p>
+                          <p className="text-xs font-black text-market-blue">{tRole(viewingEmp.role)}</p>
+                        </div>
                      </div>
                   </div>
-                  <div className="col-span-2">
-                     <h4 className="text-[9px] font-bold text-market-slate uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><Map size={12} className="text-market-blue"/> {t('hr.location')}</h4>
-                     <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                        <p className="text-xs font-medium text-market-navy italic">"{viewingEmp.address || (t('hr.addr_not_spec') || 'Morada não especificada no sistema.')}"</p>
+
+                  {/* Contract & Staff info */}
+                  <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100/80 md:col-span-2">
+                     <h4 className="text-[10px] font-black text-market-navy uppercase tracking-[0.2em] mb-4.5 flex items-center gap-2">
+                       <FileBadge size={14} className="text-market-blue"/> 
+                       Contrato & Integração
+                     </h4>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-white p-3.5 rounded-2xl border border-slate-100">
+                           <p className="text-[8px] font-black text-slate-400 uppercase mb-0.5">Data de Admissão</p>
+                           <p className="text-xs font-mono font-bold text-market-navy">{viewingEmp.join_date ? new Date(viewingEmp.join_date).toLocaleDateString('pt-MZ') : 'N/D'}</p>
+                        </div>
+                        <div className="bg-white p-3.5 rounded-2xl border border-slate-100">
+                           <p className="text-[8px] font-black text-slate-400 uppercase mb-0.5">Nº de Segurança Social (NISS)</p>
+                           <p className="text-xs font-mono font-bold text-market-navy">{viewingEmp.niss || 'N/D'}</p>
+                        </div>
+                     </div>
+                  </div>
+
+                  {/* Location Card */}
+                  <div className="md:col-span-2">
+                     <h4 className="text-[10px] font-black text-market-navy uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                       <Map size={14} className="text-market-blue"/> 
+                       {t('hr.location')}
+                     </h4>
+                     <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                        <p className="text-xs font-bold text-market-navy/95 leading-relaxed">
+                          {viewingEmp.address || "Endereço residencial não especificado no sistema corporativo."}
+                        </p>
                      </div>
                   </div>
                </div>

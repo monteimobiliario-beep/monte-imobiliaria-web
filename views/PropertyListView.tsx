@@ -65,6 +65,7 @@ const PropertyListView: React.FC<PropertyListViewProps> = () => {
   }
 
   const filteredProperties = properties
+    .filter(p => p.is_active !== false)
     .filter(p => (dealTypeFilter === t('props.filter.todos') || p.deal_type === dealTypeFilter))
     .filter(p => (categoryFilter === t('props.filter.all') || p.type === categoryFilter))
     .filter(p => {
@@ -229,10 +230,15 @@ const PropertyListView: React.FC<PropertyListViewProps> = () => {
                   >
                     <div className="relative h-48 overflow-hidden">
                       <img src={property.image || undefined} alt={property.title} referrerPolicy="no-referrer" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                      <div className="absolute top-3 left-3 flex flex-col gap-2">
-                        <span className="bg-market-navy/90 backdrop-blur-sm text-white text-[8px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md">
+                      <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+                        <span className="bg-market-navy/90 backdrop-blur-sm text-white text-[8px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md w-fit">
                           {property.deal_type}
                         </span>
+                        {property.is_promo && (
+                          <span className="bg-rose-600 backdrop-blur-sm text-white text-[8px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md animate-pulse w-fit">
+                            % Promoção
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -248,8 +254,13 @@ const PropertyListView: React.FC<PropertyListViewProps> = () => {
                       </div>
                       
                       <div className="flex items-center justify-between pt-3 border-t border-slate-50">
-                        <div className="text-sm font-black text-market-navy">
-                          {property.price.toLocaleString('pt-MZ')} <span className="text-[9px] font-medium opacity-50">MT</span>
+                        <div>
+                          {property.is_promo && property.old_price && (
+                            <p className="text-[9px] line-through text-slate-400 font-semibold leading-none mb-0.5">{property.old_price.toLocaleString('pt-MZ')} MT</p>
+                          )}
+                          <div className="text-sm font-black text-market-navy">
+                            {property.price.toLocaleString('pt-MZ')} <span className="text-[9px] font-medium opacity-50">MT</span>
+                          </div>
                         </div>
                         <div className="flex items-center gap-3 text-slate-400">
                            <div className="flex items-center gap-1 text-[10px] font-bold"><BedDouble size={12} /> {property.bedrooms}</div>

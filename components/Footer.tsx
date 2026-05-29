@@ -76,7 +76,9 @@ const Footer: React.FC = () => {
               </a>
             </li>
             <li className="break-all opacity-40">
-                monteimobiliario@gmail.com
+                <a href="mailto:info@monteimobiliaria.com" className="hover:text-market-blue transition-colors">
+                  info@monteimobiliaria.com
+                </a>
             </li>
           </ul>
         </div>

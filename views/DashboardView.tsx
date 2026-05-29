@@ -53,7 +53,7 @@ const DashboardView: React.FC = () => {
         db.catalog('properties').select('*'),
         db.catalog('contact_requests').select('*', { count: 'exact', head: true }),
         db.hr('job_applications').select('*', { count: 'exact', head: true }).eq('status', 'Pendente'),
-        db.hr('job_applications').select('*').order('created_at', { ascending: false }).limit(4),
+        db.hr('job_applications').select('id, vacancy_id, name, email, phone, resume_url, message, status, created_at, job_vacancies:vacancy_id (title)').order('created_at', { ascending: false }).limit(4),
         db.finance('projects').select('*', { count: 'exact', head: true }),
         db.fleet('vehicles').select('*', { count: 'exact', head: true })
       ]);
@@ -61,7 +61,23 @@ const DashboardView: React.FC = () => {
       const txs = txRes.data || [];
       const props = propRes.data || [];
       setAllTransactions(txs);
-      setRecentApps(recentAppsRes.data || []);
+      
+      const rawApps = recentAppsRes.data || [];
+      const mappedApps: JobApplication[] = rawApps.map((app: any) => ({
+        id: app.id,
+        job_id: app.vacancy_id || '',
+        job_title: app.job_vacancies?.title || 'Vaga Geral',
+        applicant_name: app.name || '',
+        applicant_email: app.email || '',
+        applicant_phone: app.phone || '',
+        cv_url: app.resume_url || '',
+        cover_letter_url: '',
+        applicant_linkedin: '',
+        message: app.message || '',
+        status: app.status || 'Pendente',
+        created_at: app.created_at
+      }));
+      setRecentApps(mappedApps);
       
       const rev = txs.filter(t => t.type === 'RECEITA').reduce((a, b) => a + Number(b.amount || 0), 0);
       const exp = txs.filter(t => t.type === 'DESPESA').reduce((a, b) => a + Number(b.amount || 0), 0);
@@ -360,14 +376,14 @@ const DashboardView: React.FC = () => {
                  >
                     <div className="flex items-center gap-4 min-w-0">
                        <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center border border-slate-100 text-market-blue font-black text-xs">
-                          {app.applicant_name.charAt(0)}
+                          {(app.applicant_name || 'C').charAt(0)}
                        </div>
                        <div className="min-w-0">
-                          <p className="text-[11px] font-black text-market-navy truncate uppercase leading-none mb-1">{app.applicant_name}</p>
+                          <p className="text-[11px] font-black text-market-navy truncate uppercase leading-none mb-1">{app.applicant_name || 'Candidato'}</p>
                           <div className="flex items-center gap-2">
                              <span className="text-[8px] font-bold text-market-blue uppercase tracking-widest">{app.job_title}</span>
                              <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                             <span className="text-[8px] font-bold text-slate-400 uppercase">{new Date(app.created_at).toLocaleDateString()}</span>
+                             <span className="text-[8px] font-bold text-slate-400 uppercase">{app.created_at ? new Date(app.created_at).toLocaleDateString() : ''}</span>
                           </div>
                        </div>
                     </div>

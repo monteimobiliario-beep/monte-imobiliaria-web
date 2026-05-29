@@ -178,7 +178,7 @@ const CareerView: React.FC = () => {
                       <span className="text-[10px] font-black uppercase tracking-widest">Enviar via WhatsApp</span>
                    </a>
                    <a 
-                     href={`mailto:monteimobiliario@gmail.com?subject=Candidatura: ${selectedJob?.title} - ${applyForm.name}&body=Olá Equipa de RH,%0A%0AEfetuou a candidatura para a vaga de ${selectedJob?.title}.%0A%0ADados do Candidato:%0ANome: ${applyForm.name}%0AEmail: ${applyForm.email}%0A%0ADocumentação:%0ACV: ${applyForm.cv_url}%0ACarta de Manifestação: ${applyForm.cover_letter_url}%0ALinkedIn: ${applyForm.linkedin || 'N/D'}%0A%0AMensagem: ${applyForm.message}`}
+                     href={`mailto:info@monteimobiliaria.com?subject=Candidatura: ${selectedJob?.title} - ${applyForm.name}&body=Olá Equipa de RH,%0A%0AEfetuou a candidatura para a vaga de ${selectedJob?.title}.%0A%0ADados do Candidato:%0ANome: ${applyForm.name}%0AEmail: ${applyForm.email}%0A%0ADocumentação:%0ACV: ${applyForm.cv_url}%0ACarta de Manifestação: ${applyForm.cover_letter_url}%0ALinkedIn: ${applyForm.linkedin || 'N/D'}%0A%0AMensagem: ${applyForm.message}`}
                      className="p-5 bg-market-blue text-white rounded-2xl flex flex-col items-center gap-3 transition-all hover:scale-[1.02] shadow-lg active:scale-95"
                    >
                       <Mail size={24} />
@@ -255,7 +255,7 @@ const CareerView: React.FC = () => {
                    <div className="bg-slate-50 p-8 rounded-2xl border border-slate-200 text-center">
                       <p className="text-[10px] font-bold text-market-slate uppercase tracking-widest mb-4">{t('careers.form.email_pref')}</p>
                       <a 
-                        href={`mailto:monteimobiliario@gmail.com?subject=Candidatura: ${selectedJob?.title} - ${applyForm.name || 'Candidato'}&body=Olá, gostaria de me candidatar à vaga de ${selectedJob?.title}. Segue em anexo o meu currículo.`}
+                        href={`mailto:info@monteimobiliaria.com?subject=Candidatura: ${selectedJob?.title} - ${applyForm.name || 'Candidato'}&body=Olá, gostaria de me candidatar à vaga de ${selectedJob?.title}. Segue em anexo o meu currículo.`}
                         className="inline-flex items-center gap-2 text-market-blue font-bold text-[11px] uppercase tracking-widest hover:text-market-navy transition-colors"
                       >
                         <Mail size={18} /> {t('careers.form.email_button')}

@@ -87,6 +87,9 @@ export interface Property {
   status?: 'Disponível' | 'Reservado' | 'Vendido' | 'Arrendado';
   video_url?: string;
   map_coords?: { lat: number; lng: number };
+  is_active?: boolean;
+  old_price?: number;
+  is_promo?: boolean;
 }
 
 export interface Project {

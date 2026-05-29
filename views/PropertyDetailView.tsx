@@ -182,7 +182,7 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
       return `https://wa.me/258875018283?text=${encodeURIComponent(text)}`;
     } else {
       const subject = encodeURIComponent(`Interesse em Imóvel: ${property?.title}`);
-      return `mailto:monteimobiliario@gmail.com?subject=${subject}&body=${encodeURIComponent(text.replace(/\*/g, ''))}`;
+      return `mailto:info@monteimobiliaria.com?subject=${subject}&body=${encodeURIComponent(text.replace(/\*/g, ''))}`;
     }
   };
 
@@ -358,6 +358,9 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
           <div className="flex items-center gap-4">
              <div className="text-right hidden sm:block">
                 <p className="text-[8px] font-bold text-market-blue uppercase tracking-widest leading-none mb-1">{t('detail.price_label')}</p>
+                {property?.is_promo && property?.old_price && (
+                  <p className="text-xs line-through text-slate-400 font-semibold leading-none mb-1">{property.old_price.toLocaleString('pt-MZ')} MT</p>
+                )}
                 <p className="text-xl font-display font-black text-market-navy leading-none">
                   {property?.price.toLocaleString('pt-MZ')} <span className="text-[10px] text-market-slate/60 font-medium">MT</span>
                 </p>
@@ -535,7 +538,16 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
                       <div className="absolute top-0 right-0 w-32 h-32 bg-market-blue/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:bg-market-blue/10 transition-all duration-1000"></div>
                       <div className="relative space-y-6">
                          <div className="space-y-1">
-                           <p className="text-[9px] font-bold text-market-blue uppercase tracking-[0.5em]">Valor de Mercado</p>
+                           <p className="text-[9px] font-bold text-market-blue uppercase tracking-[0.5em] flex items-center gap-2">
+                             {property.is_promo ? (
+                               <span className="text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded font-bold uppercase tracking-widest animate-pulse">% Preço Promocional</span>
+                             ) : (
+                               'Valor de Mercado'
+                             )}
+                           </p>
+                           {property.is_promo && property.old_price && (
+                             <p className="text-sm line-through text-slate-400 font-bold leading-none select-none mb-1">{property.old_price.toLocaleString('pt-MZ')} MT</p>
+                           )}
                            <h3 className="text-5xl font-display font-black text-market-navy tracking-tighter">
                              {property.price.toLocaleString('pt-MZ')} <span className="text-sm text-market-slate/40 uppercase">MT</span>
                            </h3>

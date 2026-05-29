@@ -65,9 +65,12 @@ const HomeView: React.FC<HomeViewProps> = () => {
 
   async function fetchFeatured() {
     try {
-      const { data, error } = await db.catalog('properties').select('*').eq('featured', true).limit(4);
+      const { data, error } = await db.catalog('properties').select('*').eq('featured', true).limit(10);
       if (error) throw error;
-      setFeaturedProperties(data || []);
+      const activeFeatured = (data || [])
+        .filter((p: any) => p.is_active !== false)
+        .slice(0, 4);
+      setFeaturedProperties(activeFeatured);
     } catch (err) {
       console.error("Erro ao carregar destaques:", err);
     } finally {
@@ -191,10 +194,15 @@ const HomeView: React.FC<HomeViewProps> = () => {
               >
                 <div className="relative h-44 overflow-hidden">
                   <img src={property.image || undefined} referrerPolicy="no-referrer" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={property.title} />
-                  <div className="absolute top-3 left-3 flex flex-col gap-2">
-                    <span className="bg-market-navy/90 backdrop-blur-sm text-white px-3 py-1 rounded-md text-[8px] font-bold uppercase tracking-wider">
+                  <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+                    <span className="bg-market-navy/90 backdrop-blur-sm text-white px-3 py-1 rounded-md text-[8px] font-bold uppercase tracking-wider w-fit">
                       {property.deal_type}
                     </span>
+                    {property.is_promo && (
+                      <span className="bg-rose-600 backdrop-blur-sm text-white px-3 py-1 rounded-md text-[8px] font-bold uppercase tracking-wider animate-pulse w-fit">
+                        % Promoção
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -205,7 +213,12 @@ const HomeView: React.FC<HomeViewProps> = () => {
                   </div>
                   
                   <div className="flex items-center justify-between pt-3 border-t border-slate-50">
-                    <p className="text-sm font-black text-market-navy">{property.price.toLocaleString()} <span className="text-[8px] opacity-40">MT</span></p>
+                    <div>
+                      {property.is_promo && property.old_price && (
+                        <p className="text-[9px] line-through text-slate-400 font-semibold leading-none mb-0.5">{property.old_price.toLocaleString()} MT</p>
+                      )}
+                      <p className="text-sm font-black text-market-navy">{property.price.toLocaleString()} <span className="text-[8px] opacity-40">MT</span></p>
+                    </div>
                     <div className="flex items-center gap-3 text-[10px] font-bold text-slate-400">
                       <div className="flex items-center gap-1"><BedDouble size={12} /> {property.bedrooms}</div>
                       <div className="flex items-center gap-1"><Maximize2 size={12} /> {property.area}</div>

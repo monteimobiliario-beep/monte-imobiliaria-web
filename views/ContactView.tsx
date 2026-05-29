@@ -35,7 +35,7 @@ const ContactView: React.FC = () => {
             email: formData.email, 
             subject: formData.subject, 
             message: formData.message,
-            destination_email: 'monteimobiliario@gmail.com',
+            destination_email: 'info@monteimobiliaria.com',
             created_at: new Date().toISOString()
           }
         ]);
@@ -104,7 +104,7 @@ const ContactView: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t('contact.channels.email')}</p>
-                    <p className="text-base font-bold text-market-navy break-all">monteimobiliario@gmail.com</p>
+                    <p className="text-base font-bold text-market-navy break-all">info@monteimobiliaria.com</p>
                   </div>
                 </div>
 

@@ -192,6 +192,9 @@ ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS nearby JSONB DEFAULT '[]
 ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS video_url TEXT;
 ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS map_coords JSONB;
 ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS featured BOOLEAN DEFAULT false;
+ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
+ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS old_price NUMERIC DEFAULT NULL;
+ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS is_promo BOOLEAN DEFAULT false;
 
 CREATE TABLE IF NOT EXISTS catalog.contact_requests (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -93,7 +93,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
                 className="w-full px-6 py-5 rounded-[1.8rem] border border-slate-200 font-bold text-sm transition-all outline-none focus:ring-4 bg-white text-market-navy placeholder:text-slate-300 focus:ring-market-blue/10 focus:border-market-blue pointer-events-auto relative z-20"
-                placeholder="nome@monte.mz"
+                placeholder="nome@monteimobiliaria.com"
               />
             </div>
 

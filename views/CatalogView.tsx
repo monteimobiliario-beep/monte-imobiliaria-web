@@ -33,7 +33,10 @@ const CatalogView: React.FC = () => {
     image: '',
     gallery: [],
     featured: false,
-    status: 'Disponível'
+    status: 'Disponível',
+    is_active: true,
+    is_promo: false,
+    old_price: undefined
   });
 
   const [galleryInput, setGalleryInput] = useState('');
@@ -49,7 +52,10 @@ const CatalogView: React.FC = () => {
       if (error) throw error;
       setProperties((data || []).map(p => ({
         ...p,
-        gallery: Array.isArray(p.gallery) ? p.gallery : (typeof p.gallery === 'string' ? JSON.parse(p.gallery) : [])
+        gallery: Array.isArray(p.gallery) ? p.gallery : (typeof p.gallery === 'string' ? JSON.parse(p.gallery) : []),
+        is_active: p.is_active !== false, // Fallback to true if null/undefined
+        is_promo: !!p.is_promo,
+        old_price: p.old_price !== null ? Number(p.old_price) : undefined
       })));
     } catch (err: any) {
       console.error("Fetch error:", err);
@@ -98,23 +104,46 @@ const CatalogView: React.FC = () => {
 
     const executeSave = async (): Promise<void> => {
       try {
-        const payload = {
+        const payload: any = {
           ...newProp,
           price: Number(newProp.price),
           area: Number(newProp.area),
           bedrooms: Number(newProp.bedrooms),
           bathrooms: Number(newProp.bathrooms),
           image: newProp.image?.trim() || defaultPlaceholder,
-          gallery: newProp.gallery || []
+          gallery: newProp.gallery || [],
+          is_active: newProp.is_active !== undefined ? newProp.is_active : true,
+          is_promo: newProp.is_promo !== undefined ? newProp.is_promo : false,
+          old_price: newProp.is_promo && newProp.old_price ? Number(newProp.old_price) : null
         };
 
-        const { error } = editingItem 
+        const result = editingItem 
           ? await db.catalog('properties').update(payload).eq('id', editingItem.id)
           : await db.catalog('properties').insert([payload]);
 
-        if (error) throw error;
+        if (result.error) {
+          const errMsg = result.error.message || '';
+          // If custom columns don't exist in Supabase yet, retry with sanitized standard payload gracefully
+          if (errMsg.includes('column') || errMsg.includes('not exist') || errMsg.includes('missing')) {
+            console.warn("New columns not found in database, retrying without is_active / promo fields...");
+            const safePayload = { ...payload };
+            delete safePayload.is_active;
+            delete safePayload.is_promo;
+            delete safePayload.old_price;
 
-        setMessage({ type: 'success', text: 'Operação concluída com sucesso!' });
+            const retryResult = editingItem
+              ? await db.catalog('properties').update(safePayload).eq('id', editingItem.id)
+              : await db.catalog('properties').insert([safePayload]);
+
+            if (retryResult.error) throw retryResult.error;
+            setMessage({ type: 'success', text: 'Imóvel guardado! (Nota: Adicione as novas colunas is_active / promo no Supabase para ativar controlo completo)' });
+          } else {
+            throw result.error;
+          }
+        } else {
+          setMessage({ type: 'success', text: 'Operação concluída com sucesso!' });
+        }
+
         setShowModal(false);
         setEditingItem(null);
         fetchData();
@@ -179,7 +208,7 @@ const CatalogView: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
           {properties.map(prop => (
-            <div key={prop.id} className="group market-card overflow-hidden transition-all hover:shadow-xl relative border-slate-100 bg-white">
+            <div key={prop.id} className={`group market-card overflow-hidden transition-all hover:shadow-xl relative border border-slate-100 bg-white ${prop.is_active === false ? 'opacity-60 bg-slate-50' : ''}`}>
               <div className="h-40 relative overflow-hidden">
                 <img 
                   src={formatImageUrl(prop.image || defaultPlaceholder)} 
@@ -190,12 +219,26 @@ const CatalogView: React.FC = () => {
                     (e.target as HTMLImageElement).src = defaultPlaceholder;
                   }}
                 />
-                <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-                  <div className="bg-market-navy/90 backdrop-blur-md px-2.5 py-1 rounded text-[8px] font-bold uppercase text-white shadow-sm">
+                <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+                  <div className="bg-market-navy/90 backdrop-blur-md px-2.5 py-1 rounded text-[8px] font-bold uppercase text-white shadow-sm w-fit">
                     {prop.deal_type}
                   </div>
+                  {prop.is_active === false ? (
+                    <div className="bg-slate-500/90 backdrop-blur-md px-2.5 py-1 rounded text-[8px] font-bold uppercase text-white shadow-sm w-fit">
+                      Inativo (Oculto)
+                    </div>
+                  ) : (
+                    <div className="bg-emerald-600/90 backdrop-blur-md px-2.5 py-1 rounded text-[8px] font-bold uppercase text-white shadow-sm w-fit">
+                      Ativo
+                    </div>
+                  )}
+                  {prop.is_promo && (
+                    <div className="bg-rose-600/95 backdrop-blur-md px-2.5 py-1 rounded text-[8px] font-bold uppercase text-white shadow-sm animate-pulse flex items-center gap-1 w-fit">
+                      % Promoção
+                    </div>
+                  )}
                   {prop.featured && (
-                    <div className="bg-market-gold/90 backdrop-blur-md px-2.5 py-1 rounded text-[8px] font-bold uppercase text-white shadow-sm flex items-center gap-1">
+                    <div className="bg-market-gold/90 backdrop-blur-md px-2.5 py-1 rounded text-[8px] font-bold uppercase text-white shadow-sm flex items-center gap-1 w-fit">
                       <Star size={8} fill="currentColor" /> Destaque
                     </div>
                   )}
@@ -204,7 +247,12 @@ const CatalogView: React.FC = () => {
               <div className="p-4">
                 <div className="flex justify-between items-start mb-2">
                    <p className="text-[9px] font-bold text-market-slate uppercase tracking-widest">{prop.type}</p>
-                   <p className="text-market-blue font-bold text-xs">{Number(prop.price).toLocaleString()} MT</p>
+                   <div className="text-right">
+                     {prop.is_promo && prop.old_price && (
+                       <p className="text-[8px] line-through text-slate-400 font-medium mb-0.5">{Number(prop.old_price).toLocaleString()} MT</p>
+                     )}
+                     <p className="text-market-blue font-bold text-xs">{Number(prop.price).toLocaleString()} MT</p>
+                   </div>
                 </div>
                 <h3 className="text-sm font-bold text-market-navy mb-2 truncate leading-none group-hover:text-market-blue transition-colors">{prop.title}</h3>
                 
@@ -260,7 +308,9 @@ const CatalogView: React.FC = () => {
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Preço (MT)</label>
+                  <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">
+                    {newProp.is_promo ? 'Preço Promocional / Recente (MT)' : 'Preço (MT)'}
+                  </label>
                   <input type="number" required value={newProp.price} onChange={e => setNewProp({...newProp, price: Number(e.target.value)})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium text-sm outline-none focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" />
                 </div>
                 <div className="space-y-1.5">
@@ -332,6 +382,63 @@ const CatalogView: React.FC = () => {
                 <div className="md:col-span-3 space-y-1.5">
                   <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Descrição do Ativo</label>
                   <textarea value={newProp.description} onChange={e => setNewProp({...newProp, description: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-6 font-medium text-sm outline-none focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all h-32 resize-none" placeholder="Narritiva comercial do imóvel..." />
+                </div>
+
+                {/* Painel de Visibilidade e Promoção */}
+                <div className="md:col-span-3 bg-slate-50/50 p-6 rounded-2xl border border-slate-150 space-y-6">
+                  <h3 className="text-[11px] font-bold text-market-navy uppercase tracking-wider border-b border-slate-100 pb-2">Configurações de Visibilidade & Preço Promocional</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">Estado de Visibilidade do Imóvel</label>
+                      <select 
+                        value={newProp.is_active === false ? 'false' : 'true'} 
+                        onChange={e => setNewProp({...newProp, is_active: e.target.value === 'true'})} 
+                        className="w-full bg-white border border-slate-200 rounded-xl p-4 font-medium text-sm outline-none focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all cursor-pointer"
+                      >
+                        <option value="true">🟢 Ativo (Aparece no site para Clientes)</option>
+                        <option value="false">🔴 Inativo (Ocultado dos Clientes / Rascunho)</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1 block">Campanha Promocional</label>
+                      <label className="flex items-center gap-3 cursor-pointer group">
+                        <div className={`w-12 h-6 rounded-full transition-all relative ${newProp.is_promo ? 'bg-rose-500' : 'bg-slate-200'}`}>
+                           <input type="checkbox" checked={!!newProp.is_promo} onChange={e => setNewProp({...newProp, is_promo: e.target.checked})} className="hidden" />
+                           <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${newProp.is_promo ? 'left-7' : 'left-1'}`}></div>
+                        </div>
+                        <span className="text-[10px] font-bold text-market-navy uppercase tracking-widest">Ativar Preço de Promoção</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {newProp.is_promo && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 animate-in fade-in slide-in-from-top-1">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-rose-600 uppercase tracking-widest ml-1 flex items-center gap-1">
+                          Preço Anterior (Antes da Promoção em MT)
+                        </label>
+                        <input 
+                          type="number" 
+                          required={!!newProp.is_promo} 
+                          value={newProp.old_price || ''} 
+                          onChange={e => setNewProp({...newProp, old_price: e.target.value ? Number(e.target.value) : undefined})} 
+                          className="w-full bg-white border border-rose-200 text-slate-500 line-through rounded-xl p-4 font-medium text-sm outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all font-mono" 
+                          placeholder="Ex: Preço de 1200000 antes da promoção"
+                        />
+                      </div>
+                      
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest ml-1">
+                          Preço de Promoção Atual (Recente em MT)
+                        </label>
+                        <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-150 font-mono font-bold text-[13px] text-emerald-700">
+                          {newProp.price ? Number(newProp.price).toLocaleString() : '0'} MT
+                        </div>
+                        <p className="text-[9px] text-slate-400 font-medium">Nota: O preço acima é definido no campo principal "Preço".</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="md:col-span-3">

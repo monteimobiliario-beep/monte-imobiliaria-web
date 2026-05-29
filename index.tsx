@@ -5,7 +5,7 @@ import App from './App';
 import './index.css';
 import { BrandingProvider } from './BrandingContext';
 import { I18nProvider } from './src/i18nContext';
-import { BrowserRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -17,9 +17,9 @@ root.render(
   <React.StrictMode>
     <BrandingProvider>
       <I18nProvider>
-        <BrowserRouter>
+        <HashRouter>
           <App />
-        </BrowserRouter>
+        </HashRouter>
       </I18nProvider>
     </BrandingProvider>
   </React.StrictMode>

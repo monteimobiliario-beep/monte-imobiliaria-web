@@ -48,8 +48,8 @@ const Navbar: React.FC<NavbarProps> = ({ isLoggedIn }) => {
             <a href="https://wa.me/258875018283" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-market-blue transition-colors">
               <Phone size={12} className="text-market-blue" /> +258 87 501 8283
             </a>
-            <a href="mailto:monteimobiliario@gmail.com" className="flex items-center gap-2 hover:text-market-blue transition-colors">
-              <Mail size={12} className="text-market-blue" /> monteimobiliario@gmail.com
+            <a href="mailto:info@monteimobiliaria.com" className="flex items-center gap-2 hover:text-market-blue transition-colors">
+              <Mail size={12} className="text-market-blue" /> info@monteimobiliaria.com
             </a>
           </div>
           <div className="flex items-center gap-4">
