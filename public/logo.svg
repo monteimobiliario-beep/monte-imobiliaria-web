@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- Gradients -->
+  <defs>
+    <!-- Sky backdrop gradient -->
+    <radialGradient id="shieldGrad" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#0a225c" />
+      <stop offset="100%" stop-color="#040b20" />
+    </radialGradient>
+    <!-- Gold peak gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C5A029" />
+      <stop offset="30%" stop-color="#EBC051" />
+      <stop offset="70%" stop-color="#FCD269" />
+      <stop offset="100%" stop-color="#FFF3C2" />
+    </linearGradient>
+    <!-- Blue peak gradient -->
+    <linearGradient id="blueGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#004ae6" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+    <!-- Outer gold ring gradient -->
+    <linearGradient id="goldRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700" />
+      <stop offset="50%" stop-color="#C5A029" />
+      <stop offset="100%" stop-color="#F3C34F" />
+    </linearGradient>
+    <!-- Glass sheen overlay -->
+    <linearGradient id="sheen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.25" />
+      <stop offset="40%" stop-color="#ffffff" stop-opacity="0.05" />
+      <stop offset="40.1%" stop-color="#ffffff" stop-opacity="0" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Base Shield / Premium Rounded Icon Wrapper -->
+  <rect x="16" y="16" width="480" height="480" rx="128" fill="url(#shieldGrad)" stroke="url(#goldRing)" stroke-width="12" />
+
+  <!-- Elegant Inner Double Border -->
+  <rect x="36" y="36" width="440" height="440" rx="108" fill="none" stroke="#2563eb" stroke-opacity="0.3" stroke-width="4" />
+
+  <!-- MONTE logo emblem mark -->
+  <g transform="translate(16, -15)">
+    <!-- Right Peak: Deep Royal Blue slope (background mountain) -->
+    <path d="M 120 400 L 260 170 L 400 400 Z" fill="url(#blueGrad)" opacity="0.6" />
+    
+    <!-- Left Peak: Golden Mountain (representing "Monte") -->
+    <path d="M 80 400 L 210 130 L 340 400 Z" fill="url(#goldGrad)" />
+    
+    <!-- Fine-line architectural luxury home roof over the golden peak -->
+    <path d="M 190 130 L 330 310" stroke="#040b20" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M 190 130 L 330 310" stroke="url(#goldGrad)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+
+    <!-- Overlapping center crystal peak (High-end Asset Curation) -->
+    <path d="M 150 400 L 280 180 L 410 400 Z" fill="url(#shieldGrad)" opacity="0.4" />
+    <path d="M 150 400 L 280 180 L 410 400 Z" fill="none" stroke="url(#goldGrad)" stroke-width="6" stroke-linejoin="round" />
+
+    <!-- Monogram 'M' built elegantly into the peaks structure -->
+    <path d="M 160 380 L 210 135" stroke="url(#goldGrad)" stroke-width="4" stroke-opacity="0.7" />
+    <path d="M 330 380 L 280 185" stroke="url(#blueGrad)" stroke-width="4" stroke-opacity="0.7" />
+
+    <!-- Elegant foundation lines under the mountain / rooftops -->
+    <line x1="100" y1="380" x2="380" y2="380" stroke="url(#goldRing)" stroke-width="8" stroke-linecap="round" />
+    <line x1="130" y1="400" x2="350" y2="400" stroke="#2563eb" stroke-width="4" stroke-linecap="round" />
+
+    <!-- A sparkling diamond element above the core peak (Luxury symbol) -->
+    <path d="M 270 90 L 280 75 L 290 90 L 280 105 Z" fill="url(#goldGrad)" filter="url(#glow)" />
+  </g>
+
+  <!-- Modern diagonal light sheaf/glass reflection overlay representing elite quality -->
+  <rect x="22" y="22" width="468" height="468" rx="122" fill="url(#sheen)" pointer-events="none" />
+</svg>

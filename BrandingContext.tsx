@@ -16,13 +16,13 @@ interface BrandingSettings {
 }
 
 const DEFAULT_SETTINGS: BrandingSettings = {
-  companyName: 'Monte Hub',
+  companyName: 'Monte Imobiliária',
   tagline: 'Patrimónios',
   heroTitle: 'Onde o Legado Encontra o Destino',
   heroSubtitle: 'Onde o Legado Encontra o Destino', // Fallback for components using different labels
-  heroDescription: 'A Monte Hub curadoria de patrimónios. Descubra a nova era do imobiliário de luxo em Moçambique.',
-  logoUrl: 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/building-2.svg',
-  faviconUrl: 'https://monteimobiliaria.co.mz/wp-content/uploads/2024/04/Monte-Sloagn-01-2.png',
+  heroDescription: 'A Monte Imobiliária curadoria de patrimónios. Descubra a nova era do imobiliário de luxo em Moçambique.',
+  logoUrl: '/logo.svg',
+  faviconUrl: '/favicon.svg',
   heroBgUrl: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=1600',
   legacyTitle: 'Curadoria de Ativos Premium',
   primaryColor: '#0052FF', // market-blue
@@ -40,7 +40,28 @@ export const BrandingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [settings, setSettings] = useState<BrandingSettings>(() => {
     try {
       const saved = localStorage.getItem('monte_branding_settings');
-      return saved ? { ...DEFAULT_SETTINGS, ...JSON.parse(saved) } : DEFAULT_SETTINGS;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Auto-heal legacy or broken asset links
+        let changed = false;
+        if (!parsed.logoUrl || parsed.logoUrl.includes('building-2.svg') || parsed.logoUrl.includes('monteimobiliaria.co.mz')) {
+          parsed.logoUrl = '/logo.svg';
+          changed = true;
+        }
+        if (!parsed.faviconUrl || parsed.faviconUrl.includes('monteimobiliaria.co.mz')) {
+          parsed.faviconUrl = '/favicon.svg';
+          changed = true;
+        }
+        if (parsed.companyName === 'Monte Hub') {
+          parsed.companyName = 'Monte Imobiliária';
+          changed = true;
+        }
+        if (changed) {
+          localStorage.setItem('monte_branding_settings', JSON.stringify(parsed));
+        }
+        return { ...DEFAULT_SETTINGS, ...parsed };
+      }
+      return DEFAULT_SETTINGS;
     } catch (e) {
       console.warn("Could not parse branding settings, using defaults", e);
       return DEFAULT_SETTINGS;

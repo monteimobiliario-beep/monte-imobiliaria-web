@@ -33,7 +33,7 @@ const translations: TranslationDict = {
   'home.featured.title': { pt: 'Imóveis de Referência', en: 'Reference Properties' },
   'home.featured.viewall': { pt: 'Ver Tudo', en: 'View All' },
   
-  'home.philosophy.tag': { pt: 'Monte Hub', en: 'Monte Hub' },
+  'home.philosophy.tag': { pt: 'Monte Imobiliária', en: 'Monte Imobiliária' },
   'home.philosophy.title': { pt: 'Transformando Posses em Legados', en: 'Transforming Assets into Legacies' },
   'home.philosophy.desc': { pt: 'A nossa abordagem transcende o imobiliário convencional. Unimos consultoria estratégica e gestão de ativos de elite.', en: 'Our approach transcends conventional real estate. We combine strategic consulting and elite asset management.' },
   'careers.hero.title': { pt: 'Carreira na Monte Imobiliária', en: 'Careers at Monte Imobiliária' },
@@ -190,7 +190,7 @@ const translations: TranslationDict = {
   'detail.proximity': { pt: 'Proximidade', en: 'Proximity' },
   'detail.mobility': { pt: 'Mobilidade Estratégica', en: 'Strategic Mobility' },
   'detail.continuity': { pt: 'Continuidade', en: 'Continuity' },
-  'detail.explore_more': { pt: 'Explore outros ativos da prestigiada coleção Monte Hub.', en: 'Explore other assets from the prestigious Monte Hub collection.' },
+  'detail.explore_more': { pt: 'Explore outros ativos da prestigiada coleção Monte Imobiliária.', en: 'Explore other assets from the prestigious Monte Imobiliária collection.' },
   'detail.view_all': { pt: 'Ver Portfólio Completo', en: 'View Full Portfolio' },
   'detail.concierge': { pt: 'Concierge VIP', en: 'VIP Concierge' },
   'detail.specialist': { pt: 'Especialista Ativo', en: 'Active Specialist' },

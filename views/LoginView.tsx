@@ -17,8 +17,14 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const DEFAULT_LOGO = 'https://raw.githubusercontent.com/lucide-react/lucide/main/icons/building-2.svg';
-  const [systemLogo, setSystemLogo] = useState(localStorage.getItem('monte_custom_logo') || DEFAULT_LOGO);
+  const DEFAULT_LOGO = '/logo.svg';
+  const [systemLogo, setSystemLogo] = useState(() => {
+    const saved = localStorage.getItem('monte_custom_logo');
+    if (!saved || saved.includes('building-2.svg') || saved.includes('monteimobiliaria.co.mz')) {
+      return DEFAULT_LOGO;
+    }
+    return saved;
+  });
 
   useEffect(() => {
     const handleLogoUpdate = (e: any) => {
