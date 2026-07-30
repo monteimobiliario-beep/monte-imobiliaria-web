@@ -51,7 +51,10 @@ const CatalogView: React.FC = () => {
       const { data, error } = await db.catalog('properties').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       setProperties((data || []).map(p => {
-        const mc = p.map_coords ? (typeof p.map_coords === 'string' ? JSON.parse(p.map_coords) : p.map_coords) : {};
+        let mc: any = {};
+        try {
+          mc = p.map_coords ? (typeof p.map_coords === 'string' ? JSON.parse(p.map_coords) : p.map_coords) : {};
+        } catch(e) {}
         return {
           ...p,
           gallery: Array.isArray(p.gallery) ? p.gallery : (typeof p.gallery === 'string' ? JSON.parse(p.gallery) : []),
@@ -207,7 +210,7 @@ const CatalogView: React.FC = () => {
           onClick={() => { 
             setShowModal(true); 
             setEditingItem(null); 
-            setNewProp({title:'', type:'Casa', deal_type:'Venda', price:0, location:'', bedrooms:1, bathrooms:1, area:0, description:'', image:'', gallery: [], featured: false, status: 'Disponível'}); 
+            setNewProp({title:'', type:'Casa', deal_type:'Venda', price:0, location:'', bedrooms:1, bathrooms:1, area:0, description:'', image:'', gallery: [], featured: false, status: 'Disponível', video_url: ''}); 
           }} 
           className="market-button market-button-primary px-6 py-3 text-[10px] uppercase tracking-widest flex items-center gap-2"
         >
@@ -353,6 +356,10 @@ const CatalogView: React.FC = () => {
                     placeholder="Cole um link (Google Drive, etc) ou carregue da galeria..."
                   />
                 </div>
+                <div className="md:col-span-3 space-y-1.5">
+                  <label className="text-[10px] font-bold text-market-slate uppercase tracking-widest ml-1">URL do Vídeo (YouTube/Vimeo) - Opcional</label>
+                  <input value={newProp.video_url || ''} onChange={e => setNewProp({...newProp, video_url: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium text-sm outline-none focus:ring-2 focus:ring-market-blue/20 focus:border-market-blue transition-all" placeholder="Ex: https://youtube.com/watch?v=..." />
+                </div>
 
                 <div className="md:col-span-3 space-y-4">
                   <label className="text-[10px] font-bold text-market-navy uppercase tracking-widest ml-1">Galeria de Imagens Complementares (Álbum)</label>
@@ -380,7 +387,7 @@ const CatalogView: React.FC = () => {
                     <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
                       {newProp.gallery?.map((url, i) => (
                         <div key={i} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
-                          <img src={formatImageUrl(url) || undefined} className="w-full h-full object-cover" alt="" referrerPolicy="no-referrer" />
+                          <img loading="lazy" src={formatImageUrl(url) || undefined} className="w-full h-full object-cover" alt="" referrerPolicy="no-referrer" />
                           <button 
                             type="button" 
                             onClick={() => handleRemoveGalleryImage(i)}

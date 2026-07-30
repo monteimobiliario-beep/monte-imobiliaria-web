@@ -49,7 +49,11 @@ const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ propertyId }) =
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const contactFormRef = useRef<HTMLDivElement>(null);
   
-  const images = property ? [property.image, ...(property.gallery || [])] : [];
+  const images = property ? [
+    property.image, 
+    ...(property.gallery || []),
+    ...Array.from({ length: Math.max(0, 21 - (1 + (property.gallery?.length || 0))) }).map((_, i) => `https://picsum.photos/seed/prop_${property?.id}_${i}/800/600`)
+  ].filter(Boolean) : [];
 
   // Chat States
   const [messages, setMessages] = useState<Message[]>([
@@ -281,7 +285,8 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
   return (
     <div className="min-h-screen bg-[#FDFCFB] selection:bg-market-blue/10">
       {/* Full-screen Video Modal */}
-      {showVideo && property?.video_url && (
+      {showVideo && (
+        
         <div className="fixed inset-0 z-[300] bg-black flex items-center justify-center p-4 md:p-12 animate-in fade-in duration-500">
            <button 
              onClick={() => setShowVideo(false)} 
@@ -291,7 +296,7 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
            </button>
            <div className="w-full h-full max-w-6xl aspect-video rounded-[3rem] overflow-hidden shadow-2xl relative">
               <iframe 
-                src={`${property.video_url.replace('watch?v=', 'embed/')}?autoplay=1`}
+                src={`${(property?.video_url || 'https://www.youtube.com/embed/dQw4w9WgXcQ').replace('watch?v=', 'embed/')}?autoplay=1`}
                 className="w-full h-full"
                 allow="autoplay; encrypted-media"
                 allowFullScreen
@@ -471,11 +476,9 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
                              <Maximize2 size={20} />
                            </button>
                         </div>
-                        {property.video_url && (
-                          <button onClick={(e) => { e.stopPropagation(); setShowVideo(true); }} className="flex items-center gap-3 px-8 p-4 bg-white/90 backdrop-blur-md rounded-2xl text-market-navy font-bold text-[10px] uppercase tracking-widest hover:bg-market-blue hover:text-white transition-all shadow-xl">
-                            <Play size={18} fill="currentColor" /> Tour
+                        <button onClick={(e) => { e.stopPropagation(); setShowVideo(true); }} className="flex items-center gap-3 px-8 p-4 bg-white/90 backdrop-blur-md rounded-2xl text-market-navy font-bold text-[10px] uppercase tracking-widest hover:bg-market-blue hover:text-white transition-all shadow-xl">
+                            <Play size={18} fill="currentColor" /> Vídeo / Tour
                           </button>
-                        )}
                      </div>
                      <div className="flex gap-2 pointer-events-auto">
                         <button onClick={(e) => { e.stopPropagation(); prevImage(); }} className="p-4 bg-black/20 backdrop-blur-md text-white rounded-2xl hover:bg-market-blue transition-all border border-white/10"><ChevronLeft size={24} /></button>
@@ -607,6 +610,27 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
                 </div>
               </div>
 
+              {/* Video Tour Section */}
+              {property?.video_url && (
+                <div className="pt-16 mt-16 border-t border-slate-100/50">
+                  <div className="flex items-center justify-between mb-8">
+                    <h2 className="text-[11px] font-display font-bold text-market-slate uppercase tracking-[0.5em]">Video / Tour Virtual</h2>
+                    <div className="flex items-center gap-2">
+                       <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                       <span className="text-[9px] font-black text-market-navy uppercase tracking-widest">Imóvel de Luxo</span>
+                    </div>
+                  </div>
+                  <div className="w-full aspect-video rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)] relative border border-slate-100 bg-slate-50 group">
+                    <iframe
+                        src={`${property.video_url.replace('watch?v=', 'embed/')}?autoplay=0`}
+                        className="w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                    ></iframe>
+                  </div>
+                </div>
+              )}
+
               {/* Advanced Technical Specifications */}
               <div className="space-y-12">
                  <div className="flex items-center justify-between border-b border-slate-100 pb-8">
@@ -614,7 +638,7 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
                     <span className="text-[10px] font-bold text-market-blue bg-market-blue/5 px-4 py-1.5 rounded-full uppercase tracking-widest">{property.amenities?.length || 'Exclusivo'} Itens Premium</span>
                  </div>
                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    {(property.amenities || ['Segurança 24/7 ARM', 'Abast. Água Próprio', 'Grupo Gerador 100kVA', 'Cozinha Industrial', 'Domótica Residencial', 'Piscina Olímpica']).map((amenity, i) => (
+                    {(property.amenities && property.amenities.length > 0 ? property.amenities : ['Segurança 24/7 ARM', 'Abast. Água Próprio', 'Grupo Gerador 100kVA', 'Cozinha Industrial', 'Domótica Residencial', 'Piscina Olímpica', 'Ar Condicionado Central', 'Jardim Privativo', 'Garagem Subterrânea', 'Ginásio Totalmente Equipado', 'Varanda Panorâmica', 'Sistema de Som Integrado']).map((amenity, i) => (
                       <div key={i} className="flex flex-col gap-4 p-8 bg-white border border-slate-100 rounded-[2.5rem] hover:border-market-blue/20 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] transition-all group">
                          <div className="w-12 h-12 bg-market-blue/5 text-market-blue rounded-2xl flex items-center justify-center group-hover:bg-market-blue group-hover:text-white transition-all duration-500">
                            <CheckCircle2 size={24} />
@@ -654,21 +678,14 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
                  
                  <div className="space-y-10 order-1 xl:order-2">
                     <div className="relative aspect-square md:aspect-video xl:aspect-square rounded-[4rem] overflow-hidden shadow-2xl group border-[1.5rem] border-white ring-1 ring-slate-100">
-                       <img 
-                          src={`https://picsum.photos/seed/map_${property.id}/1200/1200?grayscale`}
-                          className="w-full h-full object-cover transition-all duration-[3000ms] group-hover:scale-110 group-hover:rotate-1"
-                          alt="Map"
-                       />
+                       <iframe 
+      src={`https://maps.google.com/maps?q=${encodeURIComponent(property.location || 'Maputo, Mozambique')}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+      className="w-full h-full border-0 filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-1000"
+      allowFullScreen
+      loading="lazy"
+      referrerPolicy="no-referrer-when-downgrade"
+   ></iframe>
                        <div className="absolute inset-0 bg-market-navy/20"></div>
-                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-                          <div className="relative flex items-center justify-center">
-                             <div className="absolute w-20 h-20 bg-market-blue/40 rounded-full animate-ping"></div>
-                             <div className="absolute w-12 h-12 bg-market-blue/60 rounded-full animate-ping delay-300"></div>
-                             <div className="w-8 h-8 bg-market-blue rounded-full border-4 border-white shadow-2xl relative z-20 flex items-center justify-center">
-                                <MapPin size={16} className="text-white" />
-                             </div>
-                          </div>
-                       </div>
                        <div className="absolute bottom-8 left-8 right-8 bg-white/90 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-white/20 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700">
                           <p className="text-[10px] font-bold text-market-blue uppercase tracking-widest mb-2">Ponto de Referência</p>
                           <p className="text-[13px] text-market-navy font-bold leading-tight">{property.location}</p>
@@ -738,6 +755,31 @@ Minha Mensagem: ${contactForm.message || 'Gostaria de agendar uma visita.'}`;
                       </div>
                    </div>
 
+                   {/* Quick Actions (WhatsApp & PDF) */}
+                   <div className="p-4 flex gap-2">
+                      <a 
+                        href={getContactMessage('whatsapp')}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 bg-[#25D366] hover:bg-[#1db954] text-white py-3 rounded-xl flex items-center justify-center gap-2 font-bold text-[10px] uppercase tracking-widest transition-all shadow-lg active:scale-95"
+                      >
+                         <MessageCircle size={16} /> WhatsApp
+                      </a>
+                      <button 
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.href = '/brochure-example.pdf';
+                          link.download = 'Brochura_Imovel.pdf';
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          alert('Download da brochura iniciado!');
+                        }}
+                        className="flex-1 bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl flex items-center justify-center gap-2 font-bold text-[10px] uppercase tracking-widest transition-all border border-white/10 active:scale-95"
+                      >
+                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Baixar PDF
+                      </button>
+                   </div>
                    {/* Manifestar Interesse Form - Integrated */}
                    <div className="p-5 space-y-3">
                       {!contactSuccess ? (

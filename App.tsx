@@ -112,19 +112,27 @@ const App: React.FC = () => {
   async function checkUser() {
     if (isChecking.current) return;
     isChecking.current = true;
-
     try {
       const { data: { session }, error } = await supabase.auth.getSession();
       
+      const cleanCorruptedState = async () => {
+        Object.keys(localStorage)
+          .filter(k => k.startsWith('sb-') && k.endsWith('-auth-token'))
+          .forEach(k => localStorage.removeItem(k));
+        sessionStorage.clear();
+        setCurrentUser(null);
+        await supabase.auth.signOut().catch(() => {});
+      };
+
       if (error) {
         if (error.message?.includes('Lock broken')) {
           const { data: { user } } = await supabase.auth.getUser();
           if (user) await fetchAndSetUser(user);
           return;
         }
-        if (error.message.includes('Refresh Token Not Found') || error.message.includes('invalid') || error.message.includes('not found')) {
-          await supabase.auth.signOut();
-        }
+        
+        console.warn("Auth session error detected, cleaning up local state:", error.message);
+        await cleanCorruptedState();
         return;
       }
       
@@ -132,10 +140,18 @@ const App: React.FC = () => {
         await fetchAndSetUser(session.user);
       } else {
         const { data: { user } } = await supabase.auth.getUser();
-        if (user) await fetchAndSetUser(user);
+        if (user) {
+          await fetchAndSetUser(user);
+        } else {
+          // If no user found, ensure clean state to avoid corrupted partial tokens
+          await cleanCorruptedState();
+        }
       }
     } catch (err: any) {
       console.warn("Soft error in checkUser:", err.message);
+      Object.keys(localStorage)
+        .filter(k => k.startsWith('sb-') && k.endsWith('-auth-token'))
+        .forEach(k => localStorage.removeItem(k));
     } finally { 
       isChecking.current = false;
       setIsInitializing(false);
