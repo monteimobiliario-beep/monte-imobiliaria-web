@@ -21,8 +21,8 @@ const DEFAULT_SETTINGS: BrandingSettings = {
   heroTitle: 'Onde o Legado Encontra o Destino',
   heroSubtitle: 'Onde o Legado Encontra o Destino', // Fallback for components using different labels
   heroDescription: 'A Monte Imobiliária curadoria de patrimónios. Descubra a nova era do imobiliário de luxo em Moçambique.',
-  logoUrl: '/logo.svg',
-  faviconUrl: '/favicon.svg',
+  logoUrl: '/logo.png',
+  faviconUrl: '/favicon.png',
   heroBgUrl: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=1600',
   legacyTitle: 'Curadoria de Ativos Premium',
   primaryColor: '#0052FF', // market-blue
@@ -44,12 +44,12 @@ export const BrandingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const parsed = JSON.parse(saved);
         // Auto-heal legacy or broken asset links
         let changed = false;
-        if (!parsed.logoUrl || parsed.logoUrl.includes('building-2.svg') || parsed.logoUrl.includes('monteimobiliaria.co.mz')) {
-          parsed.logoUrl = '/logo.svg';
+        if (!parsed.logoUrl || parsed.logoUrl.includes('building-2.svg') || parsed.logoUrl.includes('monteimobiliaria.co.mz') || parsed.logoUrl === '/logo.svg') {
+          parsed.logoUrl = '/logo.png';
           changed = true;
         }
-        if (!parsed.faviconUrl || parsed.faviconUrl.includes('monteimobiliaria.co.mz')) {
-          parsed.faviconUrl = '/favicon.svg';
+        if (!parsed.faviconUrl || parsed.faviconUrl.includes('monteimobiliaria.co.mz') || parsed.faviconUrl === '/favicon.svg') {
+          parsed.faviconUrl = '/favicon.png';
           changed = true;
         }
         if (parsed.companyName === 'Monte Hub') {

@@ -17,7 +17,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBack }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const DEFAULT_LOGO = '/logo.svg';
+  const DEFAULT_LOGO = '/logo.png';
   const [systemLogo, setSystemLogo] = useState(() => {
     const saved = localStorage.getItem('monte_custom_logo');
     if (!saved || saved.includes('building-2.svg') || saved.includes('monteimobiliaria.co.mz')) {

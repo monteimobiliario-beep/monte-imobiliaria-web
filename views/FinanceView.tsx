@@ -44,8 +44,9 @@ import { useTranslation } from '../src/i18nContext';
 import { supabase, db } from '../supabaseClient';
 import { Transaction, Beneficiary, Project, TransactionStatus } from '../types';
 import { getFinancialInsights } from '../geminiService';
+import InvoiceArea from '../components/InvoiceArea';
 
-type FinanceTab = 'transactions' | 'receivable' | 'payable' | 'reports';
+type FinanceTab = 'transactions' | 'receivable' | 'payable' | 'invoices' | 'reports';
 
 const FinanceView: React.FC = () => {
   const { t } = useTranslation();
@@ -328,6 +329,7 @@ const FinanceView: React.FC = () => {
              { id: 'transactions', label: 'Transações', icon: <LayoutList size={16}/> },
              { id: 'receivable', label: 'Contas a Receber', icon: <ArrowUpCircle size={16}/> },
              { id: 'payable', label: 'Contas a Pagar', icon: <ArrowDownCircle size={16}/> },
+             { id: 'invoices', label: 'Faturação & Recibos', icon: <FileText size={16}/> },
              { id: 'reports', label: 'Relatórios & Export', icon: <BarChart3 size={16}/> },
            ].map(tab => (
              <button
@@ -341,7 +343,9 @@ const FinanceView: React.FC = () => {
         </div>
 
         <div className="flex-1 overflow-x-auto p-6">
-           {activeTab === 'reports' ? (
+           {activeTab === 'invoices' ? (
+             <InvoiceArea />
+           ) : activeTab === 'reports' ? (
              <div className="p-10 grid grid-cols-1 md:grid-cols-3 gap-8 animate-in zoom-in-95">
                 {[
                   { title: 'Fluxo de Caixa', desc: 'DRE e movimentação diária.', action: exportCSV, icon: <FileSpreadsheet className="text-market-blue" /> },
