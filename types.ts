@@ -172,16 +172,16 @@ export interface MarketingPost {
   title: string;
   platform: string;
   status: 'Published' | 'Scheduled' | 'Draft';
-  scheduledDate: string;
+  scheduled_date: string;
   image: string;
 }
 
 export interface AttendanceRecord {
   id: string;
-  employeeId: string;
+  employee_id: string;
   date: string;
-  checkIn: string;
-  checkOut: string;
+  check_in: string;
+  check_out: string;
   status: string;
   location: string;
 }
@@ -190,9 +190,9 @@ export interface Contract {
   id: string;
   employeeId: string;
   type: string;
-  startDate: string;
-  endDate?: string;
-  salaryBase: number;
+  start_date: string;
+  end_date?: string;
+  salary_base: number;
   status: string;
 }
 

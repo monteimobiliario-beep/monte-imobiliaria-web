@@ -918,7 +918,7 @@ const InvoiceArea: React.FC = () => {
                     <div className="space-y-2">
                       <div className="flex items-center gap-3">
                         <img 
-                          src="/logo.png" 
+                          src="https://i.ibb.co/324wtnf/fivicom-monte.png" 
                           alt="Monte Imobiliária Logo" 
                           className="h-14 w-14 object-contain"
                           onError={(e) => {
