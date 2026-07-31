@@ -273,9 +273,6 @@ const App: React.FC = () => {
         />
         <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
           <div className="max-w-[1800px] mx-auto min-h-[calc(100vh-theme(spacing.40))]">{content}</div>
-          <div className="mt-12 -mx-4 md:-mx-8">
-            <Footer />
-          </div>
         </main>
       </div>
     </div>
