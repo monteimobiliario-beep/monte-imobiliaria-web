@@ -274,7 +274,7 @@ const DashboardView: React.FC = () => {
            </div>
            <div className="flex-1 w-full h-[220px] relative z-10">
               {propertyTypes.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                   <PieChart>
                     <Pie
                       data={propertyTypes}
@@ -331,7 +331,7 @@ const DashboardView: React.FC = () => {
               </div>
            </div>
            <div className="flex-1 w-full h-[300px] relative z-10">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                  <AreaChart data={expenseChartData}>
                     <defs>
                       <linearGradient id="colorVal" x1="0" y1="0" x2="0" y2="1">

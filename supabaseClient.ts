@@ -23,9 +23,9 @@ const getSanitizedUrl = (url: string) => {
   return sanitized;
 };
 
-const rawUrl = import.meta.env.VITE_SUPABASE_URL || 'https://qiqlntnxzozsedpmynlr.supabase.co';
+const rawUrl = import.meta.env.VITE_SUPABASE_URL || 'https://vazhjvigorytfuebfdca.supabase.co';
 const supabaseUrl = getSanitizedUrl(rawUrl);
-const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_-clWChvAhC3RYBlLPuAO6w_2PUNKzRt').trim();
+const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_cAdT9JABZhCUoBAL50KJkQ_7F6b-qo9').trim();
 
 console.log('Initializing Supabase with URL:', supabaseUrl);
 

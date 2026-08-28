@@ -1,22 +1,28 @@
+-- ==============================================================================
+-- MONTE IMOBILIÁRIA ERP & PORTAL - ESQUEMA COMPLETO DO BANCO DE DADOS SUPABASE
+-- ==============================================================================
+-- INSTRUÇÕES DE EXECUÇÃO:
+-- 1. Abra o painel do Supabase: https://supabase.com/dashboard/project/vazhjvigorytfuebfdca
+-- 2. Vá no menu lateral esquerdo em "SQL Editor" -> "+ New query".
+-- 3. Cole todo este código SQL e clique em "Run" (ou pressione Ctrl+Enter / Cmd+Enter).
+-- 4. Vá em "Project Settings" -> "API" (Data API) -> "Exposed Schemas"
+--    e certifique-se de adicionar os schemas: public, catalog, hr, finance, fleet, core, marketing
+-- ==============================================================================
 
--- SQL PARA ARQUITETURA MULTI-SCHEMA - MONTE HUB v19.0
--- INSTRUÇÕES:
--- 1. Execute este script no SQL Editor do Supabase.
--- 2. Vá em Settings > API > Exposed Schemas e adicione: hr, finance, fleet, catalog, core.
-
--- 0. CRIAÇÃO DOS ESQUEMAS
+-- 1. CRIAÇÃO DOS ESQUEMAS
 CREATE SCHEMA IF NOT EXISTS hr;
 CREATE SCHEMA IF NOT EXISTS fleet;
 CREATE SCHEMA IF NOT EXISTS finance;
 CREATE SCHEMA IF NOT EXISTS catalog;
 CREATE SCHEMA IF NOT EXISTS core;
+CREATE SCHEMA IF NOT EXISTS marketing;
 
--- 1. PERMISSÕES DE ACESSO (CRITICAL PARA SUPABASE)
+-- 2. CONCESSÃO DE PERMISSÕES GLOBAIS (anon, authenticated, service_role)
 DO $$
 DECLARE
     schema_name TEXT;
 BEGIN
-    FOR schema_name IN SELECT unnest(ARRAY['hr', 'fleet', 'finance', 'catalog', 'core'])
+    FOR schema_name IN SELECT unnest(ARRAY['public', 'hr', 'fleet', 'finance', 'catalog', 'core', 'marketing'])
     LOOP
         EXECUTE format('GRANT USAGE ON SCHEMA %I TO anon, authenticated, service_role', schema_name);
         EXECUTE format('ALTER DEFAULT PRIVILEGES IN SCHEMA %I GRANT ALL ON TABLES TO anon, authenticated, service_role', schema_name);
@@ -26,7 +32,9 @@ BEGIN
     END LOOP;
 END $$;
 
--- 2. ESQUEMA: CORE (Gestão)
+-- ==============================================================================
+-- 3. ESQUEMA: CORE
+-- ==============================================================================
 CREATE TABLE IF NOT EXISTS core.roles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT UNIQUE NOT NULL,
@@ -45,7 +53,19 @@ CREATE TABLE IF NOT EXISTS core.audit_logs (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 3. ESQUEMA: HR
+CREATE TABLE IF NOT EXISTS core.strategic_plans (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  goal TEXT NOT NULL,
+  kpi TEXT NOT NULL,
+  progress NUMERIC DEFAULT 0,
+  responsible TEXT NOT NULL,
+  deadline DATE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ==============================================================================
+-- 4. ESQUEMA: HR (Recursos Humanos)
+-- ==============================================================================
 CREATE TABLE IF NOT EXISTS hr.employees (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
@@ -60,6 +80,36 @@ CREATE TABLE IF NOT EXISTS hr.employees (
   nuit TEXT,
   address TEXT,
   permissions JSONB DEFAULT '[]'::jsonb,
+  document_type TEXT,
+  document_number TEXT,
+  document_expiry DATE,
+  payment_method TEXT,
+  contract_start DATE,
+  niss TEXT,
+  emergency_contact TEXT,
+  gender TEXT CHECK (gender IN ('M', 'F', 'O')),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS hr.attendance_records (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  employee_id UUID REFERENCES hr.employees(id) ON DELETE CASCADE,
+  date DATE NOT NULL,
+  check_in TIME,
+  check_out TIME,
+  status TEXT,
+  location TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS hr.contracts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  employee_id UUID REFERENCES hr.employees(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE,
+  salary_base NUMERIC NOT NULL,
+  status TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -71,6 +121,7 @@ CREATE TABLE IF NOT EXISTS hr.job_vacancies (
   location TEXT,
   salary TEXT,
   description TEXT,
+  image TEXT,
   status TEXT DEFAULT 'Open' CHECK (status IN ('Open', 'Closed')),
   created_at TIMESTAMPTZ DEFAULT now()
 );
@@ -90,21 +141,9 @@ CREATE TABLE IF NOT EXISTS hr.job_applications (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- RLS PARA HR (MUITO IMPORTANTE PARA FUNCIONAMENTO PÚBLICO)
-ALTER TABLE hr.job_applications ENABLE ROW LEVEL SECURITY;
-ALTER TABLE hr.job_vacancies ENABLE ROW LEVEL SECURITY;
-
--- Candidaturas: Qualquer pessoa pode submeter (Public Insert)
-CREATE POLICY "Public insert applications" ON hr.job_applications FOR INSERT WITH CHECK (true);
-CREATE POLICY "Authenticated select applications" ON hr.job_applications FOR SELECT TO authenticated USING (true);
-CREATE POLICY "Authenticated update applications" ON hr.job_applications FOR UPDATE TO authenticated USING (true);
-CREATE POLICY "Authenticated delete applications" ON hr.job_applications FOR DELETE TO authenticated USING (true);
-
--- Vagas: Qualquer pessoa pode ver (Public Read)
-CREATE POLICY "Public read vacancies" ON hr.job_vacancies FOR SELECT USING (true);
-CREATE POLICY "Authenticated all vacancies" ON hr.job_vacancies FOR ALL TO authenticated USING (true);
-
--- 4. ESQUEMA: FINANCE
+-- ==============================================================================
+-- 5. ESQUEMA: FINANCE (Finanças e Projetos)
+-- ==============================================================================
 CREATE TABLE IF NOT EXISTS finance.beneficiaries (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
@@ -142,11 +181,27 @@ CREATE TABLE IF NOT EXISTS finance.transactions (
   payment_method TEXT CHECK (payment_method IN ('Banco', 'M-Pesa', 'e-Mola', 'Dinheiro', 'Cartão', 'Cheque')),
   beneficiary_id UUID REFERENCES finance.beneficiaries(id) ON DELETE SET NULL,
   project_id UUID REFERENCES finance.projects(id) ON DELETE SET NULL,
+  client_supplier_name TEXT,
+  is_recurring BOOLEAN DEFAULT false,
+  recurrence_period TEXT CHECK (recurrence_period IN ('Mensal', 'Anual', 'Semanal')),
   receipt_url TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 5. ESQUEMA: FLEET
+CREATE TABLE IF NOT EXISTS core.tasks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  description TEXT,
+  completed BOOLEAN DEFAULT false,
+  priority TEXT CHECK (priority IN ('Baixa', 'Média', 'Alta')),
+  due_date DATE,
+  beneficiary_id UUID REFERENCES finance.beneficiaries(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ==============================================================================
+-- 6. ESQUEMA: FLEET (Frotas)
+-- ==============================================================================
 CREATE TABLE IF NOT EXISTS fleet.vehicles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   make TEXT NOT NULL,
@@ -162,12 +217,17 @@ CREATE TABLE IF NOT EXISTS fleet.vehicles (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 6. ESQUEMA: CATALOG
+-- ==============================================================================
+-- 7. ESQUEMA: CATALOG (Imóveis e Conteúdo do Portal)
+-- ==============================================================================
 CREATE TABLE IF NOT EXISTS catalog.properties (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title TEXT NOT NULL,
   description TEXT,
   price NUMERIC NOT NULL CHECK (price >= 0),
+  old_price NUMERIC DEFAULT NULL,
+  is_promo BOOLEAN DEFAULT false,
+  is_active BOOLEAN DEFAULT true,
   location TEXT NOT NULL,
   bathrooms INTEGER DEFAULT 1,
   bedrooms INTEGER DEFAULT 1,
@@ -185,17 +245,6 @@ CREATE TABLE IF NOT EXISTS catalog.properties (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- REPARAÇÃO: Caso a tabela já exista mas colunas específicas faltem
-ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS gallery JSONB DEFAULT '[]'::jsonb;
-ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS amenities JSONB DEFAULT '[]'::jsonb;
-ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS nearby JSONB DEFAULT '[]'::jsonb;
-ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS video_url TEXT;
-ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS map_coords JSONB;
-ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS featured BOOLEAN DEFAULT false;
-ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
-ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS old_price NUMERIC DEFAULT NULL;
-ALTER TABLE catalog.properties ADD COLUMN IF NOT EXISTS is_promo BOOLEAN DEFAULT false;
-
 CREATE TABLE IF NOT EXISTS catalog.contact_requests (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
@@ -207,94 +256,6 @@ CREATE TABLE IF NOT EXISTS catalog.contact_requests (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- DADOS INICIAIS
-INSERT INTO core.roles (name, permissions) VALUES 
-('Administrador', '["*"]'),
-('Gestor RH', '["hr.*", "dashboard.view"]'),
-('Gestor Financeiro', '["finance.*", "dashboard.view"]')
-ON CONFLICT (name) DO NOTHING;
--- Adições e Correções ao ESQUEMA HR
-ALTER TABLE hr.employees ADD COLUMN IF NOT EXISTS document_type TEXT;
-ALTER TABLE hr.employees ADD COLUMN IF NOT EXISTS document_number TEXT;
-ALTER TABLE hr.employees ADD COLUMN IF NOT EXISTS document_expiry DATE;
-ALTER TABLE hr.employees ADD COLUMN IF NOT EXISTS payment_method TEXT;
-ALTER TABLE hr.employees ADD COLUMN IF NOT EXISTS contract_start DATE;
-ALTER TABLE hr.employees ADD COLUMN IF NOT EXISTS niss TEXT;
-ALTER TABLE hr.employees ADD COLUMN IF NOT EXISTS emergency_contact TEXT;
-ALTER TABLE hr.employees ADD COLUMN IF NOT EXISTS gender TEXT CHECK (gender IN ('M', 'F', 'O'));
-
-CREATE TABLE IF NOT EXISTS hr.attendance_records (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  employee_id UUID REFERENCES hr.employees(id) ON DELETE CASCADE,
-  date DATE NOT NULL,
-  check_in TIME,
-  check_out TIME,
-  status TEXT,
-  location TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS hr.contracts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  employee_id UUID REFERENCES hr.employees(id) ON DELETE CASCADE,
-  type TEXT NOT NULL,
-  start_date DATE NOT NULL,
-  end_date DATE,
-  salary_base NUMERIC NOT NULL,
-  status TEXT NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- Adições e Correções ao ESQUEMA FINANCE
-ALTER TABLE finance.transactions ADD COLUMN IF NOT EXISTS client_supplier_name TEXT;
-ALTER TABLE finance.transactions ADD COLUMN IF NOT EXISTS is_recurring BOOLEAN DEFAULT false;
-ALTER TABLE finance.transactions ADD COLUMN IF NOT EXISTS recurrence_period TEXT CHECK (recurrence_period IN ('Mensal', 'Anual', 'Semanal'));
-
--- Criação da Tabela tasks em CORE
-CREATE TABLE IF NOT EXISTS core.tasks (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title TEXT NOT NULL,
-  description TEXT,
-  completed BOOLEAN DEFAULT false,
-  priority TEXT CHECK (priority IN ('Baixa', 'Média', 'Alta')),
-  due_date DATE,
-  beneficiary_id UUID REFERENCES finance.beneficiaries(id) ON DELETE SET NULL,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- Criação da Tabela strategic_plans em CORE
-CREATE TABLE IF NOT EXISTS core.strategic_plans (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  goal TEXT NOT NULL,
-  kpi TEXT NOT NULL,
-  progress NUMERIC DEFAULT 0,
-  responsible TEXT NOT NULL,
-  deadline DATE NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- Criação da Tabela marketing_posts em CORE (ou um schema marketing se quiser)
-CREATE SCHEMA IF NOT EXISTS marketing;
-DO $$
-BEGIN
-    EXECUTE 'GRANT USAGE ON SCHEMA marketing TO anon, authenticated, service_role';
-    EXECUTE 'ALTER DEFAULT PRIVILEGES IN SCHEMA marketing GRANT ALL ON TABLES TO anon, authenticated, service_role';
-    EXECUTE 'ALTER DEFAULT PRIVILEGES IN SCHEMA marketing GRANT ALL ON SEQUENCES TO anon, authenticated, service_role';
-    EXECUTE 'ALTER DEFAULT PRIVILEGES IN SCHEMA marketing GRANT ALL ON FUNCTIONS TO anon, authenticated, service_role';
-    EXECUTE 'GRANT ALL ON ALL TABLES IN SCHEMA marketing TO anon, authenticated, service_role';
-END $$;
-
-CREATE TABLE IF NOT EXISTS marketing.posts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title TEXT NOT NULL,
-  platform TEXT NOT NULL,
-  status TEXT CHECK (status IN ('Published', 'Scheduled', 'Draft')),
-  scheduled_date TIMESTAMPTZ,
-  image TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- Criação das Tabelas partners e real_estate_services em CATALOG
 CREATE TABLE IF NOT EXISTS catalog.partners (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
@@ -311,6 +272,138 @@ CREATE TABLE IF NOT EXISTS catalog.real_estate_services (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Correção nas Vagas (Adicionar image e description em hr.job_vacancies)
-ALTER TABLE hr.job_vacancies ADD COLUMN IF NOT EXISTS image TEXT;
+-- ==============================================================================
+-- 8. ESQUEMA: MARKETING
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS marketing.posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  platform TEXT NOT NULL,
+  status TEXT CHECK (status IN ('Published', 'Scheduled', 'Draft')),
+  scheduled_date TIMESTAMPTZ,
+  image TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
 
+-- ==============================================================================
+-- 9. COMPATIBILIDADE / TABELAS NO ESQUEMA PUBLIC (Caso chamado sem prefixo)
+-- ==============================================================================
+CREATE OR REPLACE VIEW public.properties AS SELECT * FROM catalog.properties;
+CREATE OR REPLACE VIEW public.services AS SELECT * FROM catalog.real_estate_services;
+CREATE OR REPLACE VIEW public.contact_requests AS SELECT * FROM catalog.contact_requests;
+CREATE OR REPLACE VIEW public.partners AS SELECT * FROM catalog.partners;
+CREATE OR REPLACE VIEW public.tasks AS SELECT * FROM core.tasks;
+CREATE OR REPLACE VIEW public.beneficiaries AS SELECT * FROM finance.beneficiaries;
+CREATE OR REPLACE VIEW public.transactions AS SELECT * FROM finance.transactions;
+CREATE OR REPLACE VIEW public.employees AS SELECT * FROM hr.employees;
+CREATE OR REPLACE VIEW public.job_applications AS SELECT * FROM hr.job_applications;
+CREATE OR REPLACE VIEW public.job_vacancies AS SELECT * FROM hr.job_vacancies;
+
+-- ==============================================================================
+-- 10. POLÍTICAS RLS (Row Level Security)
+-- ==============================================================================
+-- Habilitar RLS nas tabelas principais
+ALTER TABLE hr.job_vacancies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE hr.job_applications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE hr.employees ENABLE ROW LEVEL SECURITY;
+ALTER TABLE catalog.properties ENABLE ROW LEVEL SECURITY;
+ALTER TABLE catalog.contact_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE catalog.partners ENABLE ROW LEVEL SECURITY;
+ALTER TABLE catalog.real_estate_services ENABLE ROW LEVEL SECURITY;
+ALTER TABLE finance.transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE finance.beneficiaries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE finance.projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE fleet.vehicles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE core.roles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE core.tasks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE core.strategic_plans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE core.audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE marketing.posts ENABLE ROW LEVEL SECURITY;
+
+-- Políticas de Acesso Público & Autenticado (Permite leitura pública do portal e gestão via app)
+DO $$
+BEGIN
+  -- Catálogo de Imóveis
+  DROP POLICY IF EXISTS "Public read properties" ON catalog.properties;
+  DROP POLICY IF EXISTS "All access properties" ON catalog.properties;
+  CREATE POLICY "Public read properties" ON catalog.properties FOR SELECT USING (true);
+  CREATE POLICY "All access properties" ON catalog.properties FOR ALL USING (true);
+
+  -- Contact Requests
+  DROP POLICY IF EXISTS "Public insert contacts" ON catalog.contact_requests;
+  DROP POLICY IF EXISTS "All access contacts" ON catalog.contact_requests;
+  CREATE POLICY "Public insert contacts" ON catalog.contact_requests FOR INSERT WITH CHECK (true);
+  CREATE POLICY "All access contacts" ON catalog.contact_requests FOR ALL USING (true);
+
+  -- Vagas e Candidaturas
+  DROP POLICY IF EXISTS "Public read vacancies" ON hr.job_vacancies;
+  DROP POLICY IF EXISTS "All access vacancies" ON hr.job_vacancies;
+  CREATE POLICY "Public read vacancies" ON hr.job_vacancies FOR SELECT USING (true);
+  CREATE POLICY "All access vacancies" ON hr.job_vacancies FOR ALL USING (true);
+
+  DROP POLICY IF EXISTS "Public insert applications" ON hr.job_applications;
+  DROP POLICY IF EXISTS "All access applications" ON hr.job_applications;
+  CREATE POLICY "Public insert applications" ON hr.job_applications FOR INSERT WITH CHECK (true);
+  CREATE POLICY "All access applications" ON hr.job_applications FOR ALL USING (true);
+
+  -- Parceiros e Serviços
+  DROP POLICY IF EXISTS "Public read partners" ON catalog.partners;
+  DROP POLICY IF EXISTS "All access partners" ON catalog.partners;
+  CREATE POLICY "Public read partners" ON catalog.partners FOR SELECT USING (true);
+  CREATE POLICY "All access partners" ON catalog.partners FOR ALL USING (true);
+
+  DROP POLICY IF EXISTS "Public read services" ON catalog.real_estate_services;
+  DROP POLICY IF EXISTS "All access services" ON catalog.real_estate_services;
+  CREATE POLICY "Public read services" ON catalog.real_estate_services FOR SELECT USING (true);
+  CREATE POLICY "All access services" ON catalog.real_estate_services FOR ALL USING (true);
+
+  -- Demais módulos internos
+  DROP POLICY IF EXISTS "All access employees" ON hr.employees;
+  CREATE POLICY "All access employees" ON hr.employees FOR ALL USING (true);
+
+  DROP POLICY IF EXISTS "All access attendance" ON hr.attendance_records;
+  CREATE POLICY "All access attendance" ON hr.attendance_records FOR ALL USING (true);
+
+  DROP POLICY IF EXISTS "All access contracts" ON hr.contracts;
+  CREATE POLICY "All access contracts" ON hr.contracts FOR ALL USING (true);
+
+  DROP POLICY IF EXISTS "All access transactions" ON finance.transactions;
+  CREATE POLICY "All access transactions" ON finance.transactions FOR ALL USING (true);
+
+  DROP POLICY IF EXISTS "All access beneficiaries" ON finance.beneficiaries;
+  CREATE POLICY "All access beneficiaries" ON finance.beneficiaries FOR ALL USING (true);
+
+  DROP POLICY IF EXISTS "All access projects" ON finance.projects;
+  CREATE POLICY "All access projects" ON finance.projects FOR ALL USING (true);
+
+  DROP POLICY IF EXISTS "All access vehicles" ON fleet.vehicles;
+  CREATE POLICY "All access vehicles" ON fleet.vehicles FOR ALL USING (true);
+
+  DROP POLICY IF EXISTS "All access roles" ON core.roles;
+  CREATE POLICY "All access roles" ON core.roles FOR ALL USING (true);
+
+  DROP POLICY IF EXISTS "All access tasks" ON core.tasks;
+  CREATE POLICY "All access tasks" ON core.tasks FOR ALL USING (true);
+
+  DROP POLICY IF EXISTS "All access strategic_plans" ON core.strategic_plans;
+  CREATE POLICY "All access strategic_plans" ON core.strategic_plans FOR ALL USING (true);
+
+  DROP POLICY IF EXISTS "All access audit_logs" ON core.audit_logs;
+  CREATE POLICY "All access audit_logs" ON core.audit_logs FOR ALL USING (true);
+
+  DROP POLICY IF EXISTS "All access posts" ON marketing.posts;
+  CREATE POLICY "All access posts" ON marketing.posts FOR ALL USING (true);
+END $$;
+
+-- ==============================================================================
+-- 11. DADOS INICIAIS (SEED)
+-- ==============================================================================
+INSERT INTO core.roles (name, permissions) VALUES 
+('Administrador', '["*"]'),
+('Gestor RH', '["hr.*", "dashboard.view"]'),
+('Gestor Financeiro', '["finance.*", "dashboard.view"]'),
+('Gestor de Catálogo', '["catalog.*", "dashboard.view"]')
+ON CONFLICT (name) DO NOTHING;
+
+-- Notificar PostgREST para recarregar o schema cache imediatamente
+NOTIFY pgrst, reload_schema;
