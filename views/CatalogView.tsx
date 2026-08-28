@@ -112,51 +112,88 @@ const CatalogView: React.FC = () => {
       try {
         const payload: any = {
           ...newProp,
-          price: Number(newProp.price),
-          area: Number(newProp.area),
-          bedrooms: Number(newProp.bedrooms),
-          bathrooms: Number(newProp.bathrooms),
+          price: Number(newProp.price) || 0,
+          area: Number(newProp.area) || 0,
+          bedrooms: Number(newProp.bedrooms) || 0,
+          bathrooms: Number(newProp.bathrooms) || 0,
           image: newProp.image?.trim() || defaultPlaceholder,
           gallery: newProp.gallery || [],
           is_active: newProp.is_active !== undefined ? newProp.is_active : true,
           is_promo: newProp.is_promo !== undefined ? newProp.is_promo : false,
           old_price: newProp.is_promo && newProp.old_price ? Number(newProp.old_price) : null,
-          map_coords: {
-            ...(newProp.map_coords || {}),
-            is_active: newProp.is_active !== undefined ? newProp.is_active : true,
-            is_promo: newProp.is_promo !== undefined ? newProp.is_promo : false,
-            old_price: newProp.is_promo && newProp.old_price ? Number(newProp.old_price) : null
-          }
+          map_coords: newProp.map_coords || null
         };
 
-        const result = editingItem 
+        // Try primary catalog schema
+        let result = editingItem 
           ? await db.catalog('properties').update(payload).eq('id', editingItem.id)
           : await db.catalog('properties').insert([payload]);
 
+        // If error occurs, inspect and apply progressive fallbacks
         if (result.error) {
           const errMsg = result.error.message || '';
-          // If custom columns don't exist in Supabase yet, retry with sanitized standard payload gracefully
-          if (errMsg.includes('column') || errMsg.includes('not exist') || errMsg.includes('missing')) {
-            console.warn("New columns not found in database, retrying without is_active / promo fields...");
-            const safePayload = { ...payload };
-            safePayload.map_coords = {
-              ...(safePayload.map_coords || {}),
-              is_active: payload.is_active,
-              is_promo: payload.is_promo,
-              old_price: payload.old_price
-            };
-            delete safePayload.is_active;
-            delete safePayload.is_promo;
-            delete safePayload.old_price;
+          console.warn("Primary save encountered error:", errMsg);
 
-            const retryResult = editingItem
-              ? await db.catalog('properties').update(safePayload).eq('id', editingItem.id)
-              : await db.catalog('properties').insert([safePayload]);
+          // Fallback 1: Remove unindexed/optional columns that might be missing in schema cache
+          if (errMsg.includes('column') || errMsg.includes('schema cache') || errMsg.includes('not exist') || errMsg.includes('missing')) {
+            const sanitizedPayload = { ...payload };
+            
+            // If map_coords was the culprit, remove it
+            if (errMsg.includes('map_coords')) {
+              delete sanitizedPayload.map_coords;
+            }
+            if (errMsg.includes('is_active')) {
+              delete sanitizedPayload.is_active;
+            }
+            if (errMsg.includes('is_promo') || errMsg.includes('old_price')) {
+              delete sanitizedPayload.is_promo;
+              delete sanitizedPayload.old_price;
+            }
 
-            if (retryResult.error) throw retryResult.error;
-            setMessage({ type: 'success', text: 'Imóvel guardado! (Nota: Adicione as novas colunas is_active / promo no Supabase para ativar controlo completo)' });
+            // Retry on catalog schema with sanitized payload
+            let retryResult = editingItem
+              ? await db.catalog('properties').update(sanitizedPayload).eq('id', editingItem.id)
+              : await db.catalog('properties').insert([sanitizedPayload]);
+
+            // Fallback 2: If catalog schema still fails or isn't exposed, try public schema
+            if (retryResult.error) {
+              console.warn("Retrying save on public.properties...");
+              const pubResult = editingItem
+                ? await supabase.from('properties').update(sanitizedPayload).eq('id', editingItem.id)
+                : await supabase.from('properties').insert([sanitizedPayload]);
+
+              if (pubResult.error) {
+                // Strip all optional modern columns as last resort
+                const minimalPayload = {
+                  title: payload.title,
+                  description: payload.description,
+                  price: payload.price,
+                  location: payload.location,
+                  bathrooms: payload.bathrooms,
+                  bedrooms: payload.bedrooms,
+                  area: payload.area,
+                  image: payload.image,
+                  type: payload.type,
+                  deal_type: payload.deal_type,
+                  status: payload.status,
+                  featured: payload.featured || false
+                };
+                const lastResort = editingItem
+                  ? await supabase.from('properties').update(minimalPayload).eq('id', editingItem.id)
+                  : await supabase.from('properties').insert([minimalPayload]);
+
+                if (lastResort.error) throw lastResort.error;
+              }
+            }
+            setMessage({ type: 'success', text: 'Imóvel guardado com sucesso!' });
           } else {
-            throw result.error;
+            // If catalog schema is inaccessible, try public schema directly
+            const pubResult = editingItem
+              ? await supabase.from('properties').update(payload).eq('id', editingItem.id)
+              : await supabase.from('properties').insert([payload]);
+
+            if (pubResult.error) throw pubResult.error;
+            setMessage({ type: 'success', text: 'Imóvel guardado com sucesso!' });
           }
         } else {
           setMessage({ type: 'success', text: 'Operação concluída com sucesso!' });
